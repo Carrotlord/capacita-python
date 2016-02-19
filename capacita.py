@@ -32,6 +32,13 @@ def convert_value(val):
     """
     Given a value in string form, converts to an int, float, etc.
     """
+    if len(val) >= 2:
+        if val[0] == "'" and val[-1] == "'":
+            return val[1:-1]
+        elif val[0] == '"' and val[-1] == '"':
+            return val[1:-1]
+        elif val[0] == '`' and val[-1] == '`':
+            return Ribbon(val[1:-1])
     try:
         return int(val)
     except ValueError:
@@ -39,6 +46,31 @@ def convert_value(val):
             return float(val)
         except ValueError:
             return None
+            
+class Ribbon(object):
+    def __init__(self, string):
+        if len(string) == 0:
+            self.char = None
+            self.rest = None
+        else:
+            self.char = string[0]
+            self.rest = Ribbon(string[1:])
+    
+    def to_string(self):
+        if self.char == None:
+            return ''
+        string = self.char
+        next = self.rest
+        while next.char:
+            string += next.char
+            next = next.rest
+        return string
+    
+    def __repr__(self):
+        return '`' + self.to_string() + '`'
+    
+    def __str__(self):
+        return repr(self)
 
 class Environment(object):
     def __init__(self):
@@ -61,6 +93,10 @@ def main():
     execute_statement('x = 3', env)
     execute_statement('x+=7', env)
     execute_statement('y=9.23', env)
+    print(env.frames)
+    execute_statement('z="hello world"', env)
+    execute_statement('z +="!!!"', env)
+    execute_statement('a= `gelatin`', env)
     print(env.frames)
         
 main()

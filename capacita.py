@@ -1,5 +1,7 @@
 # Use Python 2, not Python 3
 
+import re
+
 test_code = """
 x = 5
 y = 15
@@ -23,15 +25,18 @@ def tokenize_statement(stmt):
 def execute_statement(stmt, env):
     tokens = tokenize_statement(stmt)
     if tokens[1] == '=':
-        env.assign(tokens[0], convert_value(tokens[2]))
+        env.assign(tokens[0], convert_value(tokens[2], env))
     elif tokens[1] == '+=':
         val = env.get(tokens[0])
-        env.assign(tokens[0], val + convert_value(tokens[2]))
+        env.assign(tokens[0], val + convert_value(tokens[2], env))
     
-def convert_value(val):
+def convert_value(val, env):
     """
     Given a value in string form, converts to an int, float, etc.
     """
+    if re.match('[A-Za-z_][A-Za-z_0-9]*', val):
+        # Grab a variable's value:
+        return env.get(val)
     if len(val) >= 2:
         if val[0] == "'" and val[-1] == "'":
             return val[1:-1]
@@ -71,6 +76,11 @@ class Ribbon(object):
     
     def __str__(self):
         return repr(self)
+        
+def throw_exception(kind, msg):
+    print(kind + ' exception')
+    print(msg)
+    exit()
 
 class Environment(object):
     def __init__(self):
@@ -83,16 +93,29 @@ class Environment(object):
         self.frames[-1][var_name] = value
         
     def get(self, var_name):
-        return self.frames[-1][var_name]
+        i = -1
+        while i >= -len(self.frames):
+            if var_name in self.frames[i]:
+                return self.frames[i][var_name]
+            else:
+                i -= 1
+        throw_exception('UndefinedVariable', var_name + ' is not defined.')
         
     def pop(self):
         return self.frames.pop()
+
+def repl():
+    pass
 
 def main():
     env = Environment()
     execute_statement('x = 3', env)
     execute_statement('x+=7', env)
     execute_statement('y=9.23', env)
+    env.new_frame()
+    execute_statement('y+=y', env)
+    env.new_frame()
+    execute_statement('k += 5', env)
     print(env.frames)
     execute_statement('z="hello world"', env)
     execute_statement('z +="!!!"', env)

@@ -28,7 +28,7 @@ def execute_statement(stmt, env):
         env.assign(tokens[0], convert_value(tokens[2], env))
     elif tokens[1] == '+=':
         val = env.get(tokens[0])
-        env.assign(tokens[0], val + convert_value(tokens[2], env))
+        env.update(tokens[0], val + convert_value(tokens[2], env))
     
 def convert_value(val, env):
     """
@@ -91,6 +91,12 @@ class Environment(object):
     
     def assign(self, var_name, value):
         self.frames[-1][var_name] = value
+    
+    def update(self, var_name, value):
+        if var_name in self.frames[-1]:
+            self.frames[-1][var_name] = value
+        else:
+            throw_exception('UndefinedVariable', var_name + ' is not defined.')
         
     def get(self, var_name):
         i = -1
@@ -113,9 +119,7 @@ def main():
     execute_statement('x+=7', env)
     execute_statement('y=9.23', env)
     env.new_frame()
-    execute_statement('y+=y', env)
-    env.new_frame()
-    execute_statement('k += 5', env)
+    execute_statement('x = 5', env)
     print(env.frames)
     execute_statement('z="hello world"', env)
     execute_statement('z +="!!!"', env)

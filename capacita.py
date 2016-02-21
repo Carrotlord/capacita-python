@@ -10,6 +10,45 @@ x += y
 
 operators = ['+=', '=']
 
+class AST(object):
+    """
+    Abstract syntax tree with strongly binding operators at the bottom.
+    The smaller the precedence, the stronger the binding.
+    """
+    def __init__(self, expr):
+        self.expr = expr
+        self.precedences = {
+            ':': 1,
+            '^': 2,
+            '*': 3, '/': 3,
+            '+': 4, '-': 4
+        }
+        self.left_child = None
+        self.right_child = None
+        self.op = None
+    
+    def weakest(self):
+        current = 0
+        result = None
+        for op in self.expr:
+            if op in self.precedences and self.precedences[op] > current:
+                current = self.precedences[op]
+                result = op
+        return result
+        
+    def parse(self):
+        buffer = ''
+        tokens = []
+        for c in self.expr:
+            if c in self.precedences:
+                tokens.append(buffer)
+                tokens.append(c)
+                buffer = ''
+            else:
+                buffer += c
+        tokens.append(buffer)
+        return tokens
+
 # TODO: finish this function
 def tokenize_statement(stmt):
     for i in range(len(stmt)):

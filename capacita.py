@@ -48,6 +48,17 @@ class AST(object):
                 buffer += c
         tokens.append(buffer)
         return tokens
+    
+    def build_indices(self):
+        # TODO: consider modification of index as expression is being parsed.
+        tokens = self.parse()
+        table = [[], [], [], []]
+        i = 0
+        for token in tokens:
+            if token in self.precedences:
+                table[self.precedences[token] - 1].append(i)
+            i += 1
+        return table
 
 # TODO: finish this function
 def tokenize_statement(stmt):
@@ -164,5 +175,8 @@ def main():
     execute_statement('z +="!!!"', env)
     execute_statement('a= `gelatin`', env)
     print(env.frames)
+    ast = AST("3*4+5 ^ 7")
+    print(ast.parse())
+    print(ast.build_indices())
         
 main()

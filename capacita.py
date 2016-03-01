@@ -50,7 +50,6 @@ class AST(object):
         return tokens
     
     def build_indices(self):
-        # TODO: consider modification of index as expression is being parsed.
         tokens = self.parse()
         table = [[], [], [], []]
         i = 0
@@ -59,6 +58,23 @@ class AST(object):
                 table[self.precedences[token] - 1].append(i)
             i += 1
         return table
+    
+    def collapse_indices(self, index_table):
+        all = []
+        for index_list in index_table:
+            all += index_list
+        i = 0
+        for index in all:
+            j = i + 1
+            for checked_index in all[i+1:]:
+                # Indices that are greater than
+                # the current should be moved over 2 slots:
+                if index < checked_index:
+                    all[j] -= 2
+                j += 1
+            i += 1
+        return all
+        
 
 # TODO: finish this function
 def tokenize_statement(stmt):
@@ -177,6 +193,9 @@ def main():
     print(env.frames)
     ast = AST("3*4+5 ^ 7")
     print(ast.parse())
-    print(ast.build_indices())
+    print(ast.collapse_indices(ast.build_indices()))
+    ast = AST("18+15*9:3+10")
+    print(ast.parse())
+    print(ast.collapse_indices(ast.build_indices()))
         
 main()

@@ -100,6 +100,8 @@ def convert_value(val, env):
     """
     Given a value in string form, converts to an int, float, etc.
     """
+    if type(val) is not str:
+        return val
     if re.match('[A-Za-z_][A-Za-z_0-9]*', val):
         # Grab a variable's value:
         return env.get(val)
@@ -178,6 +180,32 @@ class Environment(object):
 
 def repl():
     pass
+    
+def evaluate_expression(expr, env):
+    ast = AST(expr)
+    tokens = ast.parse()
+    indices = ast.collapse_indices(ast.build_indices())
+    for idx in indices:
+        op = tokens[idx]
+        if op == '+':
+            tokens[idx-1 : idx+2] = [convert_value(tokens[idx-1], env) + \
+                                     convert_value(tokens[idx+1], env)]
+        elif op == '-':
+            tokens[idx-1 : idx+2] = [convert_value(tokens[idx-1], env) - \
+                                     convert_value(tokens[idx+1], env)]
+        elif op == '*':
+            tokens[idx-1 : idx+2] = [convert_value(tokens[idx-1], env) * \
+                                     convert_value(tokens[idx+1], env)]
+        elif op == '/':
+            tokens[idx-1 : idx+2] = [float(convert_value(tokens[idx-1], env)) / \
+                                     float(convert_value(tokens[idx+1], env))]
+        elif op == '^':
+            tokens[idx-1 : idx+2] = [convert_value(tokens[idx-1], env) ** \
+                                     convert_value(tokens[idx+1], env)]
+    if len(tokens) != 1:
+        throw_exception('ExprEval', str(tokens) + ' cannot be converted into a single value')
+    else:
+        return tokens[0]
 
 def main():
     env = Environment()
@@ -197,5 +225,9 @@ def main():
     ast = AST("18+15*9:3+10")
     print(ast.parse())
     print(ast.collapse_indices(ast.build_indices()))
+
+    print(evaluate_expression('1+2+3+4', Environment()))
+    print(evaluate_expression('45+7*8', Environment()))
+    print(evaluate_expression('3.2+18^2-7', Environment()))
         
 main()

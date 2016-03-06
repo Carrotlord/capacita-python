@@ -1,6 +1,7 @@
 # Use Python 2, not Python 3
 
 import re
+from fractions import Fraction
 
 test_code = """
 x = 5
@@ -9,6 +10,39 @@ x += y
 """
 
 operators = ['+=', '=']
+
+def frac_to_ratio(frac):
+    return Ratio(frac.numerator, frac.denominator)
+    
+def prepare_frac(ratio):
+    if type(ratio) is Ratio:
+        return ratio.fraction
+    return ratio
+
+class Ratio(object):
+    def __init__(self, n, d):
+        self.fraction = Fraction(n, d)
+        
+    def __add__(self, other):
+        return frac_to_ratio(self.fraction + prepare_frac(other))
+    
+    def __sub__(self, other):
+        return frac_to_ratio(self.fraction - prepare_frac(other))
+        
+    def __mul__(self, other):
+        return frac_to_ratio(self.fraction * prepare_frac(other))
+        
+    def __div__(self, other):
+        return frac_to_ratio(self.fraction / prepare_frac(other))
+    
+    def __pow__(self, other):
+        return frac_to_ratio(self.fraction ** prepare_frac(other))
+    
+    def __repr__(self):
+        return str(self.fraction.numerator) + ':' + str(self.fraction.denominator)
+    
+    def __str__(self):
+        return repr(self)
 
 class AST(object):
     """
@@ -202,6 +236,9 @@ def evaluate_expression(expr, env):
         elif op == '^':
             tokens[idx-1 : idx+2] = [convert_value(tokens[idx-1], env) ** \
                                      convert_value(tokens[idx+1], env)]
+        elif op == ':':
+            tokens[idx-1 : idx+2] = [Ratio(convert_value(tokens[idx-1], env), \
+                                     convert_value(tokens[idx+1], env))]
     if len(tokens) != 1:
         throw_exception('ExprEval', str(tokens) + ' cannot be converted into a single value')
     else:
@@ -229,5 +266,7 @@ def main():
     print(evaluate_expression('1+2+3+4', Environment()))
     print(evaluate_expression('45+7*8', Environment()))
     print(evaluate_expression('3.2+18^2-7', Environment()))
+    print(evaluate_expression('1:2 + 1:3 + 1:5', Environment()))
+    print(evaluate_expression('2:3 + 3^3 - 1:5', Environment()))
         
 main()

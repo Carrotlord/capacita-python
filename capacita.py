@@ -75,12 +75,12 @@ class AST(object):
         tokens = []
         for c in self.expr:
             if c in self.precedences:
-                tokens.append(buffer)
+                tokens.append(buffer.strip())
                 tokens.append(c)
                 buffer = ''
             else:
                 buffer += c
-        tokens.append(buffer)
+        tokens.append(buffer.strip())
         return tokens
     
     def build_indices(self):
@@ -273,7 +273,7 @@ def main():
     
     env2 = Environment()
     execute_statement('x = 3+5*4', env2)
-    execute_statement('y = x+ 19 - 3*6', env2)
+    execute_statement('y = x + 19 - 3*6', env2)
     print(env2.frames)
         
 main()

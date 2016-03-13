@@ -125,14 +125,15 @@ def tokenize_statement(stmt):
 def execute_statement(stmt, env):
     tokens = tokenize_statement(stmt)
     if tokens[1] == '=':
-        env.assign(tokens[0], convert_value(tokens[2], env))
+        env.assign(tokens[0], evaluate_expression(tokens[2], env))
     elif tokens[1] == '+=':
         val = env.get(tokens[0])
-        env.update(tokens[0], val + convert_value(tokens[2], env))
+        env.update(tokens[0], val + evaluate_expression(tokens[2], env))
     
 def convert_value(val, env):
     """
     Given a value in string form, converts to an int, float, etc.
+    Or, given a variable name, retrieves the value of that variable.
     """
     if type(val) is not str:
         return val
@@ -242,7 +243,7 @@ def evaluate_expression(expr, env):
     if len(tokens) != 1:
         throw_exception('ExprEval', str(tokens) + ' cannot be converted into a single value')
     else:
-        return tokens[0]
+        return convert_value(tokens[0], env)
 
 def main():
     env = Environment()
@@ -268,5 +269,11 @@ def main():
     print(evaluate_expression('3.2+18^2-7', Environment()))
     print(evaluate_expression('1:2 + 1:3 + 1:5', Environment()))
     print(evaluate_expression('2:3 + 3^3 - 1:5', Environment()))
+    print(evaluate_expression('1234', Environment()))
+    
+    env2 = Environment()
+    execute_statement('x = 3+5*4', env2)
+    execute_statement('y = x+ 19 - 3*6', env2)
+    print(env2.frames)
         
 main()

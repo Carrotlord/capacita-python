@@ -212,9 +212,24 @@ class Environment(object):
         
     def pop(self):
         return self.frames.pop()
+        
+def is_statement(query):
+    # TODO : need more robust testing of statement vs expression
+    return '=' in query
 
 def repl():
-    pass
+    env = Environment()
+    while True:
+        expr = raw_input('Capacita> ')
+        expr = expr.strip()
+        if expr == 'exit()':
+            break
+        elif expr == 'this':
+            print(env.frames)
+        elif is_statement(expr):
+            execute_statement(expr, env)
+        else:
+            print(evaluate_expression(expr, env))
     
 def evaluate_expression(expr, env):
     ast = AST(expr)
@@ -275,5 +290,7 @@ def main():
     execute_statement('x = 3+5*4', env2)
     execute_statement('y = x + 19 - 3*6', env2)
     print(env2.frames)
+    
+    repl()
         
 main()

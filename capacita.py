@@ -12,10 +12,13 @@ x += y
 operators = ['+=', '=']
 
 def frac_to_ratio(frac):
-    return Ratio(frac.numerator, frac.denominator)
+    try:
+        return Ratio(frac.numerator, frac.denominator)
+    except AttributeError:
+        return frac
     
 def prepare_frac(ratio):
-    if type(ratio) is Ratio:
+    if ratio.__class__ is Ratio:
         return ratio.fraction
     return ratio
 
@@ -37,6 +40,9 @@ class Ratio(object):
     
     def __pow__(self, other):
         return frac_to_ratio(self.fraction ** prepare_frac(other))
+    
+    def __float__(self):
+        return float(self.fraction.numerator) / self.fraction.denominator
     
     def __repr__(self):
         return str(self.fraction.numerator) + ':' + str(self.fraction.denominator)
@@ -230,6 +236,18 @@ def repl():
             execute_statement(expr, env)
         else:
             print(evaluate_expression(expr, env))
+            
+def promote_values(left, right):
+    if type(left) is float:
+        return left, float(right)
+    elif type(right) is float:
+        return float(left), right
+    elif left.__class__ is Ratio and type(right) is int:
+        return left, Ratio(right, 1)
+    elif type(left) is int and right.__class__ is Ratio:
+        return Ratio(left, 1), right
+    else:
+        return left, right
     
 def evaluate_expression(expr, env):
     ast = AST(expr)
@@ -237,24 +255,22 @@ def evaluate_expression(expr, env):
     indices = ast.collapse_indices(ast.build_indices())
     for idx in indices:
         op = tokens[idx]
+        left = convert_value(tokens[idx-1], env)
+        right = convert_value(tokens[idx+1], env)
+        left, right = promote_values(left, right)
         if op == '+':
-            tokens[idx-1 : idx+2] = [convert_value(tokens[idx-1], env) + \
-                                     convert_value(tokens[idx+1], env)]
+            tokens[idx-1 : idx+2] = [left + right]
         elif op == '-':
-            tokens[idx-1 : idx+2] = [convert_value(tokens[idx-1], env) - \
-                                     convert_value(tokens[idx+1], env)]
+            tokens[idx-1 : idx+2] = [left - right]
         elif op == '*':
-            tokens[idx-1 : idx+2] = [convert_value(tokens[idx-1], env) * \
-                                     convert_value(tokens[idx+1], env)]
+            tokens[idx-1 : idx+2] = [left * right]
         elif op == '/':
-            tokens[idx-1 : idx+2] = [float(convert_value(tokens[idx-1], env)) / \
-                                     float(convert_value(tokens[idx+1], env))]
+            # Todo allow for better ratio and int division
+            tokens[idx-1 : idx+2] = [float(left) / float(right)]
         elif op == '^':
-            tokens[idx-1 : idx+2] = [convert_value(tokens[idx-1], env) ** \
-                                     convert_value(tokens[idx+1], env)]
+            tokens[idx-1 : idx+2] = [left ** right]
         elif op == ':':
-            tokens[idx-1 : idx+2] = [Ratio(convert_value(tokens[idx-1], env), \
-                                     convert_value(tokens[idx+1], env))]
+            tokens[idx-1 : idx+2] = [Ratio(left, right)]
     if len(tokens) != 1:
         throw_exception('ExprEval', str(tokens) + ' cannot be converted into a single value')
     else:

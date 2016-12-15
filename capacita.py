@@ -297,6 +297,8 @@ def eval_parentheses(expr, env):
         return evaluate_expression(expr, env)
     else:
         paren_close = find_matching(expr[paren_open + 1:]) + paren_open
+        if paren_close == -1:
+            throw_exception('UnmatchedOpeningParenthesis', expr)
         left = expr[0:paren_open]
         center = expr[paren_open + 1:paren_close]
         right = expr[paren_close + 1:]

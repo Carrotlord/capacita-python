@@ -131,10 +131,10 @@ def tokenize_statement(stmt):
 def execute_statement(stmt, env):
     tokens = tokenize_statement(stmt)
     if tokens[1] == '=':
-        env.assign(tokens[0], evaluate_expression(tokens[2], env))
+        env.assign(tokens[0], eval_parentheses(tokens[2], env))
     elif tokens[1] == '+=':
         val = env.get(tokens[0])
-        env.update(tokens[0], val + evaluate_expression(tokens[2], env))
+        env.update(tokens[0], val + eval_parentheses(tokens[2], env))
     
 def convert_value(val, env):
     """
@@ -235,7 +235,7 @@ def repl():
         elif is_statement(expr):
             execute_statement(expr, env)
         else:
-            print(evaluate_expression(expr, env))
+            print(eval_parentheses(expr, env))
             
 def promote_values(left, right):
     if type(left) is float:
@@ -275,6 +275,32 @@ def evaluate_expression(expr, env):
         throw_exception('ExprEval', str(tokens) + ' cannot be converted into a single value')
     else:
         return convert_value(tokens[0], env)
+        
+def eval_parentheses(expr, env):
+    def find_matching(expr):
+        # Finds the first unmatched closing parenthesis
+        # returns -1 when there is no matching parenthesis
+        num_open = 0
+        i = 0
+        for char in expr:
+            if char == '(':
+                num_open += 1
+            elif char == ')':
+                if num_open == 0:
+                    return i + 1
+                else:
+                    num_open -= 1
+            i += 1
+        return -1
+    paren_open = expr.find('(')
+    if paren_open == -1:
+        return evaluate_expression(expr, env)
+    else:
+        paren_close = find_matching(expr[paren_open + 1:]) + paren_open
+        left = expr[0:paren_open]
+        center = expr[paren_open + 1:paren_close]
+        right = expr[paren_close + 1:]
+        return eval_parentheses(left + str(eval_parentheses(center, env)) + right, env)
 
 def main():
     env = Environment()

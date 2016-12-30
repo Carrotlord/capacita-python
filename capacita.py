@@ -134,7 +134,7 @@ def execute_statement(stmt, env):
         env.assign(tokens[0], eval_parentheses(tokens[2], env))
     elif tokens[1] == '+=':
         val = env.get(tokens[0])
-        env.update(tokens[0], val + eval_parentheses(tokens[2], env))
+        env.update(tokens[0], plus(val, eval_parentheses(tokens[2], env)))
     
 def convert_value(val, env):
     """

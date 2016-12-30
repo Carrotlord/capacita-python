@@ -148,9 +148,9 @@ def convert_value(val, env):
         return env.get(val)
     if len(val) >= 2:
         if val[0] == "'" and val[-1] == "'":
-            return val[1:-1]
+            return '"{0}"'.format(val[1:-1])
         elif val[0] == '"' and val[-1] == '"':
-            return val[1:-1]
+            return val
         elif val[0] == '`' and val[-1] == '`':
             return Ribbon(val[1:-1])
     try:
@@ -236,9 +236,37 @@ def repl():
             execute_statement(expr, env)
         else:
             print(eval_parentheses(expr, env))
+
+def is_string(val):
+    if type(val) is not str:
+        return False
+    else:
+        return len(val) >= 2 and val[0] == '"' and val[-1] == '"'
+
+def plus(a, b):
+    # Concatenates strings or returns sum of a and b
+    a_str = is_string(a)
+    b_str = is_string(b)
+    if a_str and b_str:
+        return '"{0}{1}"'.format(a[1:-1], b[1:-1])
+    elif a_str:
+        return '"{0}{1}"'.format(a[1:-1], b)
+    elif b_str:
+        return '"{0}{1}"'.format(a, b[1:-1])
+    else:
+        return a + b
             
 def promote_values(left, right):
-    if type(left) is float:
+    def stringify(val):
+        if not is_string(val):
+            return '"{0}"'.format(val)
+        else:
+            return val
+    if is_string(left):
+        return left, stringify(right)
+    elif is_string(right):
+        return stringify(left), right
+    elif type(left) is float:
         return left, float(right)
     elif type(right) is float:
         return float(left), right
@@ -259,7 +287,7 @@ def evaluate_expression(expr, env):
         right = convert_value(tokens[idx+1], env)
         left, right = promote_values(left, right)
         if op == '+':
-            tokens[idx-1 : idx+2] = [left + right]
+            tokens[idx-1 : idx+2] = [plus(left, right)]
         elif op == '-':
             tokens[idx-1 : idx+2] = [left - right]
         elif op == '*':

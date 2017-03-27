@@ -12,17 +12,20 @@ x += y
 operators = ['+=', '=']
 
 def frac_to_ratio(frac):
+    """Convert Python fraction object to Ratio."""
     try:
         return Ratio(frac.numerator, frac.denominator)
     except AttributeError:
         return frac
     
 def prepare_frac(ratio):
+    """Convert Ratio objects back to Python fraction."""
     if ratio.__class__ is Ratio:
         return ratio.fraction
     return ratio
 
 class Ratio(object):
+    """Fraction object printed as numerator:denominator."""
     def __init__(self, n, d):
         self.fraction = Fraction(n, d)
         
@@ -56,6 +59,7 @@ class AST(object):
     The smaller the precedence, the stronger the binding.
     """
     def __init__(self, expr):
+        """Setup expression and precedences of operators."""
         self.expr = expr
         self.precedences = {
             ':': 1,
@@ -68,6 +72,10 @@ class AST(object):
         self.op = None
     
     def weakest(self):
+        """
+        Returns the integer precedence of the most weakly binding
+        operator in self.expr.
+        """
         current = 0
         result = None
         for op in self.expr:
@@ -77,6 +85,11 @@ class AST(object):
         return result
         
     def parse(self):
+        """
+        Splits an expression based on its operators.
+        e.g. '2 + 3*4' -> ['2', '+', '3', '*', '4']
+        TODO : allow for operators that are larger than 1 character long.
+        """
         buffer = ''
         tokens = []
         for c in self.expr:
@@ -90,6 +103,14 @@ class AST(object):
         return tokens
     
     def build_indices(self):
+        """
+        Takes a list of tokens and collects indices of operators
+        based on their precedence. The first index encountered indicates
+        which operators should be evaluated first.
+        e.g. '1+1+3*4^7' -> ['1', '+', '1', '+', '3', '*', '4', '^', '7']
+                   indices:   0    1    2    3    4    5    6    7    8
+             -> [[], [7], [5], [1, 3]]
+        """
         tokens = self.parse()
         table = [[], [], [], []]
         i = 0
@@ -100,6 +121,15 @@ class AST(object):
         return table
     
     def collapse_indices(self, index_table):
+        """
+        Given a table of indices, determines which 'final' index
+        the operators will be at during each stage of simplification.
+        e.g. [[], [7], [5], [1, 3]]
+          -> [7, 5, 1, 3]
+          -> [7, 5, 1, 1]
+        Notice the last index was shifted to the left by 2 thanks
+        to the simplification that occurred previously.
+        """
         all = []
         for index_list in index_table:
             all += index_list
@@ -116,12 +146,17 @@ class AST(object):
         return all
 
 def display(obj):
+    """
+    Implementation of print functionality. Strings will not be printed with
+    surrounding quotes, while other objects are printed as-is.
+    """
     if type(obj) is str and len(obj) >= 2 and obj[0] == '"' and obj[-1] == '"':
         print(obj[1:-1])
     else:
         print(obj)
 
 def execute_program(prgm):
+    """Executes a program given as a string."""
     lines = prgm.split('\n')
     env = Environment()
     for line in lines:
@@ -129,6 +164,11 @@ def execute_program(prgm):
 
 # TODO: finish this function
 def tokenize_statement(stmt):
+    """
+    Tokenizes a statement based on keywords and assignment operators.
+    e.g. 'print 2+2' -> ['print', '2+2']
+         'x += 5 * 6'    -> ['x', '+=', '5 * 6']
+    """
     if stmt.startswith('print '):
         return ['print', stmt[6:]]
     for i in range(len(stmt)):
@@ -140,8 +180,9 @@ def tokenize_statement(stmt):
                     stmt[i+len(op):].strip()
                 ]
     return []
-    
+
 def execute_statement(stmt, env):
+    """Executes a statement in a given environment."""
     if len(stmt.strip()) == 0:
         return
     tokens = tokenize_statement(stmt)
@@ -179,6 +220,10 @@ def convert_value(val, env):
             return None
             
 class Ribbon(object):
+    """
+    A linked-list of characters, presented as an alternative to the
+    string type.
+    """
     def __init__(self, string):
         if len(string) == 0:
             self.char = None
@@ -209,6 +254,10 @@ def throw_exception(kind, msg):
     exit()
 
 class Environment(object):
+    """
+    A list of frames containing key-value pairs reprsenting variable names
+    bound to their values.
+    """
     def __init__(self):
         self.frames = [{}]
     
@@ -237,10 +286,14 @@ class Environment(object):
         return self.frames.pop()
         
 def is_statement(query):
+    """Returns True if query is a statement, else False."""
     # TODO : need more robust testing of statement vs expression
-    return '=' in query
+    return '=' in query or query.startswith('print ')
     
 def store_program():
+    """
+    Stores a program line-by-line until :end statement is reached.
+    """
     lines = ""
     next_line = None
     while True:
@@ -251,6 +304,11 @@ def store_program():
     return lines
 
 def repl():
+    """
+    Read-eval-print loop. Whole programs can be run by using
+    the ':program' directive, ending with ':end'.
+    Use the 'this' keyword to see the current environment frames.
+    """
     env = Environment()
     while True:
         expr = raw_input('Capacita> ')
@@ -268,13 +326,17 @@ def repl():
             print(eval_parentheses(expr, env))
 
 def is_string(val):
+    """
+    Returns True if val is a string surrounded in quotes,
+    else False.
+    """
     if type(val) is not str:
         return False
     else:
         return len(val) >= 2 and val[0] == '"' and val[-1] == '"'
 
 def plus(a, b):
-    # Concatenates strings or returns sum of a and b
+    """Concatenates strings or returns sum of a and b."""
     a_str = is_string(a)
     b_str = is_string(b)
     if a_str and b_str:
@@ -287,6 +349,11 @@ def plus(a, b):
         return a + b
             
 def promote_values(left, right):
+    """
+    Converts values left and right to proper types
+    so that operators can act on them.
+    For instance, Ratio + Integer should be a Ratio.
+    """
     def stringify(val):
         if not is_string(val):
             return '"{0}"'.format(val)
@@ -308,6 +375,10 @@ def promote_values(left, right):
         return left, right
     
 def evaluate_expression(expr, env):
+    """
+    Evaluates an expression by converting it to an AST
+    and evaluating individual operators at certain indices.
+    """
     ast = AST(expr)
     tokens = ast.parse()
     indices = ast.collapse_indices(ast.build_indices())
@@ -335,9 +406,15 @@ def evaluate_expression(expr, env):
         return convert_value(tokens[0], env)
         
 def eval_parentheses(expr, env):
+    """
+    Recursively evaluates expressions enclosed in parentheses,
+    which change the order-of-operations for the expression.
+    """
     def find_matching(expr):
-        # Finds the first unmatched closing parenthesis
-        # returns -1 when there is no matching parenthesis
+        """
+        Finds the first unmatched closing parenthesis
+        returns -1 when there is no matching parenthesis.
+        """
         num_open = 0
         i = 0
         for char in expr:
@@ -363,6 +440,7 @@ def eval_parentheses(expr, env):
         return eval_parentheses(left + str(eval_parentheses(center, env)) + right, env)
 
 def main():
+    """Main function - includes tests and runs the REPL."""
     env = Environment()
     execute_statement('x = 3', env)
     execute_statement('x+=7', env)
@@ -395,4 +473,5 @@ def main():
     
     repl()
         
-main()
+if __name__ == "__main__":
+    main()

@@ -114,10 +114,17 @@ class AST(object):
                 j += 1
             i += 1
         return all
-        
+
+def execute_program(prgm):
+    lines = prgm.split('\n')
+    env = Environment()
+    for line in lines:
+        execute_statement(line, env)
 
 # TODO: finish this function
 def tokenize_statement(stmt):
+    if stmt.startswith('print '):
+        return ['print', stmt[6:]]
     for i in range(len(stmt)):
         for op in operators:
             if stmt[i:i+len(op)] == op:
@@ -129,8 +136,12 @@ def tokenize_statement(stmt):
     return []
     
 def execute_statement(stmt, env):
+    if len(stmt.strip()) == 0:
+        return
     tokens = tokenize_statement(stmt)
-    if tokens[1] == '=':
+    if tokens[0] == 'print':
+        print(eval_parentheses(tokens[1], env))
+    elif tokens[1] == '=':
         env.assign(tokens[0], eval_parentheses(tokens[2], env))
     elif tokens[1] == '+=':
         val = env.get(tokens[0])
@@ -242,7 +253,7 @@ def repl():
             break
         elif expr == ':program':
             prgm = store_program()
-            print(prgm)
+            execute_program(prgm)
         elif expr == 'this':
             print(env.frames)
         elif is_statement(expr):

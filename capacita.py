@@ -115,6 +115,12 @@ class AST(object):
             i += 1
         return all
 
+def display(obj):
+    if type(obj) is str and len(obj) >= 2 and obj[0] == '"' and obj[-1] == '"':
+        print(obj[1:-1])
+    else:
+        print(obj)
+
 def execute_program(prgm):
     lines = prgm.split('\n')
     env = Environment()
@@ -140,7 +146,7 @@ def execute_statement(stmt, env):
         return
     tokens = tokenize_statement(stmt)
     if tokens[0] == 'print':
-        print(eval_parentheses(tokens[1], env))
+        display(eval_parentheses(tokens[1], env))
     elif tokens[1] == '=':
         env.assign(tokens[0], eval_parentheses(tokens[2], env))
     elif tokens[1] == '+=':

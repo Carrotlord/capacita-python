@@ -67,9 +67,6 @@ class AST(object):
             '*': 3, '/': 3,
             '+': 4, '-': 4
         }
-        self.left_child = None
-        self.right_child = None
-        self.op = None
     
     def weakest(self):
         """

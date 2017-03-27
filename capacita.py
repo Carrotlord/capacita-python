@@ -222,6 +222,16 @@ class Environment(object):
 def is_statement(query):
     # TODO : need more robust testing of statement vs expression
     return '=' in query
+    
+def store_program():
+    lines = ""
+    next_line = None
+    while True:
+        next_line = raw_input()
+        if next_line == ':end':
+            break
+        lines += next_line + '\n'
+    return lines
 
 def repl():
     env = Environment()
@@ -230,6 +240,9 @@ def repl():
         expr = expr.strip()
         if expr == 'exit()':
             break
+        elif expr == ':program':
+            prgm = store_program()
+            print(prgm)
         elif expr == 'this':
             print(env.frames)
         elif is_statement(expr):

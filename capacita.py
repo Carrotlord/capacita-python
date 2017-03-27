@@ -252,7 +252,7 @@ def throw_exception(kind, msg):
 
 class Environment(object):
     """
-    A list of frames containing key-value pairs reprsenting variable names
+    A list of frames containing key-value pairs representing variable names
     bound to their values.
     """
     def __init__(self):

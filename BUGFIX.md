@@ -1,6 +1,7 @@
 ## Pending
 
 - In the REPL, using ``2 = 5`` does not throw an exception. Moreover, the key-value pair ``{'2': '5'}`` is added to the current environment.
+- Negative numerical literals do not work. (e.g. -2)
 
 ## Fixed
 

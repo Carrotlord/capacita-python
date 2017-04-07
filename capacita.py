@@ -91,12 +91,35 @@ class AST(object):
         tokens = []
         for c in self.expr:
             if c in self.precedences:
-                tokens.append(buffer.strip())
+                buffer_contents = buffer.strip()
+                if len(buffer_contents) > 0:
+                    tokens.append(buffer_contents)
                 tokens.append(c)
                 buffer = ''
             else:
                 buffer += c
-        tokens.append(buffer.strip())
+        buffer_contents = buffer.strip()
+        if len(buffer_contents) > 0:
+            tokens.append(buffer_contents)
+        return self.merge_negatives(tokens)
+    
+    def merge_negatives(self, tokens):
+        """
+        Allows for proper expression of the unary operator '-'
+        e.g. ['-', '233', '+', '-', '18', ':', '-', '1']
+             -> ['-233', '+', '-18', ':', '-1']
+        """
+        if len(tokens) <= 1:
+            return tokens
+        if tokens[0] == '-':
+            return self.merge_negatives(['-' + str(tokens[1])] + tokens[2:])
+        i = 0
+        max_len = len(tokens) - 2
+        while i < max_len:
+            if tokens[i] in self.precedences and tokens[i + 1] == '-':
+                tokens[i+1 : i+3] = ['-' + str(tokens[i + 2])]
+                max_len = len(tokens) - 2
+            i += 1
         return tokens
     
     def build_indices(self):

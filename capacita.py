@@ -86,19 +86,27 @@ class AST(object):
         """
         Splits an expression based on its operators.
         e.g. '2 + 3*4' -> ['2', '+', '3', '*', '4']
-        TODO : allow for operators that are larger than 1 character long.
         """
         buffer = ''
         tokens = []
-        for c in self.expr:
-            if c in self.precedences:
-                buffer_contents = buffer.strip()
-                if len(buffer_contents) > 0:
-                    tokens.append(buffer_contents)
-                tokens.append(c)
-                buffer = ''
-            else:
-                buffer += c
+        expr_length = len(self.expr)
+        i = 0
+        while i < expr_length:
+            op_detected = False
+            for op in self.precedences:
+                op_length = len(op)
+                if self.expr[i : i+op_length] == op:
+                    buffer_contents = buffer.strip()
+                    if len(buffer_contents) > 0:
+                        tokens.append(buffer_contents)
+                    tokens.append(op)
+                    buffer = ''
+                    i += op_length
+                    op_detected = True
+                    break
+            if not op_detected:
+                buffer += self.expr[i]
+                i += 1
         buffer_contents = buffer.strip()
         if len(buffer_contents) > 0:
             tokens.append(buffer_contents)

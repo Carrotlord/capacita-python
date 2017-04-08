@@ -112,12 +112,13 @@ class AST(object):
         """
         if len(tokens) <= 1:
             return tokens
-        if tokens[0] == '-':
+        if tokens[0] == '-' and is_positive_numeric(tokens[1]):
             return self.merge_negatives(['-' + str(tokens[1])] + tokens[2:])
         i = 0
         max_len = len(tokens) - 2
         while i < max_len:
-            if tokens[i] in self.precedences and tokens[i + 1] == '-':
+            if tokens[i] in self.precedences and tokens[i + 1] == '-' and \
+               is_positive_numeric(tokens[i + 2]):
                 tokens[i+1 : i+3] = ['-' + str(tokens[i + 2])]
                 max_len = len(tokens) - 2
             i += 1
@@ -239,6 +240,33 @@ def convert_value(val, env):
             return float(val)
         except ValueError:
             return None
+
+def is_numeric(val):
+    """
+    Returns True if val is an integer or float, else False.
+    """
+    try:
+        int(val)
+    except ValueError:
+        try:
+            float(val)
+        except ValueError:
+            return False
+        else:
+            return True
+    else:
+        return True
+
+def is_positive_numeric(val):
+    """
+    Returns True if val is a positive integer or float, else False.
+    """
+    if not is_numeric(val):
+        return False
+    val = str(val)
+    if len(val) > 0 and val[0] == '-':
+        return False
+    return True
             
 class Ribbon(object):
     """
@@ -380,7 +408,9 @@ def promote_values(left, right):
             return '"{0}"'.format(val)
         else:
             return val
-    if is_string(left):
+    if left is None:
+        return left, right
+    elif is_string(left):
         return left, stringify(right)
     elif is_string(right):
         return stringify(left), right
@@ -405,13 +435,19 @@ def evaluate_expression(expr, env):
     indices = ast.collapse_indices(ast.build_indices())
     for idx in indices:
         op = tokens[idx]
-        left = convert_value(tokens[idx-1], env)
+        if idx > 0:
+            left = convert_value(tokens[idx-1], env)
+        else:
+            left = None
         right = convert_value(tokens[idx+1], env)
         left, right = promote_values(left, right)
         if op == '+':
             tokens[idx-1 : idx+2] = [plus(left, right)]
         elif op == '-':
-            tokens[idx-1 : idx+2] = [left - right]
+            if idx == 0:
+                tokens[idx : idx+2] = [-right]
+            else:
+                tokens[idx-1 : idx+2] = [left - right]
         elif op == '*':
             tokens[idx-1 : idx+2] = [left * right]
         elif op == '/':

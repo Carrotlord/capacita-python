@@ -47,6 +47,12 @@ class Ratio(object):
     
     def __float__(self):
         return float(self.fraction.numerator) / self.fraction.denominator
+        
+    def __eq__(self, other):
+        return float(self) == float(other)
+    
+    def __ne__(self, other):
+        return not self.__eq__(other)
     
     def __repr__(self):
         return str(self.fraction.numerator) + ':' + str(self.fraction.denominator)
@@ -66,7 +72,9 @@ class AST(object):
             ':': 1,
             '^': 2,
             '*': 3, '/': 3,
-            '+': 4, '-': 4
+            '+': 4, '-': 4,
+            '==': 5, '!=': 5, '>=': 5, '<=': 5,
+            '>': 5, '<': 5
         }
     
     def weakest(self):
@@ -142,7 +150,7 @@ class AST(object):
              -> [[], [7], [5], [1, 3]]
         """
         tokens = self.parse()
-        table = [[], [], [], []]
+        table = [[], [], [], [], []]
         i = 0
         for token in tokens:
             if token in self.precedences:
@@ -183,7 +191,21 @@ def display(obj):
     if type(obj) is str and len(obj) >= 2 and obj[0] == '"' and obj[-1] == '"':
         print(obj[1:-1])
     else:
-        print(obj)
+        print(literal(obj))
+        
+def literal(obj):
+    """
+    Returns a string representation of the object as a Capacita literal.
+    Similiar to Python's repr(...) function.
+    """
+    if obj is True:
+        return 'true'
+    elif obj is False:
+        return 'false'
+    elif obj is None:
+        return 'null'
+    else:
+        return obj
 
 def execute_program(prgm):
     """Executes a program given as a string."""
@@ -306,6 +328,9 @@ class Ribbon(object):
         return repr(self)
         
 def throw_exception(kind, msg):
+    """
+    Throws a Capacita exception and exits the program.
+    """
     print(kind + ' exception')
     print(msg)
     exit()
@@ -316,7 +341,7 @@ class Environment(object):
     bound to their values.
     """
     def __init__(self):
-        self.frames = [{}]
+        self.frames = [{'null': None, 'true': True, 'false': False}]
     
     def new_frame(self):
         self.frames.append({})
@@ -344,8 +369,15 @@ class Environment(object):
         
 def is_statement(query):
     """Returns True if query is a statement, else False."""
-    # TODO : need more robust testing of statement vs expression
-    return '=' in query or query.startswith('print ')
+    if query.startswith('print '):
+        return True
+    comparators = ['==', '!=', '>=', '<=']
+    ast = AST(query)
+    tokens = ast.parse()
+    for token in tokens:
+        if '=' in token and token not in comparators:
+            return True
+    return False
     
 def store_program():
     """
@@ -380,7 +412,7 @@ def repl():
         elif is_statement(expr):
             execute_statement(expr, env)
         else:
-            print(eval_parentheses(expr, env))
+            print(literal(eval_parentheses(expr, env)))
 
 def is_string(val):
     """
@@ -465,6 +497,18 @@ def evaluate_expression(expr, env):
             tokens[idx-1 : idx+2] = [left ** right]
         elif op == ':':
             tokens[idx-1 : idx+2] = [Ratio(left, right)]
+        elif op == '==':
+            tokens[idx-1 : idx+2] = [left == right]
+        elif op == '!=':
+            tokens[idx-1 : idx+2] = [left != right]
+        elif op == '>=':
+            tokens[idx-1 : idx+2] = [left >= right]
+        elif op == '<=':
+            tokens[idx-1 : idx+2] = [left <= right]
+        elif op == '>':
+            tokens[idx-1 : idx+2] = [left > right]
+        elif op == '<':
+            tokens[idx-1 : idx+2] = [left < right]
     if len(tokens) != 1:
         throw_exception('ExprEval', str(tokens) + ' cannot be converted into a single value')
     else:
@@ -530,6 +574,17 @@ def main():
     print(evaluate_expression('1:2 + 1:3 + 1:5', Environment()))
     print(evaluate_expression('2:3 + 3^3 - 1:5', Environment()))
     print(evaluate_expression('1234', Environment()))
+    
+    ast = AST("3 + 1 == 4")
+    print(ast.parse())
+    ast = AST("3 + 1 > 4")
+    print(ast.parse())
+    ast = AST("18:1 != 18.2")
+    print(ast.parse())
+    ast = AST("x = 4")
+    print(ast.parse())
+    ast = AST("y = 3 > 4")
+    print(ast.parse())
     
     env2 = Environment()
     execute_statement('x = 3+5*4', env2)

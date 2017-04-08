@@ -1,7 +1,8 @@
 ## Pending
 
 - In the REPL, using ``2 = 5`` does not throw an exception. Moreover, the key-value pair ``{'2': '5'}`` is added to the current environment.
-- Expressions such as ``5 * -3`` do not work unless wrapped in parentheses: ``5 * (-3)``
+- Expressions such as ``x = 5; print 5 * -x`` do not work unless wrapped in parentheses: ``5 * (-x)``
+- Booleans can be compared with ``>`` and ``<``, such as ``true > false``, which should throw an exception instead. Note that in Python, ``True > False`` resolves to ``True``.
 
 ## Fixed
 
@@ -22,3 +23,5 @@ Will assign 18.46 to y in the latest frame.
 - Negative numerical literals do not work. (e.g. -2)
 
 - Certain negative expressions do not work, such as ``-(-3)`` and ``x = 5; print -x``. This is because only negative signs at the front of a token list or which go after another operator are properly handled.
+
+- Expressions such as ``5 * -3`` do not work unless wrapped in parentheses: ``5 * (-3)``

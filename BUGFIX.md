@@ -3,6 +3,7 @@
 - In the REPL, using ``2 = 5`` does not throw an exception. Moreover, the key-value pair ``{'2': '5'}`` is added to the current environment.
 - Expressions such as ``x = 5; print 5 * -x`` do not work unless wrapped in parentheses: ``5 * (-x)``
 - Booleans can be compared with ``>`` and ``<``, such as ``true > false``, which should throw an exception instead. Note that in Python, ``True > False`` resolves to ``True``.
+- Dissimilar types can be compared, such as ``2 < "hello"`` resolving to ``true``. This should throw an exception instead. This is due to a quirk of Python 2.x allowing dissimilar comparisons.
 
 ## Fixed
 

@@ -1,4 +1,5 @@
 # Use Python 2, not Python 3
+# @author Jiangcheng Oliver Chu
 
 import re
 from fractions import Fraction

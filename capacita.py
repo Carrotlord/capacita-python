@@ -212,12 +212,60 @@ def literal(obj):
     else:
         return obj
 
+def prepare_control_flow(lines):
+    """
+    Converts if-statements, while-statements, for-statements, etc.
+    into :cond and jump directives
+    (:j for unconditional jump,
+     :jt for jump true, and :jf for jump false).
+
+    e.g.
+    x = 100
+    if x > 0
+        // do something
+    else
+        // do other thing
+    end
+
+    0: x = 100
+    1: :cond x > 0
+    2: :jf 5
+    3: // do something
+    4: :j 6
+    5: // do other thing
+    6: 
+    """
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if line.startswith('when '):
+            lines[i : i+1] = [':cond ' + line[5:], ':jf ' + str(i + 3)]
+        i += 1
+    return lines
+
 def execute_program(prgm):
     """Executes a program given as a string."""
     lines = prgm.split('\n')
+    lines = prepare_control_flow(lines)
     env = Environment()
-    for line in lines:
-        execute_statement(line, env)
+    prgm_counter = 0
+    cond_flag = False
+    while prgm_counter < len(lines):
+        line = lines[prgm_counter]
+        directive = execute_statement(line, env)
+        if directive is not None:
+            if directive[0] == ':cond':
+                cond_flag = eval_parentheses(directive[1], env)
+                prgm_counter += 1
+            elif directive[0] == ':j':
+                prgm_counter = int(directive[1])
+            elif (cond_flag and directive[0] == ':jt') or \
+                 ((not cond_flag) and directive[0] == ':jf'):
+                prgm_counter = int(directive[1])
+            else:
+                prgm_counter += 1
+        else:
+            prgm_counter += 1
 
 # TODO: finish this function
 def tokenize_statement(stmt):
@@ -228,6 +276,14 @@ def tokenize_statement(stmt):
     """
     if stmt.startswith('print '):
         return ['print', stmt[6:]]
+    elif stmt.startswith(':cond '):
+        return [':cond', stmt[6:]]
+    elif stmt.startswith(':j '):
+        return [':j', stmt[3:]]
+    elif stmt.startswith(':jf '):
+        return [':jf', stmt[4:]]
+    elif stmt.startswith(':jt '):
+        return [':jt', stmt[4:]]
     for i in range(len(stmt)):
         for op in operators:
             if stmt[i:i+len(op)] == op:
@@ -240,16 +296,22 @@ def tokenize_statement(stmt):
 
 def execute_statement(stmt, env):
     """Executes a statement in a given environment."""
-    if len(stmt.strip()) == 0:
+    directives = [':cond', ':j', ':jt', ':jf']
+    stmt = stmt.strip()
+    if len(stmt) == 0:
         return
     tokens = tokenize_statement(stmt)
     if tokens[0] == 'print':
         display(eval_parentheses(tokens[1], env))
+    if tokens[0] in directives:
+        return tokens
     elif tokens[1] == '=':
         env.assign(tokens[0], eval_parentheses(tokens[2], env))
     elif tokens[1] == '+=':
         val = env.get(tokens[0])
         env.update(tokens[0], plus(val, eval_parentheses(tokens[2], env)))
+    # No directive to be processed:
+    return None
     
 def convert_value(val, env):
     """

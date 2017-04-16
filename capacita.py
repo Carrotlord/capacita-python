@@ -76,6 +76,9 @@ class AST(object):
             '==': 5, '!=': 5, '>=': 5, '<=': 5,
             '>': 5, '<': 5
         }
+        # Longer operators should be detected before shorter ones:
+        self.ordered_ops = ['>=', '<=', '!=', '==', '<', '>',
+                            '+', '-', '*', '/', '^', ':']
     
     def weakest(self):
         """
@@ -101,7 +104,7 @@ class AST(object):
         i = 0
         while i < expr_length:
             op_detected = False
-            for op in self.precedences:
+            for op in self.ordered_ops:
                 op_length = len(op)
                 if self.expr[i : i+op_length] == op:
                     buffer_contents = buffer.strip()
@@ -253,6 +256,12 @@ def convert_value(val, env):
     """
     if type(val) is not str:
         return val
+    if val == 'True':
+        return True
+    if val == 'False':
+        return False
+    if val == 'None':
+        return None
     if re.match('[A-Za-z_][A-Za-z_0-9]*', val):
         # Grab a variable's value:
         return env.get(val)

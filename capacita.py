@@ -74,10 +74,12 @@ class AST(object):
             '*': 3, '/': 3,
             '+': 4, '-': 4,
             '==': 5, '!=': 5, '>=': 5, '<=': 5,
-            '>': 5, '<': 5
+            '>': 5, '<': 5,
+            ' and ': 6, ' or ': 6, ' xor ': 6
         }
         # Longer operators should be detected before shorter ones:
-        self.ordered_ops = ['>=', '<=', '!=', '==', '<', '>',
+        self.ordered_ops = [' and ', ' or ', ' xor ',
+                            '>=', '<=', '!=', '==', '<', '>',
                             '+', '-', '*', '/', '^', ':']
     
     def weakest(self):
@@ -153,7 +155,7 @@ class AST(object):
              -> [[], [7], [5], [1, 3]]
         """
         tokens = self.parse()
-        table = [[], [], [], [], []]
+        table = [[], [], [], [], [], []]
         i = 0
         for token in tokens:
             if token in self.precedences:
@@ -518,6 +520,12 @@ def evaluate_expression(expr, env):
             tokens[idx-1 : idx+2] = [left > right]
         elif op == '<':
             tokens[idx-1 : idx+2] = [left < right]
+        elif op == ' and ':
+            tokens[idx-1 : idx+2] = [left and right]
+        elif op == ' or ':
+            tokens[idx-1 : idx+2] = [left or right]
+        elif op == ' xor ':
+            tokens[idx-1 : idx+2] = [(left and not right) or ((not left) and right)]
     if len(tokens) != 1:
         throw_exception('ExprEval', str(tokens) + ' cannot be converted into a single value')
     else:

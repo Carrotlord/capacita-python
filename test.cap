@@ -1,0 +1,27 @@
+x = 4
+y = 17
+
+print x * y
+print ((x + 3) * y) - (15:7)
+
+if x == 4
+    print "x is four."
+end
+
+if y < 0
+    print "y is negative"
+else
+    print "y is positive, possibly 0"
+end
+
+if x == 2
+    print "Two"
+else if x == 3
+    print "Three"
+else if x == 4
+    print "Four"
+else if x == 5
+    print "Five"
+else
+    print "None"
+end

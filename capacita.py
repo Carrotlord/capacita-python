@@ -2,15 +2,17 @@
 # @author Jiangcheng Oliver Chu
 
 import re
+import sys
 from fractions import Fraction
 
-test_code = """
-x = 5
-y = 15
-x += y
-"""
-
 operators = ['+=', '=']
+
+def file_to_str(file_name):
+    """Returns contents of a text file as a string."""
+    file_obj = open(file_name, 'r')
+    contents = file_obj.read()
+    file_obj.close()
+    return contents
 
 def frac_to_ratio(frac):
     """Convert Python fraction object to Ratio."""
@@ -752,6 +754,14 @@ def eval_parentheses(expr, env):
 
 def main():
     """Main function - includes tests and runs the REPL."""
+    if len(sys.argv) > 1:
+        # Run a program from a text file:
+        file_name = sys.argv[1]
+        try:
+            execute_program(file_to_str(file_name))
+        except IOError:
+            print("Could not read file: " + file_name)
+        exit()
     env = Environment()
     execute_statement('x = 3', env)
     execute_statement('x+=7', env)

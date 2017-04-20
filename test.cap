@@ -4,6 +4,10 @@ y = 17
 print x * y
 print ((x + 3) * y) - (15:7)
 
+show "Hello, "
+show "world"
+print "!!!"
+
 if x == 4
     print "x is four."
 end
@@ -25,3 +29,20 @@ else if x == 5
 else
     print "None"
 end
+
+u = true
+w = false
+
+if u and w
+    print "both true"
+else if u
+    print "u is true"
+    if w
+        print "This won't be printed."
+    else
+        print "This will be printed."
+    end
+end
+
+x += x * y
+print x

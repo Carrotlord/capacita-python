@@ -190,15 +190,21 @@ class AST(object):
             i += 1
         return all
 
-def display(obj):
+def display(obj, use_newline=True):
     """
     Implementation of print functionality. Strings will not be printed with
     surrounding quotes, while other objects are printed as-is.
     """
     if type(obj) is str and len(obj) >= 2 and obj[0] == '"' and obj[-1] == '"':
-        print(obj[1:-1])
+        if use_newline:
+            print(obj[1:-1])
+        else:
+            sys.stdout.write(obj[1:-1])
     else:
-        print(literal(obj))
+        if use_newline:
+            print(literal(obj))
+        else:
+            sys.stdout.write(str(literal(obj)))
         
 def literal(obj):
     """
@@ -401,6 +407,8 @@ def tokenize_statement(stmt):
     """
     if stmt.startswith('print '):
         return ['print', stmt[6:]]
+    elif stmt.startswith('show '):
+        return ['show', stmt[5:]]
     elif stmt.startswith(':cond '):
         return [':cond', stmt[6:]]
     elif stmt.startswith(':j '):
@@ -428,7 +436,9 @@ def execute_statement(stmt, env):
     tokens = tokenize_statement(stmt)
     if tokens[0] == 'print':
         display(eval_parentheses(tokens[1], env))
-    if tokens[0] in directives:
+    elif tokens[0] == 'show':
+        display(eval_parentheses(tokens[1], env), False)
+    elif tokens[0] in directives:
         return tokens
     elif tokens[1] == '=':
         env.assign(tokens[0], eval_parentheses(tokens[2], env))
@@ -567,7 +577,7 @@ class Environment(object):
         
 def is_statement(query):
     """Returns True if query is a statement, else False."""
-    if query.startswith('print '):
+    if query.startswith('print ') or query.startswith('show '):
         return True
     comparators = ['==', '!=', '>=', '<=']
     ast = AST(query)

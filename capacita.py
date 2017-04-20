@@ -343,8 +343,6 @@ def prepare_control_flow(lines):
         if line.startswith('when '):
             lines[i : i+1] = [':cond ' + line[5:], ':jf ' + str(i + 3)]
         elif line.startswith('if '):
-            # TODO : allow for complex if-statements that have
-            # one or more else-if clauses
             lines[i : i+1] = [':cond ' + line[3:], ':jf label' + str(label_counter)]
             # Find the next else or end statement:
             kind, j = find_next_end_else(lines, i + 2)

@@ -235,12 +235,13 @@ def prepare_control_flow(lines):
     5: // do other thing
     6: 
     """
-    def find_next_end_else(lines, start):
+    def find_next_end_else(lines, start, end_only=False):
         """
         Returns the corresponding end-statement or else-statement
         for the given clause-opener (which can be an if-statement,
         while-statement, etc.)
         Skips over end and else statements that are part of nested clauses.
+        If end_only is set to True, all else statements are passed over.
         """
         i = start
         open_clauses = 0
@@ -252,7 +253,7 @@ def prepare_control_flow(lines):
                     return ['end', i]
                 else:
                     open_clauses -= 1
-            elif line == 'else' and open_clauses == 0:
+            elif (not end_only) and line == 'else' and open_clauses == 0:
                 return ['else', i]
             else:
                 for opener in openers:
@@ -285,6 +286,56 @@ def prepare_control_flow(lines):
                         break
             i += 1
         return lines
+    def prepare_else_ifs(lines):
+        """
+        Splits else-if statements into two separate lines:
+        else followed by an if.
+        Adds additional end statements for padding.
+        This allows else-if statements to be evaluated using
+        only basic if-else logic. For example, the following
+        structures are equivalent:
+        
+        x = 2
+        if x == 1
+            A
+        else if x == 2
+            B
+        else
+            C
+        end
+        
+        x = 2
+        if x == 1
+            A
+        else
+            if x == 2
+                B
+            else
+                C
+            end
+        end
+        """
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            if line.startswith('if '):
+                # Find the end statement:
+                _, end = find_next_end_else(lines, i + 1, True)
+                j = i + 1
+                # Keep track of how many else-ifs were split:
+                splits = 0
+                while j < end:
+                    other_line = lines[j]
+                    if other_line.startswith('else if '):
+                        lines[j : j+1] = ['else', other_line[5:]]
+                        end += 1
+                        splits += 1
+                    j += 1
+                # Add extra end statements:
+                lines[end : end+1] = ['end' for _ in xrange(splits + 1)]
+            i += 1
+        return lines
+    lines = prepare_else_ifs(lines)
     i = 0
     label_counter = 0
     while i < len(lines):

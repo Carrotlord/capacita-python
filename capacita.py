@@ -235,12 +235,12 @@ def prepare_control_flow(lines):
     5: // do other thing
     6: 
     """
-    def find_end_statement(lines, start):
+    def find_next_end_else(lines, start):
         """
-        Returns the corresponding end-statement
+        Returns the corresponding end-statement or else-statement
         for the given clause-opener (which can be an if-statement,
         while-statement, etc.)
-        Skips over end statements that are part of nested clauses.
+        Skips over end and else statements that are part of nested clauses.
         """
         i = start
         open_clauses = 0
@@ -249,9 +249,11 @@ def prepare_control_flow(lines):
             line = lines[i]
             if line == 'end':
                 if open_clauses == 0:
-                    return i
+                    return ['end', i]
                 else:
                     open_clauses -= 1
+            elif line == 'else' and open_clauses == 0:
+                return ['else', i]
             else:
                 for opener in openers:
                     if line.startswith(opener):
@@ -290,12 +292,25 @@ def prepare_control_flow(lines):
         if line.startswith('when '):
             lines[i : i+1] = [':cond ' + line[5:], ':jf ' + str(i + 3)]
         elif line.startswith('if '):
-            # TODO : allow for complex if-statements that have else or
-            # else-if clauses
+            # TODO : allow for complex if-statements that have
+            # one or more else-if clauses
             lines[i : i+1] = [':cond ' + line[3:], ':jf label' + str(label_counter)]
-            # Find the next end statement:
-            end = find_end_statement(lines, i + 2)
-            lines[end] = ':label' + str(label_counter)
+            # Find the next else or end statement:
+            kind, j = find_next_end_else(lines, i + 2)
+            if kind == 'end':
+                lines[j] = ':label' + str(label_counter)
+            else:
+                # kind must be an else statement.
+                # replace the else statement with a jump:
+                else_label = ':label' + str(label_counter)
+                label_counter += 1
+                lines[j : j+1] = [':j label' + str(label_counter), else_label]
+                kind, end = find_next_end_else(lines, j + 1)
+                if kind == 'else':
+                    throw_exception('MultipleElseStatement',
+                                    'if statements cannot have multiple else clauses'
+                                    ' (aside from else-if statements).')
+                lines[end] = ':label' + str(label_counter)
             label_counter += 1
         i += 1
     lines = replace_labels(lines)

@@ -46,3 +46,7 @@ end
 
 x += x * y
 print x
+
+z = -16.755
+print z
+print z + (-3 - (-5))

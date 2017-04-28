@@ -1,3 +1,5 @@
+from exception import throw_exception
+
 class Environment(object):
     """
     A list of frames containing key-value pairs representing variable names

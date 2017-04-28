@@ -28,3 +28,16 @@ end
 while 0 == 1
     print "Never shown."
 end
+
+i = 0
+while i < 6
+    j = 0
+    while j < 5
+        show j
+        show " "
+        j += 1
+    end
+    show "|"
+    i += 1
+end
+print ""

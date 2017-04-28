@@ -12,6 +12,7 @@ from env import Environment
 from console import display, literal
 from tokens import tokenize_statement
 from fileio import file_to_str
+from exception import throw_exception
 
 def execute_program(prgm):
     """Executes a program given as a string."""
@@ -89,14 +90,6 @@ def convert_value(val, env):
             return float(val)
         except ValueError:
             return None
-        
-def throw_exception(kind, msg):
-    """
-    Throws a Capacita exception and exits the program.
-    """
-    print(kind + ' exception')
-    print(msg)
-    exit()
 
 def is_statement(query):
     """Returns True if query is a statement, else False."""

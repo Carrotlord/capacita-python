@@ -1,3 +1,5 @@
+from exception import throw_exception
+
 def prepare_control_flow(lines):
     """
     Converts if-statements, while-statements, for-statements, etc.
@@ -147,6 +149,21 @@ def prepare_control_flow(lines):
                                     ' (aside from else-if statements).')
                 lines[end] = ':label' + str(label_counter)
             label_counter += 1
+        elif line.startswith('while '):
+            # TODO : allow for continue and break statements
+            # label_leave is used to exit the loop:
+            label_leave = str(label_counter)
+            label_counter += 1
+            # label_loop is used to repeat the loop:
+            label_loop = str(label_counter)
+            label_counter += 1
+            lines[i : i+1] = [':cond ' + line[6:], ':jf label' + label_leave, ':label' + label_loop]
+            kind, j = find_next_end_else(lines, i + 3)
+            if kind == 'end':
+                lines[j : j+1] = [':cond ' + line[6:], ':jt label' + label_loop, ':label' + label_leave]
+            else:
+                throw_exception('InvalidElseStatement',
+                                'While loops cannot have else statements.')
         i += 1
     lines = replace_labels(lines)
     return lines

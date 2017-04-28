@@ -1,0 +1,30 @@
+var = 0
+while true
+    var += 1
+    show var
+    show " "
+    if var >= 24
+        print ""
+        break
+    end
+end
+
+v2 = 0
+while v2 < 10
+    v2 += 9
+    if v2 / 7 < 22
+        show v2
+        show " "
+        continue
+    end
+end
+print ""
+
+while 1 > 0
+    print "Shown once."
+    break
+end
+
+while 0 == 1
+    print "Never shown."
+end

@@ -150,7 +150,6 @@ def prepare_control_flow(lines):
                 lines[end] = ':label' + str(label_counter)
             label_counter += 1
         elif line.startswith('while '):
-            # TODO : allow for continue and break statements
             # label_leave is used to exit the loop:
             label_leave = str(label_counter)
             label_counter += 1
@@ -161,6 +160,14 @@ def prepare_control_flow(lines):
             kind, j = find_next_end_else(lines, i + 3)
             if kind == 'end':
                 lines[j : j+1] = [':cond ' + line[6:], ':jt label' + label_loop, ':label' + label_leave]
+                k = i + 3
+                # Handle 'continue' and 'break' statements:
+                while k < j:
+                    if lines[k] == 'break':
+                        lines[k] = ':j label' + label_leave
+                    elif lines[k] == 'continue':
+                        lines[k] = ':j label' + label_loop
+                    k += 1
             else:
                 throw_exception('InvalidElseStatement',
                                 'While loops cannot have else statements.')

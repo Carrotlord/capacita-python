@@ -1,0 +1,31 @@
+i = 0
+while i < 2
+    j = 0
+    while j < 1
+        show j
+        show " "
+        j += 1
+        when j < 5
+            continue
+    end
+    i += 1
+end
+print ""
+
+i = 100
+while i < 107
+    i += 1
+    show i
+    show " "
+    j = 0
+    if i < 104
+        while j < 25
+            show j
+            show " "
+            j += 1
+            when j == 5
+                continue 2
+        end
+    end
+end
+print ""

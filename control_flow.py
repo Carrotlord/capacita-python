@@ -123,7 +123,24 @@ def prepare_control_flow(lines):
                 lines[end : end+1] = ['end' for _ in xrange(splits + 1)]
             i += 1
         return lines
+    def prepare_breaks_continues(lines):
+        """
+        Replace 'break' with 'break 1' and 'continue' with
+        'continue 1'.
+        Thus, all breaks and continues will be supplied
+        with a depth parameter.
+        """
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            if line == 'break':
+                lines[i] = 'break 1'
+            elif line == 'continue':
+                lines[i] = 'continue 1'
+            i += 1
+        return lines
     lines = prepare_else_ifs(lines)
+    lines = prepare_breaks_continues(lines)
     i = 0
     label_counter = 0
     while i < len(lines):
@@ -161,11 +178,23 @@ def prepare_control_flow(lines):
             if kind == 'end':
                 lines[j : j+1] = [':cond ' + line[6:], ':jt label' + label_loop, ':label' + label_leave]
                 k = i + 3
+                depth = 1
+                # stack for keeping track of end statements:
+                stack = []
                 # Handle 'continue' and 'break' statements:
                 while k < j:
-                    if lines[k] == 'break':
+                    current = lines[k]
+                    if current.startswith('while '):
+                        _, end = find_next_end_else(lines, k + 1, True)
+                        depth += 1
+                        stack.append(end)
+                    elif len(stack) > 0 and current == 'end' and stack[-1] == k:
+                        # This is the end to a nested while loop:
+                        stack.pop()
+                        depth -= 1
+                    elif current == 'break ' + str(depth):
                         lines[k] = ':j label' + label_leave
-                    elif lines[k] == 'continue':
+                    elif current == 'continue ' + str(depth):
                         lines[k] = ':j label' + label_loop
                     k += 1
             else:

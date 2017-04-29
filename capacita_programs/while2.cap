@@ -1,0 +1,63 @@
+i = 0
+while i < 5
+    j = 0
+    while j < 5
+        show j
+        show " "
+        when j == 3
+            break
+        j += 1
+    end
+    i += 1
+end
+print ""
+
+i = 0
+while i < 5
+    j = 0
+    while j < 5
+        show j
+        show " "
+        when j == 3
+            break 2
+        j += 1
+    end
+    i += 1
+end
+print ""
+
+i = 0
+while i < 2
+    j = 0
+    while j < 2
+        k = 0
+        while k < 5
+            show k
+            show " "
+            k += 1
+            when k == 3
+                break
+        end
+        j += 1
+    end
+    i += 1
+end
+print ""
+
+i = 0
+while i < 5
+    j = 0
+    while j < 5
+        k = 0
+        while k < 5
+            show k
+            show " "
+            k += 1
+            when k == 3
+                break 3
+        end
+        j += 1
+    end
+    i += 1
+end
+print ""

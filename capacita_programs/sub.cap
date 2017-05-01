@@ -1,0 +1,26 @@
+x = 5
+sub f(x)
+    return x + 1
+end
+sub myFunction(alpha, beta, gamma)
+    if alpha + beta > gamma
+        return 1
+    else
+        return 0
+    end
+end
+sub maximum(a, b)
+    when a > b
+        return a
+    return b
+end
+sub whileTest(i, j)
+    while i < j
+        show i
+        show " "
+        i += 1
+    end
+    print ""
+end
+y = 15.6
+print x + y

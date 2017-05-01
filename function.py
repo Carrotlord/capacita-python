@@ -1,10 +1,10 @@
+import re
+
 from control_flow import prepare_control_flow
 from exception import throw_exception
-from capacita import execute_lines
+from execution import execute_lines
 from control_flow import find_next_end_else
 from env import Environment
-
-import re
 
 def name_of_function(defn):
     """
@@ -68,7 +68,10 @@ class Function(object):
             current_val = arg_values[i]
             env.assign(current_arg, current_val)
             i += 1
-        return execute_lines(self.lines, env)
+        result = execute_lines(self.lines, env)
+        # Remove the stack frame created by this function:
+        env.pop()
+        return result
         
     def __repr__(self):
         return '<' + self.name + '(' + str(self.args)[1:-1] + ') -> ' + str(self.lines) + '>'

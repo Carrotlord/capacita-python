@@ -16,7 +16,8 @@ from exception import throw_exception
 from prepare_program import prepare_program
 from execution import execute_statement, \
                       evaluate_expression, \
-                      execute_lines
+                      execute_lines, \
+                      eval_parentheses
 from function import extract_functions
 
 def execute_program(prgm):

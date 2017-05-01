@@ -14,6 +14,8 @@ from tokens import tokenize_statement
 from fileio import file_to_str
 from exception import throw_exception
 from prepare_program import prepare_program
+# TODO : fix circular import issue on the next line
+#from function import extract_functions
 
 def execute_program(prgm):
     """Executes a program given as a string."""
@@ -36,6 +38,8 @@ def execute_lines(lines, env):
             elif (cond_flag and directive[0] == ':jt') or \
                  ((not cond_flag) and directive[0] == ':jf'):
                 prgm_counter = int(directive[1])
+            elif directive[0] == 'return':
+                return eval_parentheses(directive[1], env)
             else:
                 prgm_counter += 1
         else:
@@ -43,7 +47,7 @@ def execute_lines(lines, env):
 
 def execute_statement(stmt, env):
     """Executes a statement in a given environment."""
-    directives = [':cond', ':j', ':jt', ':jf']
+    directives = [':cond', ':j', ':jt', ':jf', 'return']
     stmt = stmt.strip()
     if len(stmt) == 0:
         return
@@ -95,7 +99,8 @@ def convert_value(val, env):
 
 def is_statement(query):
     """Returns True if query is a statement, else False."""
-    if query.startswith('print ') or query.startswith('show '):
+    if query.startswith('print ') or query.startswith('show ') or \
+       query.startswith('return '):
         return True
     comparators = ['==', '!=', '>=', '<=']
     ast = AST(query)

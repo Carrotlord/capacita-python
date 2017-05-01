@@ -13,13 +13,15 @@ from console import display, literal
 from tokens import tokenize_statement
 from fileio import file_to_str
 from exception import throw_exception
+from prepare_program import prepare_program
 
 def execute_program(prgm):
     """Executes a program given as a string."""
-    lines = prgm.split('\n')
-    lines = [line.strip() for line in lines]
-    lines = prepare_control_flow(lines)
+    lines = prepare_program(prgm)
     env = Environment()
+    execute_lines(lines, env)
+            
+def execute_lines(lines, env):
     prgm_counter = 0
     cond_flag = False
     while prgm_counter < len(lines):

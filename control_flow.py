@@ -1,5 +1,33 @@
 from exception import throw_exception
 
+def find_next_end_else(lines, start, end_only=False):
+    """
+    Returns the corresponding end-statement or else-statement
+    for the given clause-opener (which can be an if-statement,
+    while-statement, etc.)
+    Skips over end and else statements that are part of nested clauses.
+    If end_only is set to True, all else statements are passed over.
+    """
+    i = start
+    open_clauses = 0
+    openers = ['if ', 'while ', 'for ', 'repeat ', 'switch ', 'sub ']
+    while i < len(lines):
+        line = lines[i]
+        if line == 'end':
+            if open_clauses == 0:
+                return ['end', i]
+            else:
+                open_clauses -= 1
+        elif (not end_only) and line == 'else' and open_clauses == 0:
+            return ['else', i]
+        else:
+            for opener in openers:
+                if line.startswith(opener):
+                    open_clauses += 1
+                    break
+        i += 1
+    throw_exception('NoEndStatement', 'Corresponding end statement does not exist.')
+
 def prepare_control_flow(lines):
     """
     Converts if-statements, while-statements, for-statements, etc.
@@ -23,33 +51,6 @@ def prepare_control_flow(lines):
     5: // do other thing
     6: 
     """
-    def find_next_end_else(lines, start, end_only=False):
-        """
-        Returns the corresponding end-statement or else-statement
-        for the given clause-opener (which can be an if-statement,
-        while-statement, etc.)
-        Skips over end and else statements that are part of nested clauses.
-        If end_only is set to True, all else statements are passed over.
-        """
-        i = start
-        open_clauses = 0
-        openers = ['if ', 'while ', 'for ', 'repeat ', 'switch ']
-        while i < len(lines):
-            line = lines[i]
-            if line == 'end':
-                if open_clauses == 0:
-                    return ['end', i]
-                else:
-                    open_clauses -= 1
-            elif (not end_only) and line == 'else' and open_clauses == 0:
-                return ['else', i]
-            else:
-                for opener in openers:
-                    if line.startswith(opener):
-                        open_clauses += 1
-                        break
-            i += 1
-        throw_exception('NoEndStatement', 'Corresponding end statement does not exist.')
     def replace_labels(lines):
         """
         Replaces labels in jump directives with the actual

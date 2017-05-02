@@ -1,0 +1,11 @@
+sub f()
+    return 1 + 2 + 3
+end
+
+sub g()
+    return 17:2
+end
+
+print f()
+print g()
+print f() - g()

@@ -17,7 +17,8 @@ from prepare_program import prepare_program
 from execution import execute_statement, \
                       evaluate_expression, \
                       execute_lines, \
-                      eval_parentheses
+                      eval_parentheses, \
+                      is_statement
 from function import extract_functions
 
 def execute_program(prgm):
@@ -25,19 +26,6 @@ def execute_program(prgm):
     prgm, env = extract_functions(prgm)
     lines = prepare_program(prgm)
     execute_lines(lines, env)
-
-def is_statement(query):
-    """Returns True if query is a statement, else False."""
-    if query.startswith('print ') or query.startswith('show ') or \
-       query.startswith('return '):
-        return True
-    comparators = ['==', '!=', '>=', '<=']
-    ast = AST(query)
-    tokens = ast.parse()
-    for token in tokens:
-        if '=' in token and token not in comparators:
-            return True
-    return False
     
 def store_program():
     """

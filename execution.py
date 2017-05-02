@@ -5,6 +5,7 @@ from ast2 import AST
 from ribbon import Ribbon
 from ratio import Ratio
 from console import display
+from exception import throw_exception
 
 def execute_lines(lines, env):
     prgm_counter = 0
@@ -27,6 +28,19 @@ def execute_lines(lines, env):
                 prgm_counter += 1
         else:
             prgm_counter += 1
+            
+def is_statement(query):
+    """Returns True if query is a statement, else False."""
+    if query.startswith('print ') or query.startswith('show ') or \
+       query.startswith('return ') or query.startswith(':'):
+        return True
+    comparators = ['==', '!=', '>=', '<=']
+    ast = AST(query)
+    tokens = ast.parse()
+    for token in tokens:
+        if '=' in token and token not in comparators:
+            return True
+    return False
 
 def execute_statement(stmt, env):
     """Executes a statement in a given environment."""
@@ -34,18 +48,21 @@ def execute_statement(stmt, env):
     stmt = stmt.strip()
     if len(stmt) == 0:
         return
-    tokens = tokenize_statement(stmt)
-    if tokens[0] == 'print':
-        display(eval_parentheses(tokens[1], env))
-    elif tokens[0] == 'show':
-        display(eval_parentheses(tokens[1], env), False)
-    elif tokens[0] in directives:
-        return tokens
-    elif tokens[1] == '=':
-        env.assign(tokens[0], eval_parentheses(tokens[2], env))
-    elif tokens[1] == '+=':
-        val = env.get(tokens[0])
-        env.update(tokens[0], plus(val, eval_parentheses(tokens[2], env)))
+    if is_statement(stmt):
+        tokens = tokenize_statement(stmt)
+        if tokens[0] == 'print':
+            display(eval_parentheses(tokens[1], env))
+        elif tokens[0] == 'show':
+            display(eval_parentheses(tokens[1], env), False)
+        elif tokens[0] in directives:
+            return tokens
+        elif tokens[1] == '=':
+            env.assign(tokens[0], eval_parentheses(tokens[2], env))
+        elif tokens[1] == '+=':
+            val = env.get(tokens[0])
+            env.update(tokens[0], plus(val, eval_parentheses(tokens[2], env)))
+    else:
+        eval_parentheses(stmt, env)
     # No directive to be processed:
     return None
 
@@ -103,29 +120,34 @@ def evaluate_expression(expr, env):
         throw_exception('ExprEval', str(tokens) + ' cannot be converted into a single value')
     else:
         return convert_value(tokens[0], env)
+        
+def find_matching(expr):
+    """
+    Finds the first unmatched closing parenthesis
+    returns -1 when there is no matching parenthesis.
+    """
+    num_open = 0
+    i = 0
+    for char in expr:
+        if char == '(':
+            num_open += 1
+        elif char == ')':
+            if num_open == 0:
+                return i + 1
+            else:
+                num_open -= 1
+        i += 1
+    return -1
 
 def eval_parentheses(expr, env):
     """
     Recursively evaluates expressions enclosed in parentheses,
     which change the order-of-operations for the expression.
     """
-    def find_matching(expr):
-        """
-        Finds the first unmatched closing parenthesis
-        returns -1 when there is no matching parenthesis.
-        """
-        num_open = 0
-        i = 0
-        for char in expr:
-            if char == '(':
-                num_open += 1
-            elif char == ')':
-                if num_open == 0:
-                    return i + 1
-                else:
-                    num_open -= 1
-            i += 1
-        return -1
+    ast = AST(expr)
+    tokens = ast.parse()
+    tokens = call_functions(tokens, env)
+    expr = ''.join(tokens)
     paren_open = expr.find('(')
     if paren_open == -1:
         return evaluate_expression(expr, env)
@@ -138,6 +160,45 @@ def eval_parentheses(expr, env):
         right = expr[paren_close + 1:]
         return eval_parentheses(left + str(eval_parentheses(center, env)) + right, env)
         
+def split_args(args):
+    i = 0
+    buffer = ''
+    results = []
+    while i < len(args):
+        char = args[i]
+        if char == '(':
+            offset = find_matching(expr[i + 1:])
+            if offset == -1:
+                throw_exception('UnmatchedOpeningParenthesis', args)
+            buffer += args[i : i+offset]
+            i += offset
+        elif char == ',':
+            results.append(buffer)
+            buffer = ''
+            i += 1
+        else:
+            buffer += char
+            i += 1
+    if len(buffer) > 0:
+        results.append(buffer)
+    return results
+
+def call_functions(tokens, env):
+    i = 0
+    for token in tokens:
+        match_obj = re.match('([A-Za-z_][A-Za-z_0-9]*)\((.*)\)', token)
+        if match_obj:
+            func_name = match_obj.group(1)
+            func_args = match_obj.group(2)
+            arg_list = split_args(func_args)
+            # Evaluate all argument expressions:
+            arg_values = [eval_parentheses(arg, env) for arg in arg_list]
+            func_obj = env.get(func_name)
+            return_val = func_obj.execute(arg_values, env)
+            tokens[i] = str(return_val)
+        i += 1
+    return tokens
+
 def is_string(val):
     """
     Returns True if val is a string surrounded in quotes,

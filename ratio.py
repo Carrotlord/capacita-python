@@ -41,6 +41,18 @@ class Ratio(object):
     
     def __ne__(self, other):
         return not self.__eq__(other)
+        
+    def __gt__(self, other):
+        return float(self) > float(other)
+    
+    def __ge__(self, other):
+        return float(self) >= float(other)
+        
+    def __lt__(self, other):
+        return float(self) < float(other)
+    
+    def __le__(self, other):
+        return float(self) <= float(other)
     
     def __repr__(self):
         return str(self.fraction.numerator) + ':' + str(self.fraction.denominator)

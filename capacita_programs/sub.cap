@@ -24,3 +24,22 @@ sub whileTest(i, j)
 end
 y = 15.6
 print x + y
+sub concatAll(a, b, c)
+    return a + b + c
+end
+
+print f(32)
+print myFunction(10, 10, 5)
+print myFunction(4, 8, 350)
+print maximum(3, 2)
+val1 = 18:7
+val2 = 256:8
+print maximum(val1, val2)
+whileTest(200, 209)
+a = -5.68
+whileTest(a, 3)
+print maximum(10, 6) + maximum(2, 8) - f(3)
+print concatAll("ex ", "why ", "zee")
+
+2 + 8
+15:3

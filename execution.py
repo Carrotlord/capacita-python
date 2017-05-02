@@ -8,6 +8,9 @@ from console import display
 from exception import throw_exception
 
 def execute_lines(lines, env):
+    """
+    Executes lines of code in a given environment.
+    """
     prgm_counter = 0
     cond_flag = False
     while prgm_counter < len(lines):
@@ -161,6 +164,11 @@ def eval_parentheses(expr, env):
         return eval_parentheses(left + str(eval_parentheses(center, env)) + right, env)
         
 def split_args(args):
+    """
+    Given a comma-separated argument list, returns the individual
+    arguments as a list.
+    e.g. '(x+1)*8, y, 25' -> ['(x+1)*8', ' y', ' 25']
+    """
     i = 0
     buffer = ''
     results = []
@@ -184,6 +192,9 @@ def split_args(args):
     return results
 
 def call_functions(tokens, env):
+    """
+    Replaces function calls with the return value of each function.
+    """
     i = 0
     for token in tokens:
         match_obj = re.match('([A-Za-z_][A-Za-z_0-9]*)\((.*)\)', token)

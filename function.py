@@ -8,6 +8,8 @@ from env import Environment
 
 def name_of_function(defn):
     """
+    Given a function definition, returns the name of the function.
+    e.g. 'sub myFunc(x, y)' -> 'myFunc'
     """
     match_obj = re.match(r'sub ([A-Za-z_][A-Za-z_0-9]*)', defn)
     name = match_obj.group(1)
@@ -15,6 +17,9 @@ def name_of_function(defn):
 
 def args_of_function(defn):
     """
+    Given a function definition, returns a list of the argument names
+    of the function.
+    e.g. 'sub myFunc(x, y)' -> ['x', 'y']
     """
     match_obj = re.match(r'.*\((.*)\)', defn)
     args = match_obj.group(1)
@@ -24,6 +29,10 @@ def args_of_function(defn):
     return arg_list
 
 def extract_functions(prgm):
+    """
+    Removes all function bodies from prgm and inserts
+    the functions into a new environment frame.
+    """
     lines = prgm.split('\n')
     lines = [line.strip() for line in lines]
     env = Environment()
@@ -44,6 +53,9 @@ def extract_functions(prgm):
     return prgm, env
 
 class Function(object):
+    """
+    Implements a callable Capacita function.
+    """
     def __init__(self, name, args, lines):
         """
         Initializes function object.
@@ -57,6 +69,10 @@ class Function(object):
         self.lines = prepare_control_flow(lines) + ['return null']
         
     def execute(self, arg_values, env):
+        """
+        Executes this function's code, given argument values
+        and an environment. Returns the result of the function.
+        """
         if len(self.args) != len(arg_values):
             throw_exception('ArgValueException',
                             'Number of arguments does not match function definition')

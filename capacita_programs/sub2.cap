@@ -1,0 +1,36 @@
+sub f(a, b)
+    return a + " along with " + b
+end
+
+sub g(alpha, beta, gamma)
+    print alpha
+    print beta
+    print gamma
+    print alpha + beta + gamma
+    return "something"
+end
+
+sub hypotenuse(a, b)
+    return (a^2 + b^2) ^ (1:2)
+end
+
+sub h(a, b, c)
+    return hypotenuse(a, b) + hypotenuse(b, c)
+end
+
+sub max(a, b)
+    when a > b
+        return a
+    return b
+end
+
+sub square(x)
+    return x ^ 2
+end
+
+print f(0 + 1, 1 + 1)
+print f("ice cream", "eggs and milk")
+print g((9+7)*2, 128/(2+2), 13:7)
+print h((9+7)*2, 128/(2*(1+1)), 13:7)
+g("hey", " hello ", "hi")
+print max(square(1+1), square(1.5+max(0.7, 0.1)))

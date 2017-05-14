@@ -6,6 +6,7 @@ from ribbon import Ribbon
 from ratio import Ratio
 from console import display
 from exception import throw_exception
+from strtools import find_matching
 
 def execute_lines(lines, env):
     """
@@ -123,24 +124,6 @@ def evaluate_expression(expr, env):
         throw_exception('ExprEval', str(tokens) + ' cannot be converted into a single value')
     else:
         return convert_value(tokens[0], env)
-        
-def find_matching(expr):
-    """
-    Finds the first unmatched closing parenthesis
-    returns -1 when there is no matching parenthesis.
-    """
-    num_open = 0
-    i = 0
-    for char in expr:
-        if char == '(':
-            num_open += 1
-        elif char == ')':
-            if num_open == 0:
-                return i + 1
-            else:
-                num_open -= 1
-        i += 1
-    return -1
 
 def eval_parentheses(expr, env):
     """
@@ -175,7 +158,7 @@ def split_args(args):
     while i < len(args):
         char = args[i]
         if char == '(':
-            offset = find_matching(expr[i + 1:])
+            offset = find_matching(args[i + 1:])
             if offset == -1:
                 throw_exception('UnmatchedOpeningParenthesis', args)
             buffer += args[i : i+offset]

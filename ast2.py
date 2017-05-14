@@ -1,3 +1,6 @@
+from strtools import find_matching
+from exception import throw_exception
+
 def is_numeric(val):
     """
     Returns True if val is an integer or float, else False.
@@ -71,28 +74,35 @@ class AST(object):
         i = 0
         in_quotes = False
         while i < expr_length:
-            op_detected = False
-            if not in_quotes:
-                for op in self.ordered_ops:
-                    op_length = len(op)
-                    if self.expr[i : i+op_length] == op:
-                        buffer_contents = buffer.strip()
-                        if len(buffer_contents) > 0:
-                            tokens.append(buffer_contents)
-                        tokens.append(op)
-                        buffer = ''
-                        i += op_length
-                        op_detected = True
-                        break
-            if not op_detected:
-                next_char = self.expr[i]
-                if next_char == '"':
-                    if in_quotes:
-                        in_quotes = False
-                    else:
-                        in_quotes = True
-                buffer += next_char
-                i += 1
+            next_char = self.expr[i]
+            if next_char == '(':
+                paren_close = find_matching(self.expr[i + 1:])
+                if paren_close == -1:
+                    throw_exception('UnmatchedOpeningParenthesis', self.expr)
+                buffer += '(' + self.expr[i+1 : i+paren_close]
+                i += paren_close
+            else:
+                op_detected = False
+                if not in_quotes:
+                    for op in self.ordered_ops:
+                        op_length = len(op)
+                        if self.expr[i : i+op_length] == op:
+                            buffer_contents = buffer.strip()
+                            if len(buffer_contents) > 0:
+                                tokens.append(buffer_contents)
+                            tokens.append(op)
+                            buffer = ''
+                            i += op_length
+                            op_detected = True
+                            break
+                if not op_detected:
+                    if next_char == '"':
+                        if in_quotes:
+                            in_quotes = False
+                        else:
+                            in_quotes = True
+                    buffer += next_char
+                    i += 1
         buffer_contents = buffer.strip()
         if len(buffer_contents) > 0:
             tokens.append(buffer_contents)

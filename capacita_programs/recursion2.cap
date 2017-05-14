@@ -1,0 +1,33 @@
+sub factorial(n)
+    when n <= 1
+        return 1
+    return n * factorial(n - 1)
+end
+
+sub fibonacci(n)
+    when n <= 1
+        return n
+    return fibonacci(n - 1) + fibonacci(n - 2)
+end
+
+print factorial(4)
+print factorial(10)
+print factorial(3) + factorial(5)
+
+print fibonacci(4)
+print fibonacci(8)
+print fibonacci(2) + fibonacci(7)
+
+sub ackermann(m, n)
+    if m == 0
+        return n + 1
+    else if m > 0 and n == 0
+        return ackermann(m - 1, 1)
+    else if m > 0 and n > 0
+        return ackermann(m - 1, ackermann(m, n - 1))
+    end
+end
+
+print ackermann(2, 2) == 7
+print ackermann(3, 1) - 1
+print ackermann(4 - 2, 1 + 1 + 1)

@@ -110,6 +110,10 @@ def main():
         elif first_arg == '--test2':
             ast = AST('x = "ice cream, eggs, and milk" + "...alpha or beta"')
             print(ast.parse())
+            ast = AST('y = f(1 + 1, 2 + 2, 3 + 3) - g((9+7)*2, 128/(2+2))')
+            print(ast.parse())
+            ast = AST('z = f("ice cream", "eggs and milk") * g("alpha or beta", 3:8, "gamma or delta")')
+            print(ast.parse())
         else:
             # Run a program from a text file:
             file_name = first_arg

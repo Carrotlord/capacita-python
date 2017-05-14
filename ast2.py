@@ -69,21 +69,29 @@ class AST(object):
         tokens = []
         expr_length = len(self.expr)
         i = 0
+        in_quotes = False
         while i < expr_length:
             op_detected = False
-            for op in self.ordered_ops:
-                op_length = len(op)
-                if self.expr[i : i+op_length] == op:
-                    buffer_contents = buffer.strip()
-                    if len(buffer_contents) > 0:
-                        tokens.append(buffer_contents)
-                    tokens.append(op)
-                    buffer = ''
-                    i += op_length
-                    op_detected = True
-                    break
+            if not in_quotes:
+                for op in self.ordered_ops:
+                    op_length = len(op)
+                    if self.expr[i : i+op_length] == op:
+                        buffer_contents = buffer.strip()
+                        if len(buffer_contents) > 0:
+                            tokens.append(buffer_contents)
+                        tokens.append(op)
+                        buffer = ''
+                        i += op_length
+                        op_detected = True
+                        break
             if not op_detected:
-                buffer += self.expr[i]
+                next_char = self.expr[i]
+                if next_char == '"':
+                    if in_quotes:
+                        in_quotes = False
+                    else:
+                        in_quotes = True
+                buffer += next_char
                 i += 1
         buffer_contents = buffer.strip()
         if len(buffer_contents) > 0:

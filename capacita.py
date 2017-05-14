@@ -65,56 +65,59 @@ def repl():
 def main():
     """Main function - includes tests and runs the REPL."""
     if len(sys.argv) > 1:
-        # Run a program from a text file:
-        file_name = sys.argv[1]
-        try:
-            execute_program(file_to_str(file_name))
-        except IOError:
-            print("Could not read file: " + file_name)
-        exit()
-    tests = False
-    if tests:
-        env = Environment()
-        execute_statement('x = 3', env)
-        execute_statement('x+=7', env)
-        execute_statement('y=9.23', env)
-        env.new_frame()
-        execute_statement('x = 5', env)
-        print(env.frames)
-        execute_statement('z="hello world"', env)
-        execute_statement('z +="!!!"', env)
-        execute_statement('a= `gelatin`', env)
-        print(env.frames)
-        ast = AST("3*4+5 ^ 7")
-        print(ast.parse())
-        print(ast.collapse_indices(ast.build_indices()))
-        ast = AST("18+15*9:3+10")
-        print(ast.parse())
-        print(ast.collapse_indices(ast.build_indices()))
+        first_arg = sys.argv[1]
+        if first_arg == '--test':
+            env = Environment()
+            execute_statement('x = 3', env)
+            execute_statement('x+=7', env)
+            execute_statement('y=9.23', env)
+            env.new_frame()
+            execute_statement('x = 5', env)
+            print(env.frames)
+            execute_statement('z="hello world"', env)
+            execute_statement('z +="!!!"', env)
+            execute_statement('a= `gelatin`', env)
+            print(env.frames)
+            ast = AST("3*4+5 ^ 7")
+            print(ast.parse())
+            print(ast.collapse_indices(ast.build_indices()))
+            ast = AST("18+15*9:3+10")
+            print(ast.parse())
+            print(ast.collapse_indices(ast.build_indices()))
 
-        print(evaluate_expression('1+2+3+4', Environment()))
-        print(evaluate_expression('45+7*8', Environment()))
-        print(evaluate_expression('3.2+18^2-7', Environment()))
-        print(evaluate_expression('1:2 + 1:3 + 1:5', Environment()))
-        print(evaluate_expression('2:3 + 3^3 - 1:5', Environment()))
-        print(evaluate_expression('1234', Environment()))
-        
-        ast = AST("3 + 1 == 4")
-        print(ast.parse())
-        ast = AST("3 + 1 > 4")
-        print(ast.parse())
-        ast = AST("18:1 != 18.2")
-        print(ast.parse())
-        ast = AST("x = 4")
-        print(ast.parse())
-        ast = AST("y = 3 > 4")
-        print(ast.parse())
-        
-        env2 = Environment()
-        execute_statement('x = 3+5*4', env2)
-        execute_statement('y = x + 19 - 3*6', env2)
-        print(env2.frames)
-    
+            print(evaluate_expression('1+2+3+4', Environment()))
+            print(evaluate_expression('45+7*8', Environment()))
+            print(evaluate_expression('3.2+18^2-7', Environment()))
+            print(evaluate_expression('1:2 + 1:3 + 1:5', Environment()))
+            print(evaluate_expression('2:3 + 3^3 - 1:5', Environment()))
+            print(evaluate_expression('1234', Environment()))
+            
+            ast = AST("3 + 1 == 4")
+            print(ast.parse())
+            ast = AST("3 + 1 > 4")
+            print(ast.parse())
+            ast = AST("18:1 != 18.2")
+            print(ast.parse())
+            ast = AST("x = 4")
+            print(ast.parse())
+            ast = AST("y = 3 > 4")
+            print(ast.parse())
+            
+            env2 = Environment()
+            execute_statement('x = 3+5*4', env2)
+            execute_statement('y = x + 19 - 3*6', env2)
+            print(env2.frames)
+        elif first_arg == '--test2':
+            ast = AST('x = "ice cream, eggs, and milk" + "...alpha or beta"')
+            print(ast.parse())
+        else:
+            # Run a program from a text file:
+            file_name = first_arg
+            try:
+                execute_program(file_to_str(file_name))
+            except IOError:
+                print("Could not read file: " + file_name)
+        exit()
     repl()
         
 if __name__ == "__main__":

@@ -27,7 +27,10 @@ def execute_lines(lines, env):
                  ((not cond_flag) and directive[0] == ':jf'):
                 prgm_counter = int(directive[1])
             elif directive[0] == 'return':
-                return eval_parentheses(directive[1], env)
+                value = eval_parentheses(directive[1], env)
+                if str(value).startswith('<'):
+                    value.supply(env)
+                return value
             else:
                 prgm_counter += 1
         else:

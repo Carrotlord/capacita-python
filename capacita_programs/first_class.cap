@@ -5,5 +5,18 @@ sub wrapper()
     return square
 end
 
+sub wrapper2()
+    sub wrapper()
+        sub inner(y)
+            return y + y
+        end
+        return inner
+    end
+    return wrapper
+end
+
 f = wrapper()
 print f(40.25)
+g = wrapper2()
+h = g()
+print h(1:5)

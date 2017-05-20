@@ -1,0 +1,56 @@
+sub tripleList(a, b, c)
+    sub get(i)
+        if i == 0
+            return a
+        else if i == 1
+            return b
+        else
+            return c
+        end
+    end
+    return get
+end
+
+t = tripleList(10, 25, 55)
+print t(0)
+print t(1)
+print t(2)
+print t(99)
+
+sub compose(f, g)
+    sub h(x)
+        return f(g(x))
+    end
+    return h
+end
+
+sub makeAdder(a)
+    sub adder(x)
+        return x + a
+    end
+    return adder
+end
+
+sub makeMultiplier(a)
+    sub multiplier(x)
+        return x * a
+    end
+    return multiplier
+end
+
+sub square(x)
+    return x ^ 2
+end
+
+add5 = makeAdder(5)
+mulHalf = makeMultiplier(1:2)
+print add5(1)
+print mulHalf(16)
+func = compose(mulHalf, add5)
+print func(10)
+func2 = compose(add5, mulHalf)
+print func2(10)
+func3 = compose(square, add5)
+print func3(10)
+func4 = compose(square, square)
+print func4(10)

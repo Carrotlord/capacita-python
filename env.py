@@ -36,3 +36,14 @@ class Environment(object):
         latest_frame = other_env.frames[-1]
         for var, value in latest_frame.items():
             self.assign(var, value)
+            
+    def copy(self):
+        """
+        Provides a deep copy of the current environment.
+        """
+        new_env = Environment()
+        new_frames = []
+        for frame in self.frames:
+            new_frames.append({k: v for k, v in frame.items()})
+        new_env.frames = new_frames
+        return new_env

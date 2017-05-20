@@ -70,6 +70,7 @@ class Function(object):
         # All functions should return something,
         # which is null for 'void' functions.
         self.lines = prepare_control_flow(lines) + ['return null']
+        self.supplied_env = None
         
     def execute(self, arg_values, env):
         """
@@ -79,6 +80,8 @@ class Function(object):
         if len(self.args) != len(arg_values):
             throw_exception('ArgValueException',
                             'Number of arguments does not match function definition')
+        if self.supplied_env is not None:
+            env = self.supplied_env
         env.new_frame()
         env.merge_latest(self.defined_funcs)
         i = 0
@@ -92,6 +95,12 @@ class Function(object):
         # Remove the stack frame created by this function:
         env.pop()
         return result
+    
+    def supply(self, env):
+        """
+        Gives a higher-order function a special environment.
+        """
+        self.supplied_env = env.copy()
         
     def __repr__(self):
         return '<' + self.name + '(' + str(self.args)[1:-1] + ') -> ' + str(self.lines) + '>'

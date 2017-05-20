@@ -5,6 +5,19 @@
 - Booleans can be compared with ``>`` and ``<``, such as ``true > false``, which should throw an exception instead. Note that in Python, ``True > False`` resolves to ``True``.
 - Dissimilar types can be compared, such as ``2 < "hello"`` resolving to ``true``. This should throw an exception instead. This is due to a quirk of Python 2.x allowing dissimilar comparisons.
 - Operators cannot be embedded in strings without causing in error. For instance, ``"this and that"`` (operator boolean ``and``) as well as ``"two + three"`` (operator ``+``).
+- Function composition brings up the following bug:
+
+```func = compose(mulHalf, add5)
+func2 = compose(add5, mulHalf)
+func3 = compose(square, add5)
+func4 = compose(square, square)
+print func(10)
+print func2(10)
+print func3(10)
+print func4(10)
+```
+
+In this case, all calls to func through func4 will act like func4, returning 10000.
 
 ## Fixed
 

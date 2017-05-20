@@ -58,7 +58,10 @@ def execute_statement(stmt, env):
     if is_statement(stmt):
         tokens = tokenize_statement(stmt)
         if tokens[0] == 'print':
-            display(eval_parentheses(tokens[1], env))
+            if tokens[1] == 'this':
+                print(env)
+            else:
+                display(eval_parentheses(tokens[1], env))
         elif tokens[0] == 'show':
             display(eval_parentheses(tokens[1], env), False)
         elif tokens[0] in directives:

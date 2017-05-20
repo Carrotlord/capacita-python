@@ -1,0 +1,21 @@
+a = 5
+b = 7
+c = 9
+
+sub f(x, y)
+    z = 2
+    w = 3
+    print this
+    return x + y
+end
+
+print f(a, b)
+
+sub factorial(n)
+    print this
+    when n <= 1
+        return 1
+    return n * factorial(n - 1)
+end
+
+print factorial(4)

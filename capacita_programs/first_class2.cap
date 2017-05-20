@@ -54,3 +54,8 @@ func3 = compose(square, add5)
 print func3(10)
 func4 = compose(square, square)
 print func4(10)
+
+print func(20)
+print func2(20)
+print func3(20)
+print func4(20)

@@ -29,7 +29,7 @@ def execute_lines(lines, env):
             elif directive[0] == 'return':
                 value = eval_parentheses(directive[1], env)
                 if str(value).startswith('<'):
-                    value.supply(env)
+                    value = value.supply(env)
                 return value
             else:
                 prgm_counter += 1

@@ -56,7 +56,7 @@ class Function(object):
     """
     Implements a callable Capacita function.
     """
-    def __init__(self, name, args, lines):
+    def __init__(self, name, args, lines, supplied_env=None):
         """
         Initializes function object.
         lines are the lines of the function body
@@ -70,7 +70,7 @@ class Function(object):
         # All functions should return something,
         # which is null for 'void' functions.
         self.lines = prepare_control_flow(lines) + ['return null']
-        self.supplied_env = None
+        self.supplied_env = supplied_env
         
     def execute(self, arg_values, env):
         """
@@ -99,8 +99,13 @@ class Function(object):
     def supply(self, env):
         """
         Gives a higher-order function a special environment.
+        This provides a copy of the current function, updated
+        with the correct environment.
         """
-        self.supplied_env = env.copy()
+        new_func = Function(self.name, self.args, [], env.copy())
+        new_func.lines = self.lines
+        new_func.defined_funcs = self.defined_funcs
+        return new_func
         
     def __repr__(self):
         return '<' + self.name + '(' + str(self.args)[1:-1] + ') -> ' + str(self.lines) + '>'

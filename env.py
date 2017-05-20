@@ -47,3 +47,9 @@ class Environment(object):
             new_frames.append({k: v for k, v in frame.items()})
         new_env.frames = new_frames
         return new_env
+
+    def __repr__(self):
+        return str(self.frames)
+
+    def __str__(self):
+        return repr(self)

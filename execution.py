@@ -133,6 +133,9 @@ def eval_parentheses(expr, env):
     ast = AST(expr)
     tokens = ast.parse()
     tokens = call_functions(tokens, env)
+    # For function values, do not transform the value to a string:
+    if len(tokens) == 1 and str(tokens[0]).startswith('<'):
+        return tokens[0]
     expr = ''.join(tokens)
     paren_open = expr.find('(')
     if paren_open == -1:
@@ -189,7 +192,12 @@ def call_functions(tokens, env):
             arg_values = [eval_parentheses(arg, env) for arg in arg_list]
             func_obj = env.get(func_name)
             return_val = func_obj.execute(arg_values, env)
-            tokens[i] = str(return_val)
+            # Handle function values separately from normal values
+            str_val = str(return_val)
+            if len(str_val) > 0 and str_val[0] == '<':
+                tokens[i] = return_val
+            else:
+                tokens[i] = str_val
         i += 1
     return tokens
 

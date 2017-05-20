@@ -64,6 +64,9 @@ class Function(object):
         """
         self.name = name
         self.args = args
+        prgm = '\n'.join(lines)
+        prgm, self.defined_funcs = extract_functions(prgm)
+        lines = prgm.split('\n')
         # All functions should return something,
         # which is null for 'void' functions.
         self.lines = prepare_control_flow(lines) + ['return null']
@@ -77,6 +80,7 @@ class Function(object):
             throw_exception('ArgValueException',
                             'Number of arguments does not match function definition')
         env.new_frame()
+        env.merge_latest(self.defined_funcs)
         i = 0
         # Put function arguments into environment frame:
         while i < len(self.args):

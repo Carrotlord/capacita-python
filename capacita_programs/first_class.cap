@@ -1,0 +1,9 @@
+sub wrapper()
+    sub square(x)
+        return x ^ 2
+    end
+    return square
+end
+
+f = wrapper()
+print f(40.25)

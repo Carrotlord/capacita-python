@@ -31,3 +31,8 @@ class Environment(object):
         
     def pop(self):
         return self.frames.pop()
+
+    def merge_latest(self, other_env):
+        latest_frame = other_env.frames[-1]
+        for var, value in latest_frame.items():
+            self.assign(var, value)

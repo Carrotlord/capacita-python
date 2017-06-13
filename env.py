@@ -1,4 +1,5 @@
 from exception import throw_exception
+from builtin_function import int_div, make_list
 
 class Environment(object):
     """
@@ -6,7 +7,8 @@ class Environment(object):
     bound to their values.
     """
     def __init__(self):
-        self.frames = [{'null': None, 'true': True, 'false': False}]
+        self.frames = [{'null': None, 'true': True, 'false': False,
+                        'intDiv': int_div, 'makeList': make_list}]
     
     def new_frame(self):
         self.frames.append({})

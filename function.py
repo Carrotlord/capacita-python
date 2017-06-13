@@ -108,7 +108,8 @@ class Function(object):
         return new_func
         
     def __repr__(self):
-        return '<' + self.name + '(' + str(self.args)[1:-1] + ') -> ' + str(self.lines) + '>'
+        return '<function ' + self.name + '(' + str(self.args)[1:-1] + \
+               ') -> ' + str(self.lines) + '>'
     
     def __str__(self):
         return repr(self)

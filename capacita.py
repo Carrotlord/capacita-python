@@ -114,6 +114,8 @@ def main():
             print(ast.parse())
             ast = AST('z = f("ice cream", "eggs and milk") * g("alpha or beta", 3:8, "gamma or delta")')
             print(ast.parse())
+            ast = AST('makeList(1,2,3) + makeList(4,5,6)')
+            print(ast.parse())
         else:
             # Run a program from a text file:
             file_name = first_arg

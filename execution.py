@@ -1,4 +1,5 @@
 import re
+import ast
 
 from tokens import tokenize_statement
 from ast2 import AST
@@ -140,10 +141,10 @@ def eval_parentheses(expr, env):
     tokens = ast.parse()
     tokens = call_functions(tokens, env)
     # For function values, do not transform the value to a string:
-    if (len(tokens) == 1 and str(tokens[0]).startswith('<function')) or \
-        type(tokens[0]) is list:
+    if len(tokens) == 1 and (str(tokens[0]).startswith('<function') or \
+        type(tokens[0]) is list):
         return tokens[0]
-    expr = ''.join(tokens)
+    expr = ''.join(str(token) for token in tokens)
     paren_open = expr.find('(')
     if paren_open == -1:
         return evaluate_expression(expr, env)
@@ -283,6 +284,15 @@ def convert_value(val, env):
             return val
         elif val[0] == '`' and val[-1] == '`':
             return Ribbon(val[1:-1])
+        elif val[0] == '[' and val[-1] == ']':
+            # TODO : replace literal_eval
+            # with actual list parsing,
+            # so that ratios and similar values
+            # can be placed into lists.
+            result = ast.literal_eval(val)
+            if type(result) is not list:
+                throw_exception('ListEval', val + ' cannot be converted to a list')
+            return result
     try:
         return int(val)
     except ValueError:

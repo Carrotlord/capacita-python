@@ -116,6 +116,10 @@ def main():
             print(ast.parse())
             ast = AST('makeList(1,2,3) + makeList(4,5,6)')
             print(ast.parse())
+            ast = AST('[max(16, 25), max(36, max(49, 64))]')
+            print(ast.parse())
+            ast = AST('[concat_lists([10], [20]), concat_lists([30], [40])]')
+            print(ast.parse())
         else:
             # Run a program from a text file:
             file_name = first_arg

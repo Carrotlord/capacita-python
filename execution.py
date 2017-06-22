@@ -174,6 +174,12 @@ def split_args(args):
                 throw_exception('UnmatchedOpeningParenthesis', args)
             buffer += args[i : i+offset]
             i += offset
+        elif char == '[':
+            offset = find_matching(args[i + 1:], '[', ']')
+            if offset == -1:
+                throw_exception('UnmatchedOpeningSquareBracket', args)
+            buffer += args[i : i+offset]
+            i += offset
         elif char == ',':
             results.append(buffer)
             buffer = ''
@@ -285,13 +291,7 @@ def convert_value(val, env):
         elif val[0] == '`' and val[-1] == '`':
             return Ribbon(val[1:-1])
         elif val[0] == '[' and val[-1] == ']':
-            # TODO : replace literal_eval
-            # with actual list parsing,
-            # so that ratios and similar values
-            # can be placed into lists.
-            result = ast.literal_eval(val)
-            if type(result) is not list:
-                throw_exception('ListEval', val + ' cannot be converted to a list')
+            result = parse_list(val[1:-1], env)
             return result
     try:
         return int(val)
@@ -300,3 +300,13 @@ def convert_value(val, env):
             return float(val)
         except ValueError:
             return None
+
+def parse_list(list_contents, env):
+    """
+    Given list contents (the internals of the list without square brackets)
+    returns the list with all elements evaluated in the current environment.
+    """
+    elems = split_args(list_contents)
+    evaluated = [eval_parentheses(elem, env) for elem in elems]
+    return evaluated
+    

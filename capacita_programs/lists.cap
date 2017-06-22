@@ -1,0 +1,14 @@
+sub concat_lists(a, b)
+    return a + b
+end
+
+sub max(a, b)
+    when a > b
+        return a
+    return b
+end
+
+print concat_lists([1, 2, 3], [4, 5, 6])
+print concat_lists([[1,2], [3,4]], [5, [6,7]])
+print [concat_lists([10], [20]), concat_lists([30], [40])]
+print [max(16, 25), max(36, max(49, 64))]

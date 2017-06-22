@@ -1,5 +1,4 @@
 import re
-import ast
 
 from tokens import tokenize_statement
 from ast2 import AST

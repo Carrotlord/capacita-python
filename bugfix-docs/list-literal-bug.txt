@@ -1,0 +1,17 @@
+Q: What appears to be the problem?
+A: Function calls inside list literals don't work, such as [f(2), f(3)]. Regular literals like [1, 2, 3] work fine.
+
+Q: What is wrong with the output?
+A: It seems that function calls are not evaluated first in lists. Instead (I think) that eval_parentheses is called too early, transforming an expression such as f(2) into f2, an undefined variable. An example of this can be seen in capacita_programs/lists.cap.
+
+Q: Which file is causing the problem?
+A: eval_parentheses and call_functions are both inside 'execution.py'. call_functions should be called first to simplify function expressions inside lists, but eval_parentheses is called first instead.
+
+Q: Where should you be using call_functions to remedy the situation?
+A: Inside eval_parentheses, call_functions is actually called prior to doing any work with parenthetical expressions. The real issue is inside call_functions, the regex will not match a token such as '[f(2), f(3)]' and only matches raw function calls such as 'f(2)'.
+
+Q: What can you change about the regex or tokenization that will solve the problem?
+A: I can force the AST.parse(...) method to split apart a list literal such as '[f(2), f(3)]' into ['[', 'f(2)', ',', 'f(3)', ']']. Then call_functions is given tokens such as 'f(3)' instead of an entire list literal.
+
+Q: Are there any issues with the solution you presented?
+A: There must be a way of handling tokens like '[', ',', ']', which cannot be treated as regular binary operators. Perhaps they should be glued back together into a Python list after all sub-expressions have been properly evaluated with eval_parentheses.

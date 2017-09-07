@@ -120,6 +120,15 @@ def main():
             print(ast.parse())
             ast = AST('[concat_lists([10], [20]), concat_lists([30], [40])]')
             print(ast.parse())
+        elif first_arg == '--test3':
+            ast = AST('[1, 2, 3]')
+            print(ast.split_list_elems())
+            ast = AST('[f(2), f(3), f(4)]')
+            print(ast.split_list_elems())
+            ast = AST('[f(2, 3), f(3, 4, 5), f(4, 1)]')
+            print(ast.split_list_elems())
+            ast = AST('1 + 2 * 3')
+            print(ast.split_list_elems())
         else:
             # Run a program from a text file:
             file_name = first_arg

@@ -79,11 +79,20 @@ def execute_statement(stmt, env):
 def evaluate_list(tokens, env):
     results = []
     i = 0
+    brackets = ['[', ']']
     while i < len(tokens):
         token = tokens[i]
         if token == '[':
             j = find_matching(tokens[i + 1:], '[', ']')
-            lst = [eval_parentheses(elem, env) for elem in tokens[i+1 : i+j] if elem != ',']
+            lst = []
+            for elem in tokens[i+1 : i+j]:
+                if elem != ',':
+                    if elem in brackets or (type(elem) is not str):
+                        lst.append(elem)
+                    else:
+                        lst.append(eval_parentheses(elem, env))
+            while '[' in lst:
+                lst = evaluate_list(lst, env)
             results.append(lst)
             i += j
         else:

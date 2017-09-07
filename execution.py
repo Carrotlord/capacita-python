@@ -76,6 +76,21 @@ def execute_statement(stmt, env):
     # No directive to be processed:
     return None
 
+def evaluate_list(tokens, env):
+    results = []
+    i = 0
+    while i < len(tokens):
+        token = tokens[i]
+        if token == '[':
+            j = find_matching(tokens[i + 1:], '[', ']')
+            lst = [eval_parentheses(elem, env) for elem in tokens[i+1 : i+j] if elem != ',']
+            results.append(lst)
+            i += j
+        else:
+            results.append(token)
+        i += 1
+    return results
+
 def evaluate_expression(expr, env):
     """
     Evaluates an expression by converting it to an AST
@@ -126,6 +141,8 @@ def evaluate_expression(expr, env):
             tokens[idx-1 : idx+2] = [left or right]
         elif op == ' xor ':
             tokens[idx-1 : idx+2] = [(left and not right) or ((not left) and right)]
+    if len(tokens) != 1:
+        tokens = evaluate_list(tokens, env)
     if len(tokens) != 1:
         throw_exception('ExprEval', str(tokens) + ' cannot be converted into a single value')
     else:

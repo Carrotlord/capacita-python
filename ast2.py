@@ -1,4 +1,4 @@
-from strtools import find_matching
+from strtools import find_matching, find_matching_quote
 from exception import throw_exception
 
 def is_numeric(val):
@@ -88,6 +88,12 @@ class AST(object):
                 buffer += self.expr[i : i+j]
                 i += j
                 continue
+            elif char == '"':
+                j = find_matching_quote(self.expr[i + 1:])
+                if j == -1:
+                    throw_exception('UnmatchedQuote', self.expr)
+                buffer += self.expr[i : i+j+1] + '"'
+                i += j + 1
             else:
                 buffer += char
             i += 1
@@ -95,29 +101,36 @@ class AST(object):
         return results
         
     def parse(self):
+        results = []
+        elems = self.split_list_elems()
+        for elem in elems:
+            results += self.parse_elem(elem)
+        return results
+        
+    def parse_elem(self, expr):
         """
         Splits an expression based on its operators.
         e.g. '2 + 3*4' -> ['2', '+', '3', '*', '4']
         """
         buffer = ''
         tokens = []
-        expr_length = len(self.expr)
+        expr_length = len(expr)
         i = 0
         in_quotes = False
         while i < expr_length:
-            next_char = self.expr[i]
+            next_char = expr[i]
             if next_char == '(':
-                paren_close = find_matching(self.expr[i + 1:])
+                paren_close = find_matching(expr[i + 1:])
                 if paren_close == -1:
-                    throw_exception('UnmatchedOpeningParenthesis', self.expr)
-                buffer += '(' + self.expr[i+1 : i+paren_close]
+                    throw_exception('UnmatchedOpeningParenthesis', expr)
+                buffer += '(' + expr[i+1 : i+paren_close]
                 i += paren_close
             else:
                 op_detected = False
                 if not in_quotes:
                     for op in self.ordered_ops:
                         op_length = len(op)
-                        if self.expr[i : i+op_length] == op:
+                        if expr[i : i+op_length] == op:
                             buffer_contents = buffer.strip()
                             if len(buffer_contents) > 0:
                                 tokens.append(buffer_contents)

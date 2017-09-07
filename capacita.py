@@ -129,6 +129,7 @@ def main():
             print(ast.split_list_elems())
             ast = AST('1 + 2 * 3')
             print(ast.split_list_elems())
+            print(ast.parse())
         else:
             # Run a program from a text file:
             file_name = first_arg

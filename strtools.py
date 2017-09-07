@@ -19,3 +19,7 @@ def find_matching(expr, opening='(', closing=')'):
                 num_open -= 1
         i += 1
     return -1
+
+def find_matching_quote(expr):
+    # TODO : allow for escaped quotes
+    return expr.find('"')

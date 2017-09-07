@@ -77,6 +77,12 @@ def execute_statement(stmt, env):
     return None
 
 def evaluate_list(tokens, env):
+    """
+    Transforms a list of tokens containing square brackets
+    into a proper list.
+    
+    e.g. ['[', '1', ',', '2', ']'] -> [[1, 2]]
+    """
     results = []
     i = 0
     brackets = ['[', ']']

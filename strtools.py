@@ -21,5 +21,8 @@ def find_matching(expr, opening='(', closing=')'):
     return -1
 
 def find_matching_quote(expr):
+    """
+    Finds the next double-quote in expr.
+    """
     # TODO : allow for escaped quotes
     return expr.find('"')

@@ -109,7 +109,7 @@ class Function(object):
         
     def __repr__(self):
         return '<function ' + self.name + '(' + str(self.args)[1:-1] + \
-               ') -> ' + str(self.lines) + '>'
+               ') -> ' + str(tuple(self.lines)) + '>'
     
     def __str__(self):
         return repr(self)

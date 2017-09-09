@@ -37,7 +37,11 @@ class Ratio(object):
         return float(self.fraction.numerator) / self.fraction.denominator
         
     def __eq__(self, other):
-        return float(self) == float(other)
+        try:
+            other = float(other)
+        except ValueError:
+            return False
+        return float(self) == other
     
     def __ne__(self, other):
         return not self.__eq__(other)

@@ -114,13 +114,27 @@ def evaluate_expression(expr, env):
     ast = AST(expr)
     tokens = ast.parse()
     indices = ast.collapse_indices(ast.build_indices())
+    return evaluate_operators(tokens, indices, env)
+    
+def evaluate_operators(tokens, indices, env):
+    brackets = ['[', ']']
     for idx in indices:
+        # TODO : checking bounds should no longer be
+        # necessary after fixing the xrange issue.
+        # (passing in an xrange as operator indices)
+        if idx >= len(tokens):
+            break
         op = tokens[idx]
         if idx > 0:
             left = convert_value(tokens[idx-1], env)
         else:
             left = None
+        if idx + 1 >= len(tokens):
+            # This index is not valid:
+            break
         right = convert_value(tokens[idx+1], env)
+        if left in brackets or right in brackets:
+            break
         left, right = promote_values(left, right)
         if op == '+':
             tokens[idx-1 : idx+2] = [plus(left, right)]
@@ -156,12 +170,24 @@ def evaluate_expression(expr, env):
             tokens[idx-1 : idx+2] = [left or right]
         elif op == ' xor ':
             tokens[idx-1 : idx+2] = [(left and not right) or ((not left) and right)]
-    if len(tokens) != 1:
-        tokens = evaluate_list(tokens, env)
-    if len(tokens) != 1:
-        throw_exception('ExprEval', str(tokens) + ' cannot be converted into a single value')
-    else:
-        return convert_value(tokens[0], env)
+    stage = 0
+    while len(tokens) != 1:
+        if stage == 0:
+            tokens = evaluate_list(tokens, env)
+            stage = 1
+        elif stage == 1:
+            input_tokens = tokens
+            # TODO : avoid having to pass in an xrange of possible operator indices
+            tokens = evaluate_operators(tokens, xrange(len(tokens) - 1), env)
+            # If the value returned is no longer the outer list, it means
+            # an inner list is the result:
+            if tokens is not input_tokens:
+                return tokens
+            stage = 2
+        elif stage == 2:
+            throw_exception('ExprEval', str(tokens) + ' cannot be converted into a single value')
+    # Return the resulting (single) value without the outer list.
+    return convert_value(tokens[0], env)
 
 def eval_parentheses(expr, env):
     """
@@ -303,7 +329,8 @@ def convert_value(val, env):
     Given a value in string form, converts to an int, float, etc.
     Or, given a variable name, retrieves the value of that variable.
     """
-    if type(val) is not str:
+    brackets = ['[', ']']
+    if (type(val) is not str) or val in brackets:
         return val
     if val == 'True':
         return True

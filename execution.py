@@ -117,6 +117,11 @@ def evaluate_expression(expr, env):
     return evaluate_operators(tokens, indices, env)
     
 def evaluate_operators(tokens, indices, env):
+    """
+    Evaluates an expression based on a list of tokens,
+    indices where the operators are located, and
+    environment env.
+    """
     brackets = ['[', ']']
     for idx in indices:
         # TODO : checking bounds should no longer be

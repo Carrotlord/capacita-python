@@ -106,6 +106,20 @@ def evaluate_list(tokens, env):
         i += 1
     return results
 
+def index_lists(tokens, env):
+    i = 1
+    while i < len(tokens):
+        prev = tokens[i - 1]
+        current = tokens[i]
+        if type(prev) is list and type(current) is list and \
+           len(current) == 1:
+            index = current[0]
+            if type(index) is int:
+                tokens[i-1 : i+1] = [prev[index]]
+        else:
+            i += 1
+    return tokens
+
 def evaluate_expression(expr, env):
     """
     Evaluates an expression by converting it to an AST
@@ -181,6 +195,9 @@ def evaluate_operators(tokens, indices, env):
             tokens = evaluate_list(tokens, env)
             stage = 1
         elif stage == 1:
+            tokens = index_lists(tokens, env)
+            stage = 2
+        elif stage == 2:
             input_tokens = tokens
             # TODO : avoid having to pass in an xrange of possible operator indices
             tokens = evaluate_operators(tokens, xrange(len(tokens) - 1), env)
@@ -188,8 +205,8 @@ def evaluate_operators(tokens, indices, env):
             # an inner list is the result:
             if tokens is not input_tokens:
                 return tokens
-            stage = 2
-        elif stage == 2:
+            stage = 3
+        elif stage == 3:
             throw_exception('ExprEval', str(tokens) + ' cannot be converted into a single value')
     # Return the resulting (single) value without the outer list.
     return convert_value(tokens[0], env)

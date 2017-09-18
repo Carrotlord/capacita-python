@@ -140,8 +140,35 @@ def prepare_control_flow(lines):
                 lines[i] = 'continue 1'
             i += 1
         return lines
+    def replace_for(lines):
+        """
+        Replaces for loops with while loops.
+        
+        for i = 0; i < 10; i++
+            print i
+        end
+        
+        i = 0
+        while i < 10
+            print i
+            i++
+        end
+        """
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            if line.startswith('for '):
+                initialization = line[4:]
+                condition = lines[i + 1]
+                increment = lines[i + 2]
+                _, j = find_next_end_else(lines, i + 1, True)
+                lines[j : j+1] = [increment, 'end']
+                lines[i : i+3] = [initialization, 'while ' + condition]
+            i += 1
+        return lines
     lines = prepare_else_ifs(lines)
     lines = prepare_breaks_continues(lines)
+    lines = replace_for(lines)
     i = 0
     label_counter = 0
     while i < len(lines):

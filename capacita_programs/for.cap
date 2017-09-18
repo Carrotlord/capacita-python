@@ -1,0 +1,35 @@
+for i = 0; i < 7; i += 1
+    show i
+    show " "
+end
+print ""
+
+x = ["Alice", "Bob", "Carol", "David", "Eve"]
+for i = 0; i < 5; i += 1
+    show x[i]
+    if i != 4
+        show ", "
+    end
+end
+print ""
+
+y = [[10, 20, 30], [40, 50, 60], [70, 80, 90]]
+for i = 0; i < 3; i += 1
+    for j = 0; j < 3; j += 1
+        show y[j][i]
+        when j != 2
+            show ", "
+    end
+    print ""
+end
+
+w = [[100], [200, 300], [400, 500, 600], [700, 800]]
+z = [1, 2, 3, 2]
+for j = 0; j < 4; j += 1
+    for i = 0; i < (z[j]); i += 1
+        show w[j][i]
+        when i != (z[j]) - 1
+            show ", "
+    end
+    print ""
+end

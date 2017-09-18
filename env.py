@@ -31,6 +31,15 @@ class Environment(object):
                 i -= 1
         throw_exception('UndefinedVariable', var_name + ' is not defined.')
         
+    def has_name(self, var_name):
+        i = -1
+        while i >= -len(self.frames):
+            if var_name in self.frames[i]:
+                return True
+            else:
+                i -= 1
+        return False
+        
     def pop(self):
         return self.frames.pop()
 

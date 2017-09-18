@@ -105,15 +105,20 @@ def evaluate_list(tokens, env):
             results.append(token)
         i += 1
     return results
+    
+def get_name(name, env):
+    if type(name) is str and env.has_name(name):
+        return env.get(name)
+    return name
 
 def index_lists(tokens, env):
     i = 1
     while i < len(tokens):
-        prev = tokens[i - 1]
-        current = tokens[i]
+        prev = get_name(tokens[i - 1], env)
+        current = get_name(tokens[i], env)
         if type(prev) is list and type(current) is list and \
            len(current) == 1:
-            index = current[0]
+            index = get_name(current[0], env)
             if type(index) is int:
                 tokens[i-1 : i+1] = [prev[index]]
         else:

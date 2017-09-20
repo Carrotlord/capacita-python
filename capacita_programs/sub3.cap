@@ -1,0 +1,25 @@
+sub factorial(n)
+    product = 1
+    for i = 1; i <= n; i += 1
+        product = product * i
+    end
+    return product
+end
+
+sub fibonacci(n)
+    prev = 0
+    current = 1
+    for i = 0; i < n; i += 1
+        temp = current
+        current = current + prev
+        prev = temp
+    end
+    return prev
+end
+
+print factorial(10)
+for i = 0; i < 16; i += 1
+    show fibonacci(i)
+    show " "
+end
+print ""

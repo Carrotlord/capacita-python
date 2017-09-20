@@ -1,6 +1,6 @@
 import re
 
-from control_flow import prepare_control_flow
+from prepare_program import prepare_program
 from exception import throw_exception
 from execution import execute_lines
 from control_flow import find_next_end_else
@@ -66,10 +66,9 @@ class Function(object):
         self.args = args
         prgm = '\n'.join(lines)
         prgm, self.defined_funcs = extract_functions(prgm)
-        lines = prgm.split('\n')
         # All functions should return something,
         # which is null for 'void' functions.
-        self.lines = prepare_control_flow(lines) + ['return null']
+        self.lines = prepare_program(prgm) + ['return null']
         self.supplied_env = supplied_env
         
     def execute(self, arg_values, env):

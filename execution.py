@@ -365,7 +365,7 @@ def convert_value(val, env):
         return False
     if val == 'None':
         return None
-    if re.match('[A-Za-z_][A-Za-z_0-9]*', val):
+    if re.match(r'\$?[A-Za-z_][A-Za-z_0-9]*', val):
         # Grab a variable's value:
         return env.get(val)
     if len(val) >= 2:

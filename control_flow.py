@@ -1,5 +1,7 @@
 from exception import throw_exception
 
+import re
+
 def find_next_end_else(lines, start, end_only=False):
     """
     Returns the corresponding end-statement or else-statement
@@ -168,21 +170,41 @@ def prepare_control_flow(lines):
         return lines
     def replace_for_each(lines):
         """
-        Replaces for-each loops with for loops.
+        Replaces for-each loops with while loops.
         
         for each x of xs
             print x
         end
         
-        for $v0 = 0; $v0 < xs.length(); $v0++
+        $v0 = 0
+        while $v0 < xs.length()
             x = xs[$v0]
             print x
+            $v0++
         end
         """
-        # TODO : finish this function
-        pass
+        i = 0
+        index_var_num = 0
+        while i < len(lines):
+            line = lines[i]
+            match_obj = re.match(r'for each ([A-Za-z_][A-Za-z_0-9]*) of (.*)', line)
+            if match_obj:
+                elem_var = match_obj.group(1)
+                iterable = match_obj.group(2)
+                index_var = '$i' + str(index_var_num)
+                initialization = index_var + '=0'
+                condition = index_var + '<' + iterable + '.length()'
+                increment = index_var + '+=1'
+                assignment = elem_var + '=' + iterable + '[' + index_var + ']'
+                _, j = find_next_end_else(lines, i + 1, True)
+                lines[j : j+1] = [increment, 'end']
+                lines[i : i+1] = [initialization, 'while ' + condition, assignment]
+                index_var_num += 1
+            i += 1
+        return lines
     lines = prepare_else_ifs(lines)
     lines = prepare_breaks_continues(lines)
+    lines = replace_for_each(lines)
     lines = replace_for(lines)
     i = 0
     label_counter = 0

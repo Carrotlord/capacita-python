@@ -27,6 +27,9 @@ def is_positive_numeric(val):
     if len(val) > 0 and val[0] == '-':
         return False
     return True
+    
+def is_digit(val):
+    return val in '0123456789'
 
 class AST(object):
     """
@@ -37,18 +40,19 @@ class AST(object):
         """Setup expression and precedences of operators."""
         self.expr = expr
         self.precedences = {
-            ':': 1,
-            '^': 2,
-            '*': 3, '/': 3,
-            '+': 4, '-': 4,
-            '==': 5, '!=': 5, '>=': 5, '<=': 5,
-            '>': 5, '<': 5,
-            ' and ': 6, ' or ': 6, ' xor ': 6
+            '.': 1,
+            ':': 2,
+            '^': 3,
+            '*': 4, '/': 4,
+            '+': 5, '-': 5,
+            '==': 6, '!=': 6, '>=': 6, '<=': 6,
+            '>': 6, '<': 6,
+            ' and ': 7, ' or ': 7, ' xor ': 7
         }
         # Longer operators should be detected before shorter ones:
         self.ordered_ops = [' and ', ' or ', ' xor ',
                             '>=', '<=', '!=', '==', '<', '>',
-                            '+', '-', '*', '/', '^', ':']
+                            '+', '-', '*', '/', '^', ':', '.']
     
     def weakest(self):
         """
@@ -130,7 +134,8 @@ class AST(object):
                 if not in_quotes:
                     for op in self.ordered_ops:
                         op_length = len(op)
-                        if expr[i : i+op_length] == op:
+                        if not(op == '.' and is_digit(expr[i+op_length : i+op_length+1])) and \
+                           expr[i : i+op_length] == op:
                             buffer_contents = buffer.strip()
                             if len(buffer_contents) > 0:
                                 tokens.append(buffer_contents)
@@ -182,7 +187,7 @@ class AST(object):
              -> [[], [7], [5], [1, 3]]
         """
         tokens = self.parse()
-        table = [[], [], [], [], [], []]
+        table = [[], [], [], [], [], [], []]
         i = 0
         for token in tokens:
             if token in self.precedences:

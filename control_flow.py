@@ -166,6 +166,21 @@ def prepare_control_flow(lines):
                 lines[i : i+3] = [initialization, 'while ' + condition]
             i += 1
         return lines
+    def replace_for_each(lines):
+        """
+        Replaces for-each loops with for loops.
+        
+        for each x of xs
+            print x
+        end
+        
+        for $v0 = 0; $v0 < xs.length(); $v0++
+            x = xs[$v0]
+            print x
+        end
+        """
+        # TODO : finish this function
+        pass
     lines = prepare_else_ifs(lines)
     lines = prepare_breaks_continues(lines)
     lines = replace_for(lines)

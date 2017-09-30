@@ -130,6 +130,15 @@ def main():
             ast = AST('1 + 2 * 3')
             print(ast.split_list_elems())
             print(ast.parse())
+        elif first_arg == '--test4':
+            ast = AST('x.length()')
+            print(ast.parse())
+            ast = AST('[1,2,3].length()')
+            print(ast.parse())
+            ast = AST('3.01')
+            print(ast.parse())
+            ast = AST('3.1')
+            print(ast.parse())
         else:
             # Run a program from a text file:
             file_name = first_arg

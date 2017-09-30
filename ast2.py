@@ -1,6 +1,8 @@
 from strtools import find_matching, find_matching_quote
 from exception import throw_exception
 
+import re
+
 def is_numeric(val):
     """
     Returns True if val is an integer or float, else False.
@@ -110,6 +112,23 @@ class AST(object):
         for elem in elems:
             results += self.parse_elem(elem)
         return results
+        
+    def regroup_method_calls(self, tokens):
+        """
+        Separate method names from method arguments.
+        e.g. ['x', '.', 'length()'] -> ['x', '.', 'length', '()']
+        """
+        i = 0
+        while i < len(tokens):
+            token = tokens[i]
+            if token == '.':
+                match_obj = re.match('([A-Za-z_][A-Za-z_0-9]*)\((.*)\)', tokens[i + 1])
+                if match_obj:
+                    func_name = match_obj.group(1)
+                    func_args = match_obj.group(2)
+                    tokens[i+1 : i+2] = [func_name, '(' + func_args + ')']
+            i += 1
+        return tokens
         
     def parse_elem(self, expr):
         """

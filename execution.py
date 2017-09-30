@@ -7,6 +7,7 @@ from ratio import Ratio
 from console import display
 from exception import throw_exception
 from strtools import find_matching
+from dot_operator import dot_operator
 
 def execute_lines(lines, env):
     """
@@ -149,6 +150,7 @@ def evaluate_operators(tokens, indices, env):
         if idx >= len(tokens):
             break
         op = tokens[idx]
+        is_dot = op == '.'
         if idx > 0:
             left = convert_value(tokens[idx-1], env)
         else:
@@ -156,7 +158,10 @@ def evaluate_operators(tokens, indices, env):
         if idx + 1 >= len(tokens):
             # This index is not valid:
             break
-        right = convert_value(tokens[idx+1], env)
+        if not is_dot:
+            right = convert_value(tokens[idx+1], env)
+        else:
+            right = tokens[idx+1]
         if left in brackets or right in brackets:
             break
         left, right = promote_values(left, right)
@@ -280,6 +285,7 @@ def call_functions(tokens, env):
     Replaces function calls with the return value of each function.
     """
     i = 0
+    prev_token = None
     for token in tokens:
         match_obj = re.match('([A-Za-z_][A-Za-z_0-9]*)\((.*)\)', token)
         if match_obj:
@@ -288,16 +294,27 @@ def call_functions(tokens, env):
             arg_list = split_args(func_args)
             # Evaluate all argument expressions:
             arg_values = [eval_parentheses(arg, env) for arg in arg_list]
-            func_obj = env.get(func_name)
+            if prev_token == '.':
+                obj_name = tokens[i - 2]
+                func_obj = dot_operator(obj_name, func_name, env)
+            else:
+                func_obj = env.get(func_name)
             return_val = func_obj.execute(arg_values, env)
             # Handle function values separately from normal values
             str_val = str(return_val)
             if (len(str_val) > 0 and str_val.startswith('<function')) or \
                 type(return_val) is list:
-                tokens[i] = return_val
+                if prev_token == '.':
+                    tokens[i-2 : i+1] = [return_val]
+                else:
+                    tokens[i] = return_val
             else:
-                tokens[i] = str_val
+                if prev_token == '.':
+                    tokens[i-2 : i+1] = [str_val]
+                else:
+                    tokens[i] = str_val
         i += 1
+        prev_token = token
     return tokens
 
 def is_string(val):

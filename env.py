@@ -1,5 +1,8 @@
 from exception import throw_exception
 from builtin_function import int_div, make_list
+from execution import eval_parentheses
+
+import re
 
 class Environment(object):
     """
@@ -14,7 +17,13 @@ class Environment(object):
         self.frames.append({})
     
     def assign(self, var_name, value):
-        self.frames[-1][var_name] = value
+        match_obj = re.match(r'(\$?[A-Za-z_][A-Za-z_0-9]*)\[(.+)\]', var_name)
+        if match_obj:
+            indexable = match_obj.group(1)
+            index = eval_parentheses(match_obj.group(2), self)
+            self.frames[-1][indexable][index] = value
+        else:
+            self.frames[-1][var_name] = value
     
     def update(self, var_name, value):
         if var_name in self.frames[-1]:

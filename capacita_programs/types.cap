@@ -1,0 +1,37 @@
+Int x = 5
+Double y = 15.6
+List xs = [x, y, y + 2]
+print xs
+
+xs[0] = 500
+xs[-1] = 300
+print xs
+
+xs = []
+print xs
+
+Sequence ys = xs
+ys.push(4)
+print ys
+
+ys = "string"
+print ys
+
+Ratio r = 22:7
+print r + r
+
+Number z = 10
+z = 20.05
+z = 1:2
+print z
+
+List w = [[100], [200, 300], [400, 500, 600], [700, 800]]
+for Int j = 0; j < 4; j = j + 1
+    List row = w[j]
+    for Int i = 0; i < row.length(); i = i + 1
+        show w[j][i]
+        when i != row.length() - 1
+            show ", "
+    end
+    print ""
+end

@@ -28,7 +28,9 @@ class Environment(object):
             if var in self.frames[-1]:
                 type_tuple = self.frames[-1][var]
                 if type(type_tuple) is tuple:
-                    throw_exception('AlreadyRestrictedType', var + ' already has type ' + type_tuple[0])
+                    existing_kind = type_tuple[0]
+                    if kind != existing_kind:
+                        throw_exception('AlreadyRestrictedType', var + ' already has type ' + existing_kind)
                 else:
                     throw_exception('AlreadyAnyType',
                         var + ' already has type Any and cannot be further restricted.')
@@ -48,13 +50,14 @@ class Environment(object):
                     # This iterable has no type restriction
                     self.frames[-1][indexable][index] = value
             else:
-                # No type restriction, no index
-                if var_name in self.frames[-1]:
+                if var_name in self.frames[-1] and type(self.frames[-1][var_name]) is tuple:
+                    # There is an existing type restriction
                     kind = self.frames[-1][var_name][0]
                     if not value_is_a(value, kind):
                         throw_exception('MismatchedType', str(value) + ' is not of type ' + kind)
                     self.frames[-1][var_name] = (kind, value)
                 else:
+                    # There is no type restriction given
                     self.frames[-1][var_name] = value
     
     def update(self, var_name, value):

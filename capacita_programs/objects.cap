@@ -4,3 +4,65 @@ end
 
 x = cons(1, 2)
 print x
+print x.car
+print x.cdr
+
+ys = cons(10, cons(20, cons(30, null)))
+
+sub first(list)
+    return list.car
+end
+
+sub followers(list)
+    return list.cdr
+end
+
+sub get(list, i)
+    if i == 0
+        return first(list)
+    else
+        return get(followers(list), i - 1)
+    end
+end
+
+sub lengthOf(list)
+    if list == null
+        return 0
+    else
+        return 1 + lengthOf(followers(list))
+    end
+end
+
+print first(ys)
+print followers(ys)
+print get(ys, 0)
+print get(ys, 1)
+print get(ys, 2)
+print lengthOf(ys)
+
+sub printList(list)
+    show "["
+    size = lengthOf(list)
+    for Int i = 0; i < size; i += 1
+        show first(list)
+        list = followers(list)
+        when i != size - 1
+            show ", "
+    end
+    print "]"
+end
+
+printList(ys)
+
+sub concat(list, other)
+    if list.cdr == null
+        list.cdr = other
+    else
+        concat(list.cdr, other)
+    end
+end
+
+concat(ys, cons(40, cons(50, null)))
+printList(ys)
+concat(ys, cons(60, null))
+printList(ys)

@@ -52,15 +52,22 @@ class Environment(object):
                     # This iterable has no type restriction
                     self.frames[-1][indexable][index] = value
             else:
-                if var_name in self.frames[-1] and type(self.frames[-1][var_name]) is tuple:
-                    # There is an existing type restriction
-                    kind = self.frames[-1][var_name][0]
-                    if not value_is_a(value, kind):
-                        throw_exception('MismatchedType', str(value) + ' is not of type ' + kind)
-                    self.frames[-1][var_name] = (kind, value)
+                # Is this an attribute of an object?
+                match_obj = re.match(r'(\$?[A-Za-z_][A-Za-z_0-9]*)\.(\$?[A-Za-z_][A-Za-z_0-9]*)', var_name)
+                if match_obj:
+                    obj = match_obj.group(1)
+                    attr = match_obj.group(2)
+                    self.frames[-1][obj][attr] = value
                 else:
-                    # There is no type restriction given
-                    self.frames[-1][var_name] = value
+                    if var_name in self.frames[-1] and type(self.frames[-1][var_name]) is tuple:
+                        # There is an existing type restriction
+                        kind = self.frames[-1][var_name][0]
+                        if not value_is_a(value, kind):
+                            throw_exception('MismatchedType', str(value) + ' is not of type ' + kind)
+                        self.frames[-1][var_name] = (kind, value)
+                    else:
+                        # There is no type restriction given
+                        self.frames[-1][var_name] = value
     
     def update(self, var_name, value):
         if var_name in self.frames[-1]:

@@ -1,0 +1,6 @@
+sub cons(car, cdr)
+    return this
+end
+
+x = cons(1, 2)
+print x

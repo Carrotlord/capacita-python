@@ -28,10 +28,17 @@ def execute_lines(lines, env):
                  ((not cond_flag) and directive[0] == ':jf'):
                 prgm_counter = int(directive[1])
             elif directive[0] == 'return':
-                value = eval_parentheses(directive[1], env)
-                if str(value).startswith('<function'):
-                    value = value.supply(env)
-                return value
+                if directive[1] == 'this':
+                    # Create a user-defined object.
+                    # Do not use env.pop() because the function
+                    # will automatically remove the stack frame
+                    # upon completion.
+                    return env.last()
+                else:
+                    value = eval_parentheses(directive[1], env)
+                    if str(value).startswith('<function'):
+                        value = value.supply(env)
+                    return value
             else:
                 prgm_counter += 1
         else:
@@ -231,7 +238,7 @@ def eval_parentheses(expr, env):
     tokens = call_functions(tokens, env)
     # For function values, do not transform the value to a string:
     if len(tokens) == 1 and (str(tokens[0]).startswith('<function') or \
-        type(tokens[0]) is list):
+        type(tokens[0]) is list or type(tokens[0]) is dict):
         return tokens[0]
     expr = ''.join(str(token) for token in tokens)
     paren_open = expr.find('(')
@@ -303,7 +310,7 @@ def call_functions(tokens, env):
             # Handle function values separately from normal values
             str_val = str(return_val)
             if (len(str_val) > 0 and str_val.startswith('<function')) or \
-                type(return_val) is list:
+                type(return_val) is list or type(return_val) is dict:
                 if prev_token == '.':
                     tokens[i-2 : i+1] = [return_val]
                 else:

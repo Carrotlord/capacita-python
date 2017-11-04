@@ -13,6 +13,8 @@ class Environment(object):
     def __init__(self):
         self.frames = [{'null': None, 'true': True, 'false': False,
                         'intDiv': int_div, 'makeList': make_list}]
+        # Save names that shouldn't be replicated in subsequent stack frames
+        self.default_names = self.frames[-1].keys()
     
     def new_frame(self):
         self.frames.append({})
@@ -89,11 +91,15 @@ class Environment(object):
         
     def pop(self):
         return self.frames.pop()
+    
+    def last(self):
+        return self.frames[-1]
 
     def merge_latest(self, other_env):
         latest_frame = other_env.frames[-1]
         for var, value in latest_frame.items():
-            self.assign(var, value)
+            if var not in self.default_names:
+                self.assign(var, value)
             
     def copy(self):
         """

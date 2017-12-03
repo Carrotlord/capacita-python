@@ -1,7 +1,7 @@
 from exception import throw_exception
 from builtin_function import int_div, make_list
 from execution import eval_parentheses
-from type_tree import value_is_a
+from type_tree import get_type, generate_default_tree
 
 import re
 
@@ -15,6 +15,7 @@ class Environment(object):
                         'intDiv': int_div, 'makeList': make_list}]
         # Save names that shouldn't be replicated in subsequent stack frames
         self.default_names = self.frames[-1].keys()
+        self.all_types = generate_default_tree()
     
     def new_frame(self):
         self.frames.append({})
@@ -24,7 +25,7 @@ class Environment(object):
         match_obj = re.match(r'([A-Za-z_][A-Za-z_0-9]*) (\$?[A-Za-z_][A-Za-z_0-9]*)', var_name)
         if match_obj:
             kind = match_obj.group(1)
-            if not value_is_a(value, kind):
+            if not self.value_is_a(value, kind):
                 throw_exception('MismatchedType', str(value) + ' is not of type ' + kind)
             var = match_obj.group(2)
             if var in self.frames[-1]:
@@ -62,7 +63,7 @@ class Environment(object):
                     if var_name in self.frames[-1] and type(self.frames[-1][var_name]) is tuple:
                         # There is an existing type restriction
                         kind = self.frames[-1][var_name][0]
-                        if not value_is_a(value, kind):
+                        if not self.value_is_a(value, kind):
                             throw_exception('MismatchedType', str(value) + ' is not of type ' + kind)
                         self.frames[-1][var_name] = (kind, value)
                     else:
@@ -118,6 +119,13 @@ class Environment(object):
             new_frames.append({k: v for k, v in frame.items()})
         new_env.frames = new_frames
         return new_env
+        
+    def value_is_a(self, value, wanted_kind):
+        kind = get_type(value)
+        if wanted_kind not in self.all_types:
+            return False
+        tree = self.all_types[wanted_kind]
+        return tree.categorizes(kind)
 
     def __repr__(self):
         return str(self.frames)

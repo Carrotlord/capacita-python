@@ -47,13 +47,6 @@ def get_type(value):
     elif str(value).startswith('<function'):
         return 'Function'
     throw_exception('UnknownType', str(value) + ' has an unknown type.')
-
-def value_is_a(value, wanted_kind):
-    kind = get_type(value)
-    if wanted_kind not in all_types:
-        return False
-    tree = all_types[wanted_kind]
-    return tree.categorizes(kind)
     
 def generate_default_tree():
     integers = TypeTree('Int', 'Integer')
@@ -98,5 +91,3 @@ def generate_default_tree():
         'Iterable': sequences,
         'Object': objects
     }
-
-all_types = generate_default_tree()

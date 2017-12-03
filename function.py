@@ -37,6 +37,32 @@ def extract_functions(prgm):
     lines = [line.strip() for line in lines]
     env = Environment()
     i = 0
+    max_len = len(lines)
+    while i < max_len:
+        line = lines[i]
+        # Transform classes into functions that return objects
+        if line.startswith('class '):
+            match_obj = re.match(r'class ([\$A-Za-z_][A-Za-z0-9_]*)\((.*)\)(.*)', line)
+            child_class_name = match_obj.group(1)
+            arguments = match_obj.group(2)
+            parent_classes = match_obj.group(3)
+            inherit_obj = re.match(r' inherits (.*)', parent_classes)
+            if inherit_obj:
+                parent_class_names = inherit_obj.group(1)
+                classes = [name.strip() for name in parent_class_names.split(',')]
+                env.new_type(classes, child_class_name)
+            else:
+                # There were no parent classes provided.
+                # By default, this class should inherit from Object.
+                env.new_type(['Object'], child_class_name)
+            lines[i] = 'sub ' + child_class_name + '(' + arguments + ')'
+            lines.insert(i + 1, '$type="' + child_class_name + '"')
+            max_len += 1
+            _, end = find_next_end_else(lines, i + 1, True)
+            lines.insert(end, 'return this')
+            max_len += 1
+        i += 1
+    i = 0
     while i < len(lines):
         line = lines[i]
         if line.startswith('sub '):

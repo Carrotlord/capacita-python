@@ -1,0 +1,32 @@
+class ComplexNumber(r, i) inherits Number
+    real = r
+    imag = i
+end
+
+ComplexNumber c = ComplexNumber(1, 2)
+Number n = ComplexNumber(3, 4)
+print c
+print n
+
+class Food()
+end
+
+class Pizza() inherits Food
+end
+
+class Dessert() inherits Food
+end
+
+class ChocolateItem() inherits Dessert
+end
+
+class PepperoniPizza() inherits Pizza
+end
+
+class ChocolatePizza() inherits Pizza, ChocolateItem
+end
+
+Pizza p = PepperoniPizza()
+print p
+p = ChocolatePizza()
+print p

@@ -26,7 +26,8 @@ class Environment(object):
         if match_obj:
             kind = match_obj.group(1)
             if not self.value_is_a(value, kind):
-                throw_exception('MismatchedType', str(value) + ' is not of type ' + kind)
+                throw_exception('MismatchedType', str(value) + ' is not of type ' + kind +
+                                '\nType tree is: ' + str(self.all_types))
             var = match_obj.group(2)
             if var in self.frames[-1]:
                 type_tuple = self.frames[-1][var]
@@ -64,7 +65,8 @@ class Environment(object):
                         # There is an existing type restriction
                         kind = self.frames[-1][var_name][0]
                         if not self.value_is_a(value, kind):
-                            throw_exception('MismatchedType', str(value) + ' is not of type ' + kind)
+                            throw_exception('MismatchedType', str(value) + ' is not of type ' + kind +
+                                            '\nType tree is: ' + str(self.all_types))
                         self.frames[-1][var_name] = (kind, value)
                     else:
                         # There is no type restriction given

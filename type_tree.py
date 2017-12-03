@@ -27,6 +27,12 @@ class TypeTree(object):
         is 'String' or 'List'.
         """
         return self.has_name(name) or self.has_child(name)
+    
+    def __repr__(self):
+        return str(list(self.names)) + '(' + str(self.subclasses) + ')'
+    
+    def __str__(self):
+        return repr(self)
 
 def get_type(value):
     kind = type(value)
@@ -47,7 +53,10 @@ def get_type(value):
     elif kind is dict:
         # This is a user-defined object
         if '$type' in value:
-            return value['$type']
+            if value['$type'].startswith('"'):
+                return value['$type'][1:-1]
+            else:
+                return value['$type']
         else:
             return 'Instance'
     elif str(value).startswith('<function'):

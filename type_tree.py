@@ -44,6 +44,12 @@ def get_type(value):
         return 'Ratio'
     elif value is None:
         return 'Null'
+    elif kind is dict:
+        # This is a user-defined object
+        if '$type' in value:
+            return value['$type']
+        else:
+            return 'Instance'
     elif str(value).startswith('<function'):
         return 'Function'
     throw_exception('UnknownType', str(value) + ' has an unknown type.')
@@ -57,6 +63,7 @@ def generate_default_tree():
     ratios = TypeTree('Ratio', 'Rational')
     nulls = TypeTree('Null', 'Void')
     functions = TypeTree('Function')
+    instances = TypeTree('Instance')
     
     numbers = TypeTree('Number')
     numbers.add_subclass(integers)
@@ -73,6 +80,7 @@ def generate_default_tree():
     objects.add_subclass(bools)
     objects.add_subclass(nulls)
     objects.add_subclass(functions)
+    objects.add_subclass(instances)
     
     return {
         'Int': integers,
@@ -89,5 +97,6 @@ def generate_default_tree():
         'Number': numbers,
         'Sequence': sequences,
         'Iterable': sequences,
+        'Instance': instances,
         'Object': objects
     }

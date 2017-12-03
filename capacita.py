@@ -139,6 +139,43 @@ def main():
             print(ast.parse())
             ast = AST('3.1')
             print(ast.parse())
+        elif first_arg == '--test5':
+            env = Environment()
+            env.new_type(['Number'], 'ComplexNumber')
+            c = {'$type': 'ComplexNumber', 'real': 1, 'imag': 2}
+            print(env.value_is_a(c, 'ComplexNumber'))
+            print(env.value_is_a(c, 'Number'))
+            print(env.value_is_a(c, 'Int'))
+            print("")
+            env.new_type(['Object'], 'Food')
+            env.new_type(['Food'], 'Pizza')
+            env.new_type(['Food'], 'Dessert')
+            env.new_type(['Dessert'], 'ChocolateItem')
+            env.new_type(['Pizza'], 'PepperoniPizza')
+            env.new_type(['Pizza', 'ChocolateItem'], 'ChocolatePizza')
+            pepperoni_pizza = {'$type': 'PepperoniPizza'}
+            chocolate_pizza = {'$type': 'ChocolatePizza'}
+            print(env.value_is_a(pepperoni_pizza, 'PepperoniPizza'))
+            print(env.value_is_a(pepperoni_pizza, 'Pizza'))
+            print(env.value_is_a(pepperoni_pizza, 'Food'))
+            print(env.value_is_a(pepperoni_pizza, 'Dessert'))
+            print(env.value_is_a(pepperoni_pizza, 'ChocolateItem'))
+            print("")
+            print(env.value_is_a(chocolate_pizza, 'PepperoniPizza'))
+            print(env.value_is_a(chocolate_pizza, 'Pizza'))
+            print(env.value_is_a(chocolate_pizza, 'Food'))
+            print(env.value_is_a(chocolate_pizza, 'Dessert'))
+            print(env.value_is_a(chocolate_pizza, 'ChocolateItem'))
+            print("")
+            env.new_type(['ChocolatePizza'], 'HugeChocolatePizza')
+            huge_chocolate_pizza = {'$type': 'HugeChocolatePizza'}
+            print(env.value_is_a(huge_chocolate_pizza, 'PepperoniPizza'))
+            print(env.value_is_a(huge_chocolate_pizza, 'Pizza'))
+            print(env.value_is_a(huge_chocolate_pizza, 'Food'))
+            print(env.value_is_a(huge_chocolate_pizza, 'Dessert'))
+            print(env.value_is_a(huge_chocolate_pizza, 'ChocolateItem'))
+            print(env.value_is_a(huge_chocolate_pizza, 'ChocolatePizza'))
+            print("")
         else:
             # Run a program from a text file:
             file_name = first_arg

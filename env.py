@@ -1,7 +1,7 @@
 from exception import throw_exception
 from builtin_function import int_div, make_list
 from execution import eval_parentheses
-from type_tree import get_type, generate_default_tree
+from type_tree import get_type, generate_default_tree, TypeTree
 
 import re
 
@@ -126,6 +126,13 @@ class Environment(object):
             return False
         tree = self.all_types[wanted_kind]
         return tree.categorizes(kind)
+    
+    def new_type(self, parents, child):
+        child_tree = TypeTree(child)
+        self.all_types[child] = child_tree
+        for parent in parents:
+            parent_tree = self.all_types[parent]
+            parent_tree.add_subclass(child_tree)
 
     def __repr__(self):
         return str(self.frames)

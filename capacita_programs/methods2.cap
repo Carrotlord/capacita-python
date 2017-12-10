@@ -1,0 +1,33 @@
+class Person(name, age, height)
+    sub changeName(n)
+        name = n
+    end
+    
+    sub advance()
+        age = age + 1
+    end
+    
+    sub grow()
+        height = height + 2
+    end
+    
+    sub toString()
+        return name + " is " + age + " years old, and is " + height + " cm tall."
+    end
+end
+
+bob = Person("Bob", 25, 170)
+alice = Person("Alice", 24, 165)
+print bob.toString()
+bob.advance()
+bob.advance()
+bob.grow()
+print bob.toString()
+print alice.toString()
+alice.changeName("Allison")
+alice.advance()
+alice.grow()
+print alice.toString()
+print bob.toString()
+print alice
+print bob

@@ -26,6 +26,11 @@ class Environment(object):
             return self.this_pointers[-1]
         return {}
     
+    def pop_this(self):
+        if len(self.this_pointers) > 0:
+            return self.this_pointers.pop()
+        return {}
+    
     def new_frame(self):
         self.frames.append({})
     
@@ -38,8 +43,9 @@ class Environment(object):
                 throw_exception('MismatchedType', str(value) + ' is not of type ' + kind +
                                 '\nType tree is: ' + str(self.all_types))
             var = match_obj.group(2)
-            if var in self.frames[-1]:
-                type_tuple = self.frames[-1][var]
+            frame_or_this = self.get_frame_or_this(var)
+            if var in frame_or_this:
+                type_tuple = frame_or_this[var]
                 if type(type_tuple) is tuple:
                     existing_kind = type_tuple[0]
                     if kind != existing_kind:
@@ -47,41 +53,54 @@ class Environment(object):
                 else:
                     throw_exception('AlreadyAnyType',
                         var + ' already has type Any and cannot be further restricted.')
-            self.frames[-1][var] = (kind, value)
+            frame_or_this[var] = (kind, value)
         else:
             # Is this an assignment to an index?
             match_obj = re.match(r'(\$?[A-Za-z_][A-Za-z_0-9]*)\[(.+)\]', var_name)
             if match_obj:
                 indexable = match_obj.group(1)
                 index = eval_parentheses(match_obj.group(2), self)
-                container = self.frames[-1][indexable]
+                frame_or_this = self.get_frame_or_this(indexable)
+                container = frame_or_this[indexable]
                 if type(container) is tuple:
                     # Modify the iterable contained within the tuple
                     iterable = container[1]
                     iterable[index] = value
                 else:
                     # This iterable has no type restriction
-                    self.frames[-1][indexable][index] = value
+                    frame_or_this[indexable][index] = value
             else:
                 # Is this an attribute of an object?
                 match_obj = re.match(r'(\$?[A-Za-z_][A-Za-z_0-9]*)\.(\$?[A-Za-z_][A-Za-z_0-9]*)', var_name)
                 if match_obj:
                     obj = match_obj.group(1)
                     attr = match_obj.group(2)
-                    self.frames[-1][obj][attr] = value
+                    frame_or_this = self.get_frame_or_this(obj)
+                    frame_or_this[obj][attr] = value
                 else:
-                    if var_name in self.frames[-1] and type(self.frames[-1][var_name]) is tuple:
+                    frame_or_this = self.get_frame_or_this(var_name)
+                    if var_name in frame_or_this and type(frame_or_this[var_name]) is tuple:
                         # There is an existing type restriction
-                        kind = self.frames[-1][var_name][0]
+                        kind = frame_or_this[var_name][0]
                         if not self.value_is_a(value, kind):
                             throw_exception('MismatchedType', str(value) + ' is not of type ' + kind +
                                             '\nType tree is: ' + str(self.all_types))
-                        self.frames[-1][var_name] = (kind, value)
+                        frame_or_this[var_name] = (kind, value)
                     else:
                         # There is no type restriction given
-                        self.frames[-1][var_name] = value
+                        frame_or_this[var_name] = value
+    
+    def get_frame_or_this(self, var_name):
+        last_this = self.last_this()
+        if var_name in last_this:
+            return last_this
+        return self.frames[-1]
     
     def update(self, var_name, value):
+        # TODO : env.update(...) should be removed in favor
+        # of transforms such as (age += 1) -> (age = age + 1)
+        # Therefore the added functionality of env.assign(...)
+        # will apply to these statements.
         if var_name in self.frames[-1]:
             self.frames[-1][var_name] = value
         else:

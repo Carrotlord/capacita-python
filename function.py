@@ -119,6 +119,8 @@ class Function(object):
         result = execute_lines(self.lines, env)
         # Remove the stack frame created by this function:
         env.pop()
+        # Remove the last this pointer:
+        env.pop_this()
         return result
     
     def supply(self, env):

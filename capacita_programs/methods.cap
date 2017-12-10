@@ -16,3 +16,29 @@ c = ComplexNumber(1, 2)
 print c.toString()
 c.changeContents(3, 4)
 print c.toString()
+
+class ComplexNumberB(r, i) inherits Number
+    real = r
+    imag = i
+    
+    sub toString()
+        return "" + real + "+" + imag + "i"
+    end
+    
+    sub changeContents(r, i)
+        real = r
+        imag = i
+    end
+    
+    sub modify(r, i)
+    end
+end
+
+c = ComplexNumberB(5, 6)
+print c.toString()
+c.changeContents(7, 8)
+print c.toString()
+c.modify(9, 10)
+print c.r
+print c.i
+print c.toString()

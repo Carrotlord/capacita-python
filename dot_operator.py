@@ -18,4 +18,7 @@ def dot_operator(obj, name, env):
                 obj.append(new_elem)
                 return obj
             return BuiltinFunction('list', ['new_elem'], func_push)
+    elif type(obj) is dict:
+        env.new_this(obj)
+        return obj[name]
     throw_exception('NoSuchAttribute', str(obj) + ' object has no attribute ' + name)

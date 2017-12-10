@@ -1,0 +1,18 @@
+class ComplexNumber(r, i) inherits Number
+    real = r
+    imag = i
+    
+    sub toString()
+        return "" + real + "+" + imag + "i"
+    end
+    
+    sub changeContents(a, b)
+        real = a
+        imag = b
+    end
+end
+
+c = ComplexNumber(1, 2)
+print c.toString()
+c.changeContents(3, 4)
+print c.toString()

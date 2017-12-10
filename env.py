@@ -16,6 +16,15 @@ class Environment(object):
         # Save names that shouldn't be replicated in subsequent stack frames
         self.default_names = self.frames[-1].keys()
         self.all_types = generate_default_tree()
+        self.this_pointers = []
+    
+    def new_this(self, obj):
+        self.this_pointers.append(obj)
+    
+    def last_this(self):
+        if len(self.this_pointers) > 0:
+            return self.this_pointers[-1]
+        return {}
     
     def new_frame(self):
         self.frames.append({})
@@ -79,6 +88,9 @@ class Environment(object):
             throw_exception('UndefinedVariable', var_name + ' is not defined.')
         
     def get(self, var_name):
+        last_this = self.last_this()
+        if var_name in last_this:
+            return last_this[var_name]
         i = -1
         while i >= -len(self.frames):
             if var_name in self.frames[i]:

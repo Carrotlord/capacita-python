@@ -1,0 +1,40 @@
+class Point(a, b)
+    x = a
+    y = b
+    
+    sub moveLeft()
+        this.x = this.x - 1
+    end
+    
+    sub moveRight()
+        this.x = this.x + 1
+    end
+    
+    sub moveUp()
+        this.y = this.y + 1
+    end
+    
+    sub moveDown()
+        this.y = this.y - 1
+    end
+    
+    sub display()
+        show "["
+        show this.x
+        show ", "
+        show this.y
+        print "]"
+    end
+end
+
+Point p = Point(10, 20)
+p.moveLeft()
+p.moveLeft()
+p.moveUp()
+p.display()
+print p
+p.moveRight()
+p.moveDown()
+p.moveRight()
+p.display()
+print p

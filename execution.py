@@ -397,6 +397,9 @@ def convert_value(val, env):
     if re.match(r'\$?[A-Za-z_][A-Za-z_0-9]*', val):
         # Grab a variable's value:
         return env.get(val)
+    if re.match(r'#\$?[A-Za-z_][A-Za-z_0-9]*', val):
+        # This is a tag
+        return val
     if len(val) >= 2:
         if val[0] == "'" and val[-1] == "'":
             return '"{0}"'.format(val[1:-1])

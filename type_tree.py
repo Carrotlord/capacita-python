@@ -43,7 +43,10 @@ def get_type(value):
     elif kind is bool:
         return 'Boolean'
     elif kind is str:
-        return 'String'
+        if value.startswith('#'):
+            return 'Tag'
+        else:
+            return 'String'
     elif kind is list:
         return 'List'
     if value.__class__ is Ratio:
@@ -68,6 +71,7 @@ def generate_default_tree():
     doubles = TypeTree('Double')
     bools = TypeTree('Boolean')
     strs = TypeTree('String')
+    tags = TypeTree('Tag')
     lists = TypeTree('List')
     ratios = TypeTree('Ratio', 'Rational')
     nulls = TypeTree('Null', 'Void')
@@ -86,6 +90,7 @@ def generate_default_tree():
     objects = TypeTree('Object')
     objects.add_subclass(numbers)
     objects.add_subclass(sequences)
+    objects.add_subclass(tags)
     objects.add_subclass(bools)
     objects.add_subclass(nulls)
     objects.add_subclass(functions)
@@ -97,6 +102,7 @@ def generate_default_tree():
         'Double': doubles,
         'Boolean': bools,
         'String': strs,
+        'Tag': tags,
         'List': lists,
         'Ratio': ratios,
         'Rational': ratios,

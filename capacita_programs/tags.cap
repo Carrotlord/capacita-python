@@ -1,0 +1,30 @@
+Tag t = #something
+print t
+
+class Piece(color, type)
+    sub isBlack()
+        return color == #black
+    end
+    
+    sub isWhite()
+        return color == #white
+    end
+    
+    sub isEmpty()
+        return color == #neither and type == #empty
+    end
+    
+    sub equals(other)
+        return color == other.color and type == other.type
+    end
+end
+
+white_rook = Piece(#white, #rook)
+black_rook = Piece(#black, #rook)
+white_bishop = Piece(#white, #bishop)
+black_bishop = Piece(#black, #bishop)
+nothing = Piece(#neither, #empty)
+print white_rook.isEmpty()
+print nothing.isEmpty()
+print white_rook.equals(white_bishop)
+print black_rook.equals(black_rook)

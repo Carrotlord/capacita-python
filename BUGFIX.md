@@ -5,6 +5,7 @@
 - Booleans can be compared with ``>`` and ``<``, such as ``true > false``, which should throw an exception instead. Note that in Python, ``True > False`` resolves to ``True``.
 - Dissimilar types can be compared, such as ``2 < "hello"`` resolving to ``true``. This should throw an exception instead. This is due to a quirk of Python 2.x allowing dissimilar comparisons.
 - Expressions such as ``[[1,2][3,4]]`` are transformed into ``[[1, 2], [3, 4]]``.
+- Since objects can now refer to themselves with ``this``, there might be cases where the user performs ``return this``, which will have unexpected behavior because this is also the way new objects are generated.
 
 ## Fixed
 

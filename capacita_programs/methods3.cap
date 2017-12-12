@@ -40,10 +40,10 @@ class Child(name)
         print name + " studies at " + location + "."
     end
     
-    sub daily(parent, self)
+    sub daily(parent)
         bike("school")
         study()
-        parent.call(self)
+        parent.call(this)
         bike("home")
         study()
     end
@@ -54,4 +54,4 @@ bob = Parent("Bob")
 carol = Child("Carol")
 alice.daily()
 bob.daily()
-carol.daily(alice, carol)
+carol.daily(alice)

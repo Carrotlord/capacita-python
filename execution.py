@@ -33,7 +33,10 @@ def execute_lines(lines, env):
                     # Do not use env.pop() because the function
                     # will automatically remove the stack frame
                     # upon completion.
-                    return env.last()
+                    obj = env.last()
+                    # Allow the object to refer to itself
+                    obj['this'] = obj
+                    return obj
                 else:
                     value = eval_parentheses(directive[1], env)
                     if str(value).startswith('<function'):

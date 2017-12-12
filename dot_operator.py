@@ -19,6 +19,9 @@ def dot_operator(obj, name, env):
                 return obj
             return BuiltinFunction('list', ['new_elem'], func_push)
     elif type(obj) is dict:
+        # This is a method call
         env.new_this(obj)
-        return obj[name]
+        method = obj[name]
+        method.activate_method()
+        return method
     throw_exception('NoSuchAttribute', str(obj) + ' object has no attribute ' + name)

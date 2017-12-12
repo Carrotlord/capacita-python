@@ -1,0 +1,57 @@
+class Human()
+end
+
+class Parent(name)
+    location = "home"
+    
+    sub drive(place)
+        print name + " drives to " + place + "."
+        location = place
+    end
+    
+    sub where()
+        return location
+    end
+    
+    sub work()
+        print name + " does work."
+    end
+    
+    sub daily()
+        drive("work")
+        work()
+        drive("home")
+    end
+    
+    sub call(person)
+        print person.name + " calls " + name + "."
+    end
+end
+
+class Child(name)
+    location = "home"
+    
+    sub bike(place)
+        print name + " rides a bicycle to " + place + "."
+        location = place
+    end
+    
+    sub study()
+        print name + " studies at " + location + "."
+    end
+    
+    sub daily(parent, self)
+        bike("school")
+        study()
+        parent.call(self)
+        bike("home")
+        study()
+    end
+end
+
+alice = Parent("Alice")
+bob = Parent("Bob")
+carol = Child("Carol")
+alice.daily()
+bob.daily()
+carol.daily(alice, carol)

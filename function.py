@@ -96,6 +96,10 @@ class Function(object):
         # which is null for 'void' functions.
         self.lines = prepare_program(prgm) + ['return null']
         self.supplied_env = supplied_env
+        self.is_method = False
+    
+    def activate_method(self):
+        self.is_method = True
         
     def execute(self, arg_values, env):
         """
@@ -120,7 +124,8 @@ class Function(object):
         # Remove the stack frame created by this function:
         env.pop()
         # Remove the last this pointer:
-        env.pop_this()
+        if self.is_method:
+            env.pop_this()
         return result
     
     def supply(self, env):

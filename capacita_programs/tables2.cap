@@ -1,0 +1,7 @@
+Table t = {"Bob", 1 | "Alice", 2}
+t["Eve"] = 3
+Sequence s = t
+print s
+print t
+s = "something"
+print s

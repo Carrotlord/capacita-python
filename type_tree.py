@@ -1,4 +1,5 @@
 from ratio import Ratio
+from table import Table
 from exception import throw_exception
 
 class TypeTree(object):
@@ -51,6 +52,8 @@ def get_type(value):
         return 'List'
     if value.__class__ is Ratio:
         return 'Ratio'
+    elif value.__class__ is Table:
+        return 'Table'
     elif value is None:
         return 'Null'
     elif kind is dict:
@@ -73,6 +76,7 @@ def generate_default_tree():
     strs = TypeTree('String')
     tags = TypeTree('Tag')
     lists = TypeTree('List')
+    tables = TypeTree('Table')
     ratios = TypeTree('Ratio', 'Rational')
     nulls = TypeTree('Null', 'Void')
     functions = TypeTree('Function')
@@ -86,6 +90,7 @@ def generate_default_tree():
     sequences = TypeTree('Sequence', 'Iterable')
     sequences.add_subclass(strs)
     sequences.add_subclass(lists)
+    sequences.add_subclass(tables)
     
     objects = TypeTree('Object')
     objects.add_subclass(numbers)
@@ -103,6 +108,7 @@ def generate_default_tree():
         'Boolean': bools,
         'String': strs,
         'Tag': tags,
+        'Table': tables,
         'List': lists,
         'Ratio': ratios,
         'Rational': ratios,

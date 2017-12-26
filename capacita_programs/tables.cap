@@ -1,0 +1,23 @@
+t = {1, 2 | 3, 4 | 5, 6}
+t[7] = 8
+t["pie"] = "blueberry"
+t[#x] = #y
+print t
+print t[1]
+print t["pie"]
+print t[#x]
+print t.length()
+print t.keys()
+t[[1, 2, 3]] = [4, 5, 6]
+t[[1, 2]] = [10, 20, 30]
+x = [1, 2]
+print t[x]
+x.push(3)
+print t[x]
+print t[[1,2,3]]
+print t[[1,2]]
+print t.hasKey([1, 2])
+print t.hasKey([1, 2, 3, 4])
+print t.hasKey(#x)
+print t.hasKey(#z)
+print t

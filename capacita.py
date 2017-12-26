@@ -176,6 +176,9 @@ def main():
             print(env.value_is_a(huge_chocolate_pizza, 'ChocolateItem'))
             print(env.value_is_a(huge_chocolate_pizza, 'ChocolatePizza'))
             print("")
+        elif first_arg == '--test6':
+            ast = AST('{1, 2 | 3, 4}')
+            print(ast.parse())
         else:
             # Run a program from a text file:
             file_name = first_arg

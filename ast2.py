@@ -71,15 +71,16 @@ class AST(object):
         
     def split_list_elems(self):
         """
-        Splits apart list literals into brackets, commas, and elements.
+        Splits apart list and table literals into brackets, commas, and elements.
         e.g. '[1, 2+3, 4*5]' -> ['[', '1', ',', '2+3', ',', '4*5', ']']
+        '{1, 2 | 3, 4}' -> ['{', '1', ',', '2', '|', '3', ',', '4', '}']
         """
         def append_if_not_empty(lst, elem):
             if len(elem) > 0:
                 lst.append(elem)
         results = []
         buffer = ''
-        delimiters = ['[', ']', ',']
+        delimiters = ['[', ']', ',', '{', '}', '|']
         i = 0
         while i < len(self.expr):
             char = self.expr[i]

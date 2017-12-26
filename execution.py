@@ -8,6 +8,7 @@ from console import display
 from exception import throw_exception
 from strtools import find_matching
 from builtin_function import BuiltinFunction
+from table import Table
 
 def dot_operator(obj, name, env):
     if type(obj) is str and re.match(r'\$?[A-Za-z_][A-Za-z_0-9]*', obj):
@@ -36,6 +37,13 @@ def dot_operator(obj, name, env):
             return BuiltinFunction('constant', [], lambda: obj + 1)
         elif name == 'previous':
             return BuiltinFunction('constant', [], lambda: obj - 1)
+    elif obj.__class__ is Table:
+        if name == 'length' or name == 'size':
+            return BuiltinFunction('constant', [], lambda: len(obj))
+        elif name == 'keys':
+            return BuiltinFunction('constant', [], lambda: obj.keys())
+        elif name == 'hasKey':
+            return BuiltinFunction('hasKey', ['key'], lambda key: obj.has_key(key))
     throw_exception('NoSuchAttribute', str(obj) + ' object has no attribute ' + name)
 
 def execute_lines(lines, env):
@@ -141,6 +149,24 @@ def evaluate_list(tokens, env):
                 lst = evaluate_list(lst, env)
             results.append(lst)
             i += j
+        elif token == '{':
+            # TODO : allow nested lists and tables inside table literals
+            j = find_matching(tokens[i + 1:], '{', '}')
+            table = Table()
+            is_key = True
+            last_key = None
+            last_val = None
+            for elem in tokens[i+1 : i+j]:
+                if elem not in [',', '|']:
+                    if is_key:
+                        last_key = eval_parentheses(elem, env)
+                        is_key = False
+                    else:
+                        last_val = eval_parentheses(elem, env)
+                        is_key = True
+                        table.put(last_key, last_val)
+            results.append(table)
+            i += j
         else:
             results.append(token)
         i += 1
@@ -161,6 +187,10 @@ def index_lists(tokens, env):
             index = get_name(current[0], env)
             if type(index) is int:
                 tokens[i-1 : i+1] = [prev[index]]
+        elif prev.__class__ is Table and type(current) is list and \
+             len(current) == 1:
+             key = get_name(current[0], env)
+             tokens[i-1 : i+1] = [prev.get(key)]
         else:
             i += 1
     return tokens
@@ -181,7 +211,7 @@ def evaluate_operators(tokens, indices, env):
     indices where the operators are located, and
     environment env.
     """
-    brackets = ['[', ']']
+    brackets = ['[', ']', '{', '}']
     for idx in indices:
         # TODO : checking bounds should no longer be
         # necessary after fixing the xrange issue.

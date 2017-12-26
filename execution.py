@@ -7,7 +7,36 @@ from ratio import Ratio
 from console import display
 from exception import throw_exception
 from strtools import find_matching
-from dot_operator import dot_operator
+from builtin_function import BuiltinFunction
+
+def dot_operator(obj, name, env):
+    if type(obj) is str and re.match(r'\$?[A-Za-z_][A-Za-z_0-9]*', obj):
+        obj = env.get(obj)
+    obj = convert_value(obj, env)
+    if type(obj) is list:
+        if name == 'length' or name == 'size':
+            length = len(obj)
+            return BuiltinFunction('constant', [], lambda: length)
+        elif name == 'pop':
+            last_elem = obj.pop()
+            return BuiltinFunction('constant', [], lambda: last_elem)
+        elif name == 'push':
+            def func_push(new_elem):
+                obj.append(new_elem)
+                return obj
+            return BuiltinFunction('list', ['new_elem'], func_push)
+    elif type(obj) is dict:
+        # This is a method call
+        env.new_this(obj)
+        method = obj[name]
+        method.activate_method()
+        return method
+    elif type(obj) in [int, float]:
+        if name == 'next':
+            return BuiltinFunction('constant', [], lambda: obj + 1)
+        elif name == 'previous':
+            return BuiltinFunction('constant', [], lambda: obj - 1)
+    throw_exception('NoSuchAttribute', str(obj) + ' object has no attribute ' + name)
 
 def execute_lines(lines, env):
     """

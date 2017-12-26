@@ -15,7 +15,8 @@ class Table(object):
         self.ordered_keys = []
     
     def put(self, key, value):
-        self.ordered_keys.append(key)
+        if not self.has_key(key):
+            self.ordered_keys.append(key)
         if hashable(key):
             self.hashable_pairs[key] = value
         else:

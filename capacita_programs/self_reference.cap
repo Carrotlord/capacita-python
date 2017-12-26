@@ -1,0 +1,17 @@
+class Cons(car, cdr)
+end
+
+x = Cons(1, 2)
+x.cdr = x
+print x
+
+list = [1, 2, 3, 4]
+list[3] = list
+print list
+
+table = {1, 2 | 3, 4}
+table[3] = table
+table[table] = 100
+print table
+table[table] = table
+print table

@@ -52,6 +52,8 @@ def repl():
         expr = expr.strip()
         if expr == 'exit()':
             break
+        elif len(expr) == 0:
+            continue
         elif expr == ':program':
             prgm = store_program()
             execute_program(prgm)

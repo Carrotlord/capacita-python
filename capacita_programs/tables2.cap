@@ -5,3 +5,7 @@ print s
 print t
 s = "something"
 print s
+t["Bob"] = 100
+t["Alice"] = 200
+t["Eve"] = 297 + (t["Eve"])
+print t

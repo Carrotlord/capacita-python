@@ -15,12 +15,25 @@ class Table(object):
         self.ordered_keys = []
     
     def put(self, key, value):
-        if not self.has_key(key):
+        has_key = self.has_key(key)
+        if not has_key:
             self.ordered_keys.append(key)
         if hashable(key):
             self.hashable_pairs[key] = value
         else:
-            self.unhashable_pairs.append( (key, value) )
+            if has_key:
+                self.modify_existing_unhashable(key, value)
+            else:
+                self.unhashable_pairs.append( (key, value) )
+    
+    def modify_existing_unhashable(self, key, value):
+        for i in xrange(len(self.unhashable_pairs)):
+            k, v = self.unhashable_pairs[i]
+            if k == key:
+                self.unhashable_pairs[i] = (key, value)
+                return
+        throw_exception('ModifyingKeyNotFound', 'Trying to modify key ' +
+                        str(key) + ' that does not exist')
     
     def get(self, key):
         if hashable(key) and key in self.hashable_pairs:

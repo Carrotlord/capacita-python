@@ -21,6 +21,18 @@ def tokenize_statement(stmt):
         return [':jf', stmt[4:]]
     elif stmt.startswith(':jt '):
         return [':jt', stmt[4:]]
+    elif stmt == ':skiptoelse':
+        return [':skiptoelse']
+    elif stmt == 'try':
+        return ['try']
+    elif stmt == 'end':
+        return ['end']
+    elif stmt == 'else':
+        return ['else']
+    elif stmt.startswith('catch'):
+        return ['catch', stmt[6:]]
+    elif stmt.startswith('throw'):
+        return ['throw', stmt[6:]]
     for i in range(len(stmt)):
         for op in operators:
             if stmt[i:i+len(op)] == op:

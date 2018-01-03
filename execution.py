@@ -9,6 +9,7 @@ from exception import throw_exception
 from strtools import find_matching
 from builtin_function import BuiltinFunction
 from table import Table
+from control_flow import find_next_end_else
 
 def dot_operator(obj, name, env):
     if type(obj) is str and re.match(r'\$?[A-Za-z_][A-Za-z_0-9]*', obj):
@@ -64,6 +65,10 @@ def execute_lines(lines, env):
             elif (cond_flag and directive[0] == ':jt') or \
                  ((not cond_flag) and directive[0] == ':jf'):
                 prgm_counter = int(directive[1])
+            elif directive[0] == ':skiptoelse':
+                # Nothing was thrown in this try clause
+                _, j = find_next_end_else(lines, prgm_counter + 1, False)
+                prgm_counter = j + 1
             elif directive[0] == 'return':
                 if directive[1] == 'this':
                     # Create a user-defined object.
@@ -79,15 +84,62 @@ def execute_lines(lines, env):
                     if str(value).startswith('<function'):
                         value = value.supply(env)
                     return value
+            elif directive[0] == 'try':
+                env.exception_push(prgm_counter)
+                prgm_counter += 1
+            elif directive[0] == 'throw':
+                prgm_counter = env.exception_pop()
+                if prgm_counter is None:
+                    throw_exception('UncaughtException', 'Thrown value ' + str(directive[1:]))
+                else:
+                    # Look for a matching catch statement
+                    prgm_counter = find_catch(directive, lines, prgm_counter, env)
+            elif directive[0] in ['catch', 'else']:
+                kind, j = find_next_end_else(lines, prgm_counter + 1, True)
+                # Travel to the next end
+                prgm_counter = j + 1
+            elif directive[0] == 'end':
+                # This is an isolated end statement. Ignore it.
+                prgm_counter += 1
             else:
                 prgm_counter += 1
         else:
             prgm_counter += 1
+
+def find_catch(directive_list, lines, prgm_counter, env):
+    """
+    Finds a matching catch statement for an object that was thrown.
+    Returns the program counter for the catch statement, plus 1.
+    """
+    # TODO : allow for nested try-catch statements
+    thrown = eval_parentheses(directive_list[1], env)
+    while prgm_counter < len(lines):
+        line = lines[prgm_counter]
+        if line.startswith('catch '):
+            caught = line[6:].split(' ')
+            if len(caught) == 1:
+                # This will catch any object thrown:
+                var = caught[0]
+                env.assign(var, thrown)
+                return prgm_counter + 1
+            else:
+                kind, var = caught
+                if env.value_is_a(thrown, kind):
+                    env.assign(var, thrown)
+                    return prgm_counter + 1
+        elif line == 'else' or line == 'end':
+            # Nothing was thrown, so execute else clause
+            env.exception_pop()
+            return prgm_counter + 1
+        prgm_counter += 1
+    throw_exception('CannotFinishTryCatch', str(lines))
             
 def is_statement(query):
     """Returns True if query is a statement, else False."""
     if query.startswith('print ') or query.startswith('show ') or \
-       query.startswith('return ') or query.startswith(':'):
+       query.startswith('return ') or query.startswith(':') or \
+       query == 'try' or query == 'end' or query == 'else' or \
+       query.startswith('throw ') or query.startswith('catch '):
         return True
     comparators = ['==', '!=', '>=', '<=']
     ast = AST(query)
@@ -99,7 +151,8 @@ def is_statement(query):
 
 def execute_statement(stmt, env):
     """Executes a statement in a given environment."""
-    directives = [':cond', ':j', ':jt', ':jf', 'return']
+    directives = [':cond', ':j', ':jt', ':jf', 'return', 'try', 'throw',
+                  'catch', 'end', 'else', ':skiptoelse']
     stmt = stmt.strip()
     if len(stmt) == 0:
         return

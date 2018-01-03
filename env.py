@@ -17,6 +17,15 @@ class Environment(object):
         self.default_names = self.frames[-1].keys()
         self.all_types = generate_default_tree()
         self.this_pointers = []
+        self.exception_stack = []
+    
+    def exception_push(self, prgm_counter):
+        self.exception_stack.append(prgm_counter)
+    
+    def exception_pop(self):
+        if len(self.exception_stack) == 0:
+            return None
+        return self.exception_stack.pop()
     
     def new_this(self, obj):
         self.this_pointers.append(obj)

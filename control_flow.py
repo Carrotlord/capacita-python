@@ -2,9 +2,10 @@ from exception import throw_exception
 
 import re
 
-def find_next_end_else(lines, start, end_only=False):
+def find_next_end_else(lines, start, end_only=False, allow_catch=False):
     """
     Returns the corresponding end-statement or else-statement
+    or catch-statement
     for the given clause-opener (which can be an if-statement,
     while-statement, etc.)
     Skips over end and else statements that are part of nested clauses.
@@ -22,9 +23,12 @@ def find_next_end_else(lines, start, end_only=False):
                 open_clauses -= 1
         elif (not end_only) and line == 'else' and open_clauses == 0:
             return ['else', i]
+        elif (not end_only) and allow_catch and \
+             line.startswith('catch ') and open_clauses == 0:
+            return ['catch', i]
         else:
             for opener in openers:
-                if line.startswith(opener):
+                if line.startswith(opener) or line == 'try':
                     open_clauses += 1
                     break
         i += 1
@@ -202,10 +206,26 @@ def prepare_control_flow(lines):
                 index_var_num += 1
             i += 1
         return lines
+    def insert_skips(lines):
+        """
+        Insert :skiptoelse statements into try-catch blocks
+        """
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            if line == 'try':
+                kind, j = find_next_end_else(lines, i + 1, False, True)
+                if kind != 'catch':
+                    throw_exception('CannotFindCatch', 'Line found that was not catch statement: ' + str(lines[j]))
+                catch_statement = lines[j]
+                lines[j : j+1] = [':skiptoelse', catch_statement]
+            i += 1
+        return lines
     lines = prepare_else_ifs(lines)
     lines = prepare_breaks_continues(lines)
     lines = replace_for_each(lines)
     lines = replace_for(lines)
+    lines = insert_skips(lines)
     i = 0
     label_counter = 0
     while i < len(lines):

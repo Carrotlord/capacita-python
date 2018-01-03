@@ -1,0 +1,55 @@
+try
+    throw 2 + 2
+catch Int i
+    print "Caught " + i
+end
+
+try
+    throw 1.0 + 1.5 * 0.1
+catch Int i
+    print "Caught integer " + i
+catch String s
+    print "Caught string " + s
+catch Double d
+    print "Caught double " + d
+catch Table t
+    print "Caught table " + t
+else
+    print "Nothing caught"
+end
+
+try
+    throw {1, 2 | 3, 4}
+catch Int i
+    print "Caught integer " + i
+catch String s
+    print "Caught string " + s
+catch Double d
+    print "Caught double " + d
+catch Table t
+    print "Caught table " + t
+else
+    print "Nothing caught"
+end
+
+try
+    print "Nothing thrown"
+catch Int i
+    print "Caught integer " + i
+catch String s
+    print "Caught string " + s
+catch Double d
+    print "Caught double " + d
+catch Table t
+    print "Caught table " + t
+else
+    print "Nothing caught"
+end
+
+try
+    throw 15
+catch String s
+    print "not printed"
+end
+
+throw 5

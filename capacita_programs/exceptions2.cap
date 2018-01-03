@@ -1,0 +1,13 @@
+sub f(x, y)
+    if y == 0
+        throw "divide by zero exception"
+    else
+        return x / y
+    end
+end
+
+try
+    a = f(1, 0)
+catch String s
+    print s
+end

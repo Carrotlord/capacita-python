@@ -10,6 +10,7 @@ from strtools import find_matching
 from builtin_function import BuiltinFunction
 from table import Table
 from control_flow import find_next_end_else
+from trigger import Trigger
 
 def dot_operator(obj, name, env):
     if type(obj) is str and re.match(r'\$?[A-Za-z_][A-Za-z_0-9]*', obj):
@@ -92,8 +93,14 @@ def execute_lines(lines, env):
                 if prgm_counter is None:
                     throw_exception('UncaughtException', 'Thrown value ' + str(directive[1:]))
                 else:
+                    original_counter = prgm_counter
                     # Look for a matching catch statement
                     prgm_counter = find_catch(directive, lines, prgm_counter, env)
+                    if prgm_counter is None:
+                        # We can't find a catch statement.
+                        # Let the exception bubble up from its current scope.
+                        env.exception_push(original_counter)
+                        return Trigger(directive[1])
             elif directive[0] in ['catch', 'else']:
                 kind, j = find_next_end_else(lines, prgm_counter + 1, True)
                 # Travel to the next end
@@ -132,7 +139,8 @@ def find_catch(directive_list, lines, prgm_counter, env):
             env.exception_pop()
             return prgm_counter + 1
         prgm_counter += 1
-    throw_exception('CannotFinishTryCatch', str(lines))
+    # Cannot finish try catch:
+    return None
             
 def is_statement(query):
     """Returns True if query is a statement, else False."""
@@ -173,7 +181,10 @@ def execute_statement(stmt, env):
             val = env.get(tokens[0])
             env.update(tokens[0], plus(val, eval_parentheses(tokens[2], env)))
     else:
-        eval_parentheses(stmt, env)
+        result = eval_parentheses(stmt, env)
+        # An exception was thrown
+        if result.__class__ is Trigger:
+            return ['throw', result.get_thrown()]
     # No directive to be processed:
     return None
 
@@ -353,6 +364,8 @@ def eval_parentheses(expr, env):
     ast = AST(expr)
     tokens = ast.parse()
     tokens = call_functions(tokens, env)
+    if tokens.__class__ is Trigger:
+        return tokens
     # For function values, do not transform the value to a string:
     if len(tokens) == 1 and (str(tokens[0]).startswith('<function') or \
         type(tokens[0]) is list or type(tokens[0]) is dict):
@@ -424,6 +437,9 @@ def call_functions(tokens, env):
             else:
                 func_obj = env.get(func_name)
             return_val = func_obj.execute(arg_values, env)
+            # Was an exception thrown during this function?
+            if return_val.__class__ is Trigger:
+                return return_val
             # Handle function values separately from normal values
             str_val = str(return_val)
             if (len(str_val) > 0 and str_val.startswith('<function')) or \

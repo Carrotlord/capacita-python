@@ -181,6 +181,9 @@ def main():
         elif first_arg == '--test6':
             ast = AST('{1, 2 | 3, 4}')
             print(ast.parse())
+        elif first_arg == '--test7':
+            ast = AST('throw "something"')
+            print(ast.parse())
         else:
             # Run a program from a text file:
             file_name = first_arg

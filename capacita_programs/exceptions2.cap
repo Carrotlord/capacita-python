@@ -6,8 +6,34 @@ sub f(x, y)
     end
 end
 
+sub g()
+    throw "some exception"
+end
+
+sub h(x)
+    return f(x, x)
+end
+
+try
+    f(1, 0)
+catch String s
+    print s
+end
+
+try
+    g()
+catch String s
+    print s
+end
+
+try
+    h(0.0)
+catch String s
+    print "exception during function h: " + s
+end
+
 try
     a = f(1, 0)
 catch String s
-    print s
+    print "another " + s
 end

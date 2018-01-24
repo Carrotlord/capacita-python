@@ -177,6 +177,9 @@ def execute_statement(stmt, env):
             return tokens
         elif tokens[1] == '=':
             env.assign(tokens[0], eval_parentheses(tokens[2], env))
+            last_assigned = env.get_last_assigned()
+            if last_assigned.__class__ is Trigger:
+                return ['throw', last_assigned.get_thrown()]
         elif tokens[1] == '+=':
             val = env.get(tokens[0])
             env.update(tokens[0], plus(val, eval_parentheses(tokens[2], env)))

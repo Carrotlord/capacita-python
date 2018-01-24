@@ -18,6 +18,10 @@ class Environment(object):
         self.all_types = generate_default_tree()
         self.this_pointers = []
         self.exception_stack = []
+        self.last_assigned = None
+    
+    def get_last_assigned(self):
+        return self.last_assigned
     
     def exception_push(self, prgm_counter):
         self.exception_stack.append(prgm_counter)
@@ -44,6 +48,7 @@ class Environment(object):
         self.frames.append({})
     
     def assign(self, var_name, value):
+        self.last_assigned = value
         # Check for a type restriction
         match_obj = re.match(r'([A-Za-z_][A-Za-z_0-9]*) (\$?[A-Za-z_][A-Za-z_0-9]*)', var_name)
         if match_obj:

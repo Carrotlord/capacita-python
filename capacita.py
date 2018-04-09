@@ -21,6 +21,8 @@ from execution import execute_statement, \
                       is_statement
 from function import extract_functions
 
+import tests
+
 def execute_program(prgm):
     """Executes a program given as a string."""
     prgm, env = extract_functions(prgm)
@@ -184,6 +186,8 @@ def main():
         elif first_arg == '--test7':
             ast = AST('throw "something"')
             print(ast.parse())
+        elif first_arg == '--test-all':
+            tests.test_all('capacita_programs')
         else:
             # Run a program from a text file:
             file_name = first_arg

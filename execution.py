@@ -335,6 +335,8 @@ def evaluate_operators(tokens, indices, env):
             tokens[idx-1 : idx+2] = [left or right]
         elif op == ' xor ':
             tokens[idx-1 : idx+2] = [(left and not right) or ((not left) and right)]
+        elif op == 'not ':
+            tokens[idx : idx+2] = [not right]
         elif op == '.':
             tokens[idx-1 : idx+2] = [left[right]]
     stage = 0

@@ -186,6 +186,10 @@ def main():
         elif first_arg == '--test7':
             ast = AST('throw "something"')
             print(ast.parse())
+        elif first_arg == '--test8':
+            ast = AST('true and not false')
+            print(ast.parse())
+            print(ast.collapse_indices(ast.build_indices()))
         elif first_arg == '--test-all':
             tests.test_all('capacita_programs')
         else:

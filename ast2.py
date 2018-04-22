@@ -49,10 +49,11 @@ class AST(object):
             '+': 5, '-': 5,
             '==': 6, '!=': 6, '>=': 6, '<=': 6,
             '>': 6, '<': 6,
-            ' and ': 7, ' or ': 7, ' xor ': 7
+            'not ': 7,
+            ' and ': 8, ' or ': 8, ' xor ': 8
         }
         # Longer operators should be detected before shorter ones:
-        self.ordered_ops = [' and ', ' or ', ' xor ',
+        self.ordered_ops = [' and ', ' or ', ' xor ', 'not ',
                             '>=', '<=', '!=', '==', '<', '>',
                             '+', '-', '*', '/', '^', ':', '.']
     
@@ -190,13 +191,22 @@ class AST(object):
              -> [[], [7], [5], [1, 3]]
         """
         tokens = self.parse()
-        table = [[], [], [], [], [], [], []]
+        table = [[], [], [], [], [], [], [], []]
         i = 0
         for token in tokens:
             if token in self.precedences:
-                table[self.precedences[token] - 1].append(i)
+                if token == 'not ':
+                    table[self.precedences[token] - 1].append((i,))
+                else:
+                    table[self.precedences[token] - 1].append(i)
             i += 1
         return table
+    
+    def reduce_index(self, all, j, amount):
+        if type(all[j]) is tuple:
+            all[j] = (all[j][0] - amount,)
+        else:
+            all[j] -= amount
     
     def collapse_indices(self, index_table):
         """
@@ -217,8 +227,14 @@ class AST(object):
             for checked_index in all[i+1:]:
                 # Indices that are greater than
                 # the current should be moved over 2 slots:
-                if index < checked_index:
-                    all[j] -= 2
+                if type(index) is tuple and index[0] < checked_index:
+                    # Unary operator:
+                    self.reduce_index(all, j, 1)
+                elif index < checked_index:
+                    self.reduce_index(all, j, 2)
                 j += 1
             i += 1
+        for i in xrange(len(all)):
+            if type(all[i]) is tuple:
+                all[i] = all[i][0]
         return all

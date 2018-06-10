@@ -1,0 +1,37 @@
+class Animal()
+end
+
+class Mammal() inherits Animal
+end
+
+class Amphibian() inherits Animal
+end
+
+class Frog(name) inherits Amphibian
+end
+
+class Dog(name) inherits Mammal
+    sub speak()
+        return "Woof"
+    end
+end
+
+class Cat(name) inherits Mammal
+    sub speak()
+        return "Meow"
+    end
+end
+
+sub Mammal create(kind)
+    if kind == "cat"
+        return Cat("Henry")
+    else if kind == "dog"
+        return Dog("Fido")
+    else
+        return Frog("Alex")
+    end
+end
+
+print create("cat").speak()
+print create("dog").speak()
+print create("frog")

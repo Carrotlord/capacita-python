@@ -6,14 +6,27 @@ from execution import execute_lines
 from control_flow import find_next_end_else
 from env import Environment
 
+def extract_data(defn, kind):
+    match_obj = re.match(r'sub ([A-Za-z_][A-Za-z_0-9]* )?([A-Za-z_][A-Za-z_0-9]*)', defn)
+    if kind == 'return_type':
+        kind = match_obj.group(1)
+        if kind is None:
+            return 'Object'
+        else:
+            return kind.strip()
+    elif kind == 'func_name':
+        return match_obj.group(2)
+    return None
+
 def name_of_function(defn):
     """
     Given a function definition, returns the name of the function.
     e.g. 'sub myFunc(x, y)' -> 'myFunc'
     """
-    match_obj = re.match(r'sub ([A-Za-z_][A-Za-z_0-9]*)', defn)
-    name = match_obj.group(1)
-    return name
+    return extract_data(defn, 'func_name')
+
+def return_type_of_function(defn):
+    return extract_data(defn, 'return_type')
 
 def args_of_function(defn):
     """
@@ -68,9 +81,10 @@ def extract_functions(prgm):
         if line.startswith('sub '):
             name = name_of_function(line)
             arg_list = args_of_function(line)
+            ret_type = return_type_of_function(line)
             _, end = find_next_end_else(lines, i + 1, True)
             func_body = lines[i+1 : end]
-            env.assign(name, Function(name, arg_list, func_body))
+            env.assign(name, Function(name, arg_list, func_body, return_type=ret_type))
             # Remove the function definition from the program.
             lines[i : end+1] = []
         else:
@@ -82,7 +96,7 @@ class Function(object):
     """
     Implements a callable Capacita function.
     """
-    def __init__(self, name, args, lines, supplied_env=None):
+    def __init__(self, name, args, lines, supplied_env=None, return_type=None):
         """
         Initializes function object.
         lines are the lines of the function body
@@ -90,6 +104,9 @@ class Function(object):
         """
         self.name = name
         self.args = args
+        self.return_type = return_type
+        if self.return_type is None:
+            self.return_type = 'Object'
         prgm = '\n'.join(lines)
         prgm, self.defined_funcs = extract_functions(prgm)
         # All functions should return something,
@@ -126,7 +143,10 @@ class Function(object):
         # Remove the last this pointer:
         if self.is_method:
             env.pop_this()
-        return result
+        if env.value_is_a(result, self.return_type):
+            return result
+        else:
+            throw_exception('IncorrectReturnType', '{0} is not of type {1}'.format(result, self.return_type))
     
     def supply(self, env):
         """

@@ -1,6 +1,7 @@
 from ratio import Ratio
 from table import Table
 from exception import throw_exception
+from trigger import Trigger
 
 class TypeTree(object):
     def __init__(self, *names):
@@ -67,6 +68,8 @@ def get_type(value):
             return 'Instance'
     elif str(value).startswith('<function'):
         return 'Function'
+    elif value.__class__ is Trigger:
+        return 'Trigger'
     throw_exception('UnknownType', str(value) + ' has an unknown type.')
     
 def generate_default_tree():
@@ -81,6 +84,7 @@ def generate_default_tree():
     nulls = TypeTree('Null', 'Void')
     functions = TypeTree('Function')
     instances = TypeTree('Instance')
+    triggers = TypeTree('Trigger')
     
     numbers = TypeTree('Number')
     numbers.add_subclass(integers)
@@ -100,6 +104,7 @@ def generate_default_tree():
     objects.add_subclass(nulls)
     objects.add_subclass(functions)
     objects.add_subclass(instances)
+    objects.add_subclass(triggers)
     
     return {
         'Int': integers,
@@ -119,5 +124,6 @@ def generate_default_tree():
         'Sequence': sequences,
         'Iterable': sequences,
         'Instance': instances,
+        'Trigger': triggers,
         'Object': objects
     }

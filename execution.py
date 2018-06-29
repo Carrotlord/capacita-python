@@ -147,7 +147,8 @@ def is_statement(query):
     if query.startswith('print ') or query.startswith('show ') or \
        query.startswith('return ') or query.startswith(':') or \
        query == 'try' or query == 'end' or query == 'else' or \
-       query.startswith('throw ') or query.startswith('catch '):
+       query.startswith('throw ') or query.startswith('catch ') or \
+       query.startswith('super '):
         return True
     comparators = ['==', '!=', '>=', '<=']
     ast = AST(query)
@@ -173,6 +174,8 @@ def execute_statement(stmt, env):
                 display(eval_parentheses(tokens[1], env))
         elif tokens[0] == 'show':
             display(eval_parentheses(tokens[1], env), False)
+        elif tokens[0] == 'super':
+            env.merge(eval_parentheses(tokens[1], env))
         elif tokens[0] in directives:
             return tokens
         elif tokens[1] == '=':

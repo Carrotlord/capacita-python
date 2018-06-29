@@ -9,6 +9,8 @@ def tokenize_statement(stmt):
     """
     if stmt.startswith('print '):
         return ['print', stmt[6:]]
+    elif stmt.startswith('super '):
+        return ['super', stmt[6:]]
     elif stmt.startswith('show '):
         return ['show', stmt[5:]]
     elif stmt.startswith('return '):

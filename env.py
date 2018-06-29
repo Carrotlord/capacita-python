@@ -20,6 +20,10 @@ class Environment(object):
         self.exception_stack = []
         self.last_assigned = None
     
+    def merge(self, dictionary):
+        for key in dictionary:
+            self.frames[-1][key] = dictionary[key]
+    
     def get_last_assigned(self):
         return self.last_assigned
     

@@ -1,0 +1,52 @@
+class Human(name)
+    sub speak()
+        print "Hello, I am " + name
+    end
+end
+
+class Man(name) inherits Human
+    super Human(name)
+    
+    sub speak()
+        print "Hello, my name is " + name + ", and I am male."
+    end
+end
+
+class Woman(name) inherits Human
+    super Human(name)
+    
+    sub speak()
+        print "Hello, my name is " + name + ", and I am female."
+    end
+end
+
+class Bat()
+    sub speak()
+        print "*bat noises*"
+    end
+end
+
+class Cat()
+    sub speak()
+        print "meow"
+    end
+end
+
+class Batman(name) inherits Bat, Man
+    super Bat()
+    super Man(name)
+end
+
+class Catwoman(name) inherits Cat, Woman
+    super Cat()
+    super Woman(name)
+end
+
+Human bob = Batman("Bob")
+Human alice = Catwoman("Alice")
+Bat().speak()
+Cat().speak()
+bob.speak()
+alice.speak()
+Man("Chris").speak()
+Woman("Daisy").speak()

@@ -1,0 +1,6 @@
+sub String f(Int x, Int y, String z)
+    return x + y + z
+end
+
+print f(1, 2, "three")
+print f(1, 2, 3)

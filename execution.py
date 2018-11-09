@@ -11,6 +11,7 @@ from builtin_function import BuiltinFunction
 from table import Table
 from control_flow import find_next_end_else
 from trigger import Trigger
+from imports import perform_import
 
 def dot_operator(obj, name, env):
     if type(obj) is str and re.match(r'\$?[A-Za-z_][A-Za-z_0-9]*', obj):
@@ -148,7 +149,7 @@ def is_statement(query):
        query.startswith('return ') or query.startswith(':') or \
        query == 'try' or query == 'end' or query == 'else' or \
        query.startswith('throw ') or query.startswith('catch ') or \
-       query.startswith('super '):
+       query.startswith('super ') or query.startswith('import '):
         return True
     comparators = ['==', '!=', '>=', '<=']
     ast = AST(query)
@@ -176,6 +177,8 @@ def execute_statement(stmt, env):
             display(eval_parentheses(tokens[1], env), False)
         elif tokens[0] == 'super':
             env.merge(eval_parentheses(tokens[1], env))
+        elif tokens[0] == 'import':
+            perform_import(tokens[1], env)
         elif tokens[0] in directives:
             return tokens
         elif tokens[1] == '=':

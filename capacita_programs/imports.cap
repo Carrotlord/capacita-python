@@ -1,0 +1,10 @@
+import math
+
+print sqrt(2)
+print pi
+print e
+print phi
+print ln(2)
+print ln(e)
+print log(1000, 10)
+print cbrt(2) ^ 3

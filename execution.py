@@ -31,10 +31,14 @@ def dot_operator(obj, name, env):
             return BuiltinFunction('list', ['new_elem'], func_push)
     elif type(obj) is dict:
         # This is a method call
-        env.new_this(obj)
-        method = obj[name]
-        method.activate_method()
-        return method
+        if obj[name].__class__ is BuiltinFunction:
+            # Built in functions don't need a this pointer
+            return obj[name]
+        else:
+            env.new_this(obj)
+            method = obj[name]
+            method.activate_method()
+            return method
     elif type(obj) in [int, float]:
         if name == 'next':
             return BuiltinFunction('constant', [], lambda: obj + 1)

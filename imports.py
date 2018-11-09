@@ -13,5 +13,14 @@ def import_math(env):
 
 def perform_import(library, env):
     library = library.strip()
+    obj = None
+    if ' into ' in library:
+        pieces = library.split()
+        library = pieces[0]
+        obj = pieces[2]
+        env.new_frame()
     if library == 'math':
         import_math(env)
+    if obj is not None:
+        frame = env.pop()
+        env.assign(obj, frame)

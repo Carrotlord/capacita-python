@@ -8,3 +8,13 @@ print ln(2)
 print ln(e)
 print log(1000, 10)
 print cbrt(2) ^ 3
+
+import math into m
+print m.sqrt(2)
+print m.pi
+print m.e
+print m.phi
+print m.ln(2)
+print m.ln(e)
+print m.log(1000, 10)
+print m.cbrt(2) ^ 3

@@ -1,0 +1,11 @@
+// comment
+x = 5// comment
+y = 6
+/* multi
+line
+comment
+*/z = 7
+a = "https://example.com"
+b = "/* something */"
+c = 5 / 7
+print [x, y, z, a, b, c]

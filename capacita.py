@@ -13,7 +13,7 @@ from console import display, literal
 from tokens import tokenize_statement
 from fileio import file_to_str
 from exception import throw_exception
-from prepare_program import prepare_program
+from prepare_program import prepare_program, preprocess
 from execution import execute_statement, \
                       evaluate_expression, \
                       execute_lines, \
@@ -51,6 +51,7 @@ def repl():
     env = Environment()
     while True:
         expr = raw_input('Capacita> ')
+        expr = preprocess(expr)
         expr = expr.strip()
         if expr == 'exit()':
             break
@@ -190,6 +191,17 @@ def main():
             ast = AST('true and not false')
             print(ast.parse())
             print(ast.collapse_indices(ast.build_indices()))
+        elif first_arg == '--test9':
+            sample = """
+                x = 5 // comment
+                // comment
+                /* multi
+                line
+                comment
+                */y = 6
+                z = "https://example.com"
+            """
+            print(preprocess(sample))
         elif first_arg == '--test-all':
             tests.test_all('capacita_programs')
         else:

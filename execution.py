@@ -6,7 +6,7 @@ from ribbon import Ribbon
 from ratio import Ratio
 from console import display
 from exception import throw_exception
-from strtools import find_matching
+from strtools import find_matching, escape
 from builtin_function import BuiltinFunction
 from table import Table
 from control_flow import find_next_end_else
@@ -545,11 +545,11 @@ def convert_value(val, env):
         return val
     if len(val) >= 2:
         if val[0] == "'" and val[-1] == "'":
-            return '"{0}"'.format(val[1:-1])
+            return '"{0}"'.format(escape(val[1:-1]))
         elif val[0] == '"' and val[-1] == '"':
-            return val
+            return escape(val)
         elif val[0] == '`' and val[-1] == '`':
-            return Ribbon(val[1:-1])
+            return Ribbon(escape(val[1:-1]))
         elif val[0] == '[' and val[-1] == ']':
             result = parse_list(val[1:-1], env)
             return result

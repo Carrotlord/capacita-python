@@ -1,0 +1,3 @@
+print "abcdefghijklmnopqrstuvwxyz0123456789"
+print "\tA\nB\qC\"D\\E\x41"
+print "ABCDEFGHIJKLMNOPQRSTUVWXYZ)!@#$%^&*("

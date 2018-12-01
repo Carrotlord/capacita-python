@@ -24,5 +24,55 @@ def find_matching_quote(expr):
     """
     Finds the next double-quote in expr.
     """
-    # TODO : allow for escaped quotes
-    return expr.find('"')
+    for i in xrange(len(expr)):
+        if expr[i] == '"':
+            if i == 0:
+                return 0
+            elif expr[i - 1] != '\\':
+                return i
+    return -1
+
+def escape(str_contents):
+    processed = ''
+    i = 0
+    length = len(str_contents)
+    while i < length:
+        if i + 1 < length and str_contents[i] == '\\':
+            next = str_contents[i + 1]
+            # TODO : more escape sequences exist, which need to be
+            # accounted for.
+            if next == '\\':
+                processed += '\\'
+            elif next == 'n':
+                processed += '\n'
+            elif next == 't':
+                processed += '\t'
+            elif next == 'q':
+                processed += '"'
+            elif next == 'x':
+                # Hexadecimal character code
+                processed += chr(int(str_contents[i+2 : i+4], 16))
+                i += 2
+            else:
+                # Unrecognized escape sequence. Default to the literal character:
+                processed += next
+            i += 1
+        else:
+            processed += str_contents[i]
+        i += 1
+    return processed
+
+def unescape(str_contents):
+    replacements = {
+        '\\': '\\\\',
+        '\n': '\\n',
+        '\t': '\\t',
+        '"': '\\"'
+    }
+    processed = ''
+    for char in str_contents:
+        if char in replacements:
+            processed += replacements[char]
+        else:
+            processed += char
+    return processed

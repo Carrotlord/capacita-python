@@ -1,6 +1,7 @@
 import sys
 
 from table import Table
+from strtools import unescape
 
 def display(obj, use_newline=True):
     """
@@ -88,5 +89,7 @@ def literal(obj):
         return list_to_str(obj)
     elif obj.__class__ is Table:
         return table_to_str(obj)
+    elif type(obj) is str and obj[0] == '"' and obj[-1] == '"':
+        return '"{0}"'.format(unescape(obj[1:-1]))
     else:
         return obj

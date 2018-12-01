@@ -1,5 +1,11 @@
 from control_flow import prepare_control_flow
 
+def is_quote(prgm, i):
+    if i == 0:
+        return prgm[0] == '"'
+    else:
+        return prgm[i] == '"' and prgm[i - 1] != '\\'
+
 def preprocess(prgm):
     def remove_comments(prgm):
         """
@@ -12,8 +18,7 @@ def preprocess(prgm):
         in_quotes = False
         while i < length:
             char = prgm[i]
-            is_quote = char == '"'
-            if is_quote:
+            if is_quote(prgm, i):
                 in_quotes = not in_quotes
             if (not in_quotes) and char == '/' and i + 1 < length:
                 next = prgm[i + 1]
@@ -33,7 +38,27 @@ def preprocess(prgm):
                 processed += char
             i += 1
         return processed
-    return remove_comments(prgm)
+    def replace_special(prgm):
+        i = 0
+        processed = ''
+        length = len(prgm)
+        in_quotes = False
+        while i < length:
+            char = prgm[i]
+            if is_quote(prgm, i):
+                in_quotes = not in_quotes
+            if in_quotes:
+                if char == '(':
+                    processed += '\\x28'
+                elif char == ')':
+                    processed += '\\x29'
+                else:
+                    processed += char
+            else:
+                processed += char
+            i += 1
+        return processed
+    return replace_special(remove_comments(prgm))
 
 def prepare_program(prgm):
     """

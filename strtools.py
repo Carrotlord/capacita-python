@@ -20,12 +20,12 @@ def find_matching(expr, opening='(', closing=')'):
         i += 1
     return -1
 
-def find_matching_quote(expr):
+def find_matching_quote(expr, quote='"'):
     """
     Finds the next double-quote in expr.
     """
     for i in xrange(len(expr)):
-        if expr[i] == '"':
+        if expr[i] == quote:
             if i == 0:
                 return 0
             elif expr[i - 1] != '\\':

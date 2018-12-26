@@ -6,7 +6,6 @@
 - Dissimilar types can be compared, such as ``2 < "hello"`` resolving to ``true``. This should throw an exception instead. This is due to a quirk of Python 2.x allowing dissimilar comparisons.
 - Expressions such as ``[[1,2][3,4]]`` are transformed into ``[[1, 2], [3, 4]]``.
 - Since objects can now refer to themselves with ``this``, there might be cases where the user performs ``return this``, which will have unexpected behavior because this is also the way new objects are generated.
-- Using ``"("`` as a string literal does not work. It is interpreted as a parenthetical expression.
 - Methods called on list literals such as ``[1,2,3].pop()`` do not work.
 - Strings such as ``'\\'`` and ``"\\"`` do not work.
 
@@ -50,3 +49,5 @@ print func4(10)
 ```
 
 In this case, all calls to func through func4 will act like func4, returning 10000.
+
+- Using ``"("`` as a string literal does not work. It is interpreted as a parenthetical expression.

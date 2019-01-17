@@ -1,0 +1,15 @@
+Int x = 5
+String y = "hello"
+x += 18
+x *= 3 + 2 + 1
+print x
+z = 7
+z := x + x
+print z
+w = 7.2
+w %= 0.5 * 0.2 * 20
+print w
+y += y + y
+print y
+// Make sure operators in string literals do not get converted:
+print "Compound assignment operators include +=, *=, /=, ..."

@@ -3,6 +3,8 @@ from exception import throw_exception
 
 import re
 
+compound_operators = ['+=', '-=', '*=', '/=', '%=', '^=', ':=']
+
 def is_numeric(val):
     """
     Returns True if val is an integer or float, else False.

@@ -8,6 +8,7 @@
 - Since objects can now refer to themselves with ``this``, there might be cases where the user performs ``return this``, which will have unexpected behavior because this is also the way new objects are generated.
 - Methods called on list literals such as ``[1,2,3].pop()`` do not work.
 - Strings such as ``'\\'`` and ``"\\"`` do not work.
+- A single quote in a comment causes an error.
 
 ## Fixed
 

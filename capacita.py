@@ -51,7 +51,8 @@ def repl():
     env = Environment()
     while True:
         expr = raw_input('Capacita> ')
-        expr = preprocess(expr)
+        # Treat expr as a single-line program:
+        expr = (prepare_program(expr))[0]
         expr = expr.strip()
         if expr == 'exit()':
             break

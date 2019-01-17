@@ -323,6 +323,8 @@ def evaluate_operators(tokens, indices, env):
         elif op == '/':
             # Todo allow for better ratio and int division
             tokens[idx-1 : idx+2] = [float(left) / float(right)]
+        elif op == '%':
+            tokens[idx-1 : idx+2] = [left % right]
         elif op == '^':
             tokens[idx-1 : idx+2] = [left ** right]
         elif op == ':':

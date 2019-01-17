@@ -45,7 +45,7 @@ class AST(object):
             '.': 1,
             ':': 2,
             '^': 3,
-            '*': 4, '/': 4,
+            '*': 4, '/': 4, '%': 4,
             '+': 5, '-': 5,
             '==': 6, '!=': 6, '>=': 6, '<=': 6,
             '>': 6, '<': 6,
@@ -55,7 +55,7 @@ class AST(object):
         # Longer operators should be detected before shorter ones:
         self.ordered_ops = [' and ', ' or ', ' xor ', 'not ',
                             '>=', '<=', '!=', '==', '<', '>',
-                            '+', '-', '*', '/', '^', ':', '.']
+                            '+', '-', '*', '/', '%', '^', ':', '.']
     
     def weakest(self):
         """

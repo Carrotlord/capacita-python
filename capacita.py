@@ -205,6 +205,8 @@ def main():
             print(preprocess(sample))
         elif first_arg == '--test-all':
             tests.test_all('capacita_programs')
+        elif first_arg == '--test-all-fast':
+            tests.test_all('capacita_programs', False)
         else:
             # Run a program from a text file:
             file_name = first_arg

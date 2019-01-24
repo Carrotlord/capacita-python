@@ -3,11 +3,12 @@ import time
 import os
 import fileio
 
-def test_all(path):
+def test_all(path, has_delay=True):
     files = [f for f in os.listdir(path) if f.endswith('.cap')]
     print '===== Starting tests...'
     for file in files:
-        time.sleep(3)
+        if has_delay:
+            time.sleep(3)
         full_path = path + '/' + file
         print '===== Testing ' + full_path
         contents = fileio.file_to_str(full_path)

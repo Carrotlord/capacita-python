@@ -25,6 +25,8 @@ def tokenize_statement(stmt):
         return [':jf', stmt[4:]]
     elif stmt.startswith(':jt '):
         return [':jt', stmt[4:]]
+    elif stmt.startswith(':hook '):
+        return [':hook', stmt[6:]]
     elif stmt == ':skiptoelse':
         return [':skiptoelse']
     elif stmt == 'try':

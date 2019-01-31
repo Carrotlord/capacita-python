@@ -75,6 +75,9 @@ def execute_lines(lines, env):
                 # Nothing was thrown in this try clause
                 _, j = find_next_end_else(lines, prgm_counter + 1, False)
                 prgm_counter = j + 1
+            elif directive[0] == ':hook':
+                env.activate_hook(directive[1])
+                prgm_counter += 1
             elif directive[0] == 'return':
                 if directive[1] == 'this':
                     # Create a user-defined object.
@@ -166,7 +169,7 @@ def is_statement(query):
 def execute_statement(stmt, env):
     """Executes a statement in a given environment."""
     directives = [':cond', ':j', ':jt', ':jf', 'return', 'try', 'throw',
-                  'catch', 'end', 'else', ':skiptoelse']
+                  'catch', 'end', 'else', ':skiptoelse', ':hook']
     stmt = stmt.strip()
     if len(stmt) == 0:
         return
@@ -180,7 +183,7 @@ def execute_statement(stmt, env):
         elif tokens[0] == 'show':
             display(eval_parentheses(tokens[1], env), False)
         elif tokens[0] == 'super':
-            env.merge(eval_parentheses(tokens[1], env))
+            env.extract(eval_parentheses(tokens[1], env))
         elif tokens[0] == 'import':
             perform_import(tokens[1], env)
         elif tokens[0] in directives:

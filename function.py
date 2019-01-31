@@ -84,9 +84,10 @@ def extract_functions(prgm):
             ret_type = return_type_of_function(line)
             _, end = find_next_end_else(lines, i + 1, True)
             func_body = lines[i+1 : end]
-            env.assign(name, Function(name, arg_list, func_body, return_type=ret_type))
-            # Remove the function definition from the program.
-            lines[i : end+1] = []
+            env.assign_hook(name, Function(name, arg_list, func_body, return_type=ret_type))
+            # Remove the function definition from the program,
+            # and replace it with a hook directive.
+            lines[i : end+1] = [':hook {0}'.format(name)]
         else:
             i += 1
     prgm = '\n'.join(lines)

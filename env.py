@@ -24,6 +24,11 @@ class Environment(object):
         for key in dictionary:
             self.frames[-1][key] = dictionary[key]
     
+    def extract(self, dictionary):
+        for key in dictionary:
+            if key not in ['$hooks', '$type']:
+                self.frames[-1][key] = dictionary[key]
+
     def get_last_assigned(self):
         return self.last_assigned
     
@@ -108,6 +113,16 @@ class Environment(object):
                         # There is no type restriction given
                         frame_or_this[var_name] = value
     
+    def assign_hook(self, func_name, value):
+        frame_or_this = self.get_frame_or_this(func_name)
+        if '$hooks' not in frame_or_this:
+            frame_or_this['$hooks'] = {}
+        frame_or_this['$hooks'][func_name] = value
+
+    def activate_hook(self, func_name):
+        frame_or_this = self.get_frame_or_this(func_name)
+        self.assign(func_name, frame_or_this['$hooks'][func_name])
+
     def get_frame_or_this(self, var_name):
         last_this = self.last_this()
         if var_name in last_this:

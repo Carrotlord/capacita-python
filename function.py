@@ -116,6 +116,9 @@ class Function(object):
         self.supplied_env = supplied_env
         self.is_method = False
     
+    def get_num_args(self):
+        return len(self.args)
+
     def activate_method(self):
         self.is_method = True
         

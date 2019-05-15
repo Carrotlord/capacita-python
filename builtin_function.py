@@ -6,6 +6,9 @@ class BuiltinFunction(object):
         self.args = args
         self.action = action
         self.supplied_env = supplied_env
+
+    def get_num_args(self):
+        return len(self.args)
         
     def execute(self, arg_values, env=None):
         if self.args is not None and len(arg_values) != len(self.args):

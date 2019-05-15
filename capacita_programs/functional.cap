@@ -1,0 +1,72 @@
+import functional
+
+sub isOdd(Int n)
+    return n % 2 == 1
+end
+
+sub isEven(Int n)
+    return not isOdd(n)
+end
+
+sub generateRange(Int n, Int m)
+    range = []
+    for i = n; i <= m; i += 1
+        range.push(i)
+    end
+    return range
+end
+
+sub square(Int n)
+    odds = filter(isOdd, generateRange(1, 2*n))
+    return sum(odds)
+end
+
+sub plus(a, b)
+    return a + b
+end
+
+sub sum(list)
+    // Make sure list has at least 2 elements:
+    list = [0, 0] + list
+    return foldLeft(plus, list)
+end
+
+sub f(x, y)
+    return x - y - x * y
+end
+
+sub j(x, y, z, w)
+    return x + y + z + w
+end
+
+sub identity(x)
+    return x
+end
+
+print generateRange(0, 10)
+print map(square, generateRange(0, 10))
+isSquareEven = compose(isEven, square)
+print map(square, generateRange(13, 19))
+print map(isSquareEven, generateRange(13, 19))
+print foldLeft(f, [1,2,3,4])
+print foldRight(f, [1,2,3,4])
+print any(identity, map(isSquareEven, generateRange(13, 19)))
+print all(identity, map(isSquareEven, generateRange(13, 19)))
+print any(isEven, [1,2,3,4])
+print all(isEven, [1,2,3,4])
+print any(isEven, [5])
+print all(isEven, [])
+print foldLeft(flip(f), [1,2,3,4])
+print foldRight(flip(f), [1,2,3,4])
+g = curry(generateRange)
+h = g(70)
+i = h(75)
+print [g, h, i]
+k = curry(j)
+m = k(10)
+n = m(30)
+p = n(50)
+q = p(70)
+print [k, m, n, p, q]
+r = partial(j, [1.5, 2.75])
+print r(0.5, 0.25)

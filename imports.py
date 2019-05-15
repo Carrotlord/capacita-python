@@ -34,6 +34,8 @@ def import_functional(env):
         return BuiltinFunction('h', ['x'], h)
     def map_prime(f, lst):
         return map(lambda x: f.execute([x], env), lst)
+    def filter_prime(predicate, lst):
+        return filter(lambda x: predicate.execute([x], env), lst)
     def flip(f):
         return BuiltinFunction('g', ['x', 'y'], lambda x, y: f.execute([y, x], env))
     def fold_left(f, lst):
@@ -58,13 +60,39 @@ def import_functional(env):
             if not result:
                 return False
         return True
+    def curry(f):
+        num_args = f.get_num_args()
+        if num_args <= 1:
+            return f
+        else:
+            def curried_f(x):
+                partially_applied_f = partial(f, [x])
+                return curry(partially_applied_f)
+            return BuiltinFunction('g', ['x'], curried_f)
+    def partial(f, fixed_args):
+        num_original_args = f.get_num_args()
+        num_fixed_args = len(fixed_args)
+        num_args_needed = num_original_args - num_fixed_args
+        if num_args_needed < 0:
+            throw_exception('TooManyFixedArguments',
+                'Function {0} requires {1} arguments, but passing in {2}'.format(
+                    f.name, num_original_args, num_fixed_args
+                )
+            )
+        arg_names = ['x' + str(i) for i in xrange(num_args_needed)]
+        def partially_applied_f(*args):
+            return f.execute(fixed_args + list(args), env)
+        return BuiltinFunction('fPrime', arg_names, partially_applied_f)
     env.assign('compose', BuiltinFunction('compose', ['f', 'g'], compose))
     env.assign('map', BuiltinFunction('map', ['f', 'lst'], map_prime))
+    env.assign('filter', BuiltinFunction('filter', ['predicate', 'lst'], filter_prime))
     env.assign('flip', BuiltinFunction('flip', ['f'], flip))
     env.assign('foldLeft', BuiltinFunction('foldLeft', ['f', 'lst'], fold_left))
     env.assign('foldRight', BuiltinFunction('foldRight', ['f', 'lst'], fold_right))
     env.assign('any', BuiltinFunction('any', ['f', 'lst'], any_prime))
     env.assign('all', BuiltinFunction('all', ['f', 'lst'], all_prime))
+    env.assign('curry', BuiltinFunction('curry', ['f'], curry))
+    env.assign('partial', BuiltinFunction('partial', ['f', 'fixedArgs'], partial))
 
 def perform_import(library, env):
     library = library.strip()

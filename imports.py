@@ -15,6 +15,22 @@ def import_math(env):
             # by result may have rounding errors
             result = (result * (n + 1 - i)) / i
         return result
+    def fib(n):
+        # Use the matrix form of Fibonacci numbers
+        # to perform the computation in O(log(n)) operations.
+        # Please see the Wikipedia page on Fibonacci numbers
+        # for more information.
+        if n == 0 or n == 1:
+            return n
+        def is_odd(n):
+            return (n & 1) == 1
+        if is_odd(n):
+            k = (n + 1) / 2
+            return fib(k) ** 2 + fib(k - 1) ** 2
+        else:
+            k = n / 2
+            fib_k = fib(k)
+            return 2 * fib(k - 1) * fib_k + fib_k ** 2
     env.assign('pi', math.pi)
     env.assign('e', math.e)
     env.assign('phi', 1.6180339887498948482)
@@ -26,6 +42,7 @@ def import_math(env):
     env.assign('log', BuiltinFunction('log', ['x', 'b'], lambda x, b: math.log(x, b)))
     env.assign('ln', BuiltinFunction('ln', ['x'], lambda x: math.log(x)))
     env.assign('binomialChoose', BuiltinFunction('binomialChoose', ['n', 'k'], binomial_choose))
+    env.assign('fib', BuiltinFunction('fib', ['n'], fib))
 
 def import_functional(env):
     def compose(f, g):

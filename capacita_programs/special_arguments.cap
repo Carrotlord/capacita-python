@@ -1,0 +1,53 @@
+import functional
+
+sub plus(a=0, b=0)
+    return a + b
+end
+
+sub times(a=1, b=1)
+    return a * b
+end
+
+sub f(a, b, c)
+    return [a, b, c]
+end
+
+sub g(a, b, c=5, d=18.2, e=1:7)
+    return [a, b, c, d, e]
+end
+
+sub sum([arguments])
+    return foldLeft(plus, arguments)
+end
+
+sub product([arguments])
+    return foldLeft(times, arguments)
+end
+
+sub h(a, b, [args], c, d, e)
+    return [a, b, c, d, e, args]
+end
+
+sub i(a, b, [args])
+    return [a, b, args]
+end
+
+sub j([args], a, b)
+    return [a, b, args]
+end
+
+print [plus(), times(), plus(5), times(10), plus(1, 2), times(3:4, 5:7)]
+print f(1, 2, 3)
+print g(1, 2, 3, 4, 5)
+print g(1, 2)
+print g(1, 2, 3)
+print g(1, 2, 3, 4)
+print sum(10, 20, 30)
+print product(7, 17, 19, 23)
+print h(1, 2, 3, 4, 5)
+print h(1, 2, 3, 4, 5, 6)
+print h(1, 2, 3, 4, 5, 6, 7)
+print i(1, 2)
+print j(1, 2)
+print i(1, 2, 3, 4)
+print j(1, 2, 3, 4)

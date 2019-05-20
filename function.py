@@ -5,6 +5,7 @@ from exception import throw_exception
 from execution import execute_lines
 from control_flow import find_next_end_else
 from env import Environment
+from arguments import assign_arguments
 
 def extract_data(defn, kind):
     match_obj = re.match(r'sub ([A-Za-z_][A-Za-z_0-9]* )?([A-Za-z_][A-Za-z_0-9]*)', defn)
@@ -127,20 +128,12 @@ class Function(object):
         Executes this function's code, given argument values
         and an environment. Returns the result of the function.
         """
-        if len(self.args) != len(arg_values):
-            throw_exception('ArgValueException',
-                            'Number of arguments does not match function definition')
         if self.supplied_env is not None:
             env = self.supplied_env
         env.new_frame()
         env.merge_latest(self.defined_funcs)
-        i = 0
         # Put function arguments into environment frame:
-        while i < len(self.args):
-            current_arg = self.args[i]
-            current_val = arg_values[i]
-            env.assign(current_arg, current_val)
-            i += 1
+        assign_arguments(self.args, arg_values, env)
         result = execute_lines(self.lines, env)
         # Remove the stack frame created by this function:
         env.pop()

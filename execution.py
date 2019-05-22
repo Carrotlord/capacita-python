@@ -444,7 +444,7 @@ def call_functions(tokens, env):
     i = 0
     prev_token = None
     for token in tokens:
-        match_obj = re.match('([A-Za-z_][A-Za-z_0-9]*)\((.*)\)', token)
+        match_obj = re.match(r'(\$?[A-Za-z_][A-Za-z_0-9]*)\((.*)\)', token)
         if match_obj:
             func_name = match_obj.group(1)
             func_args = match_obj.group(2)

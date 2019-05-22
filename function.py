@@ -8,7 +8,7 @@ from env import Environment
 from arguments import assign_arguments
 
 def extract_data(defn, kind):
-    match_obj = re.match(r'sub ([A-Za-z_][A-Za-z_0-9]* )?([A-Za-z_][A-Za-z_0-9]*)', defn)
+    match_obj = re.match(r'sub ([A-Za-z_][A-Za-z_0-9]* )?(\$?[A-Za-z_][A-Za-z_0-9]*)', defn)
     if kind == 'return_type':
         kind = match_obj.group(1)
         if kind is None:

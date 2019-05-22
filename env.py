@@ -1,7 +1,11 @@
 from exception import throw_exception
 from builtin_function import int_div, make_list
 from execution import eval_parentheses
-from type_tree import get_type, generate_default_tree, TypeTree
+from type_tree import get_type, \
+                      generate_default_tree, \
+                      TypeTree, \
+                      merge_trees, \
+                      build_type_table
 
 import re
 
@@ -24,6 +28,11 @@ class Environment(object):
         for key in dictionary:
             self.frames[-1][key] = dictionary[key]
     
+    def merge_type_tree(self, new_types):
+        current_tree = self.all_types['Object']
+        new_tree = new_types['Object']
+        self.all_types = build_type_table(merge_trees(current_tree, new_tree))
+
     def extract(self, dictionary):
         for key in dictionary:
             if key not in ['$hooks', '$type']:

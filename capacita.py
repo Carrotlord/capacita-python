@@ -25,13 +25,9 @@ import tests
 
 def execute_program(prgm, existing_env=None):
     """Executes a program given as a string."""
-    prgm, env = extract_functions(prgm)
+    prgm, env = extract_functions(prgm, existing_env)
     lines = prepare_program(prgm)
-    if existing_env is None:
-        execute_lines(lines, env)
-    else:
-        existing_env.merge(env.last())
-        execute_lines(lines, existing_env)
+    execute_lines(lines, env)
     
 def store_program():
     """
@@ -210,6 +206,8 @@ def main():
                 z = "https://example.com"
             """
             print(preprocess(sample))
+        elif first_arg == '--test-tree-merge':
+            tests.test_tree_merge()
         elif first_arg == '--test-all':
             tests.test_all('capacita_programs')
         elif first_arg == '--test-all-fast':

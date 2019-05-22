@@ -42,14 +42,17 @@ def args_of_function(defn):
     arg_list = [arg.strip() for arg in args.split(',')]
     return arg_list
 
-def extract_functions(prgm):
+def extract_functions(prgm, existing_env=None):
     """
     Removes all function bodies from prgm and inserts
     the functions into a new environment frame.
     """
     lines = prgm.split('\n')
     lines = [line.strip() for line in lines]
-    env = Environment()
+    if existing_env is None:
+        env = Environment()
+    else:
+        env = existing_env
     i = 0
     max_len = len(lines)
     while i < max_len:

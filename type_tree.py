@@ -31,10 +31,88 @@ class TypeTree(object):
         return self.has_name(name) or self.has_child(name)
     
     def __repr__(self):
-        return str(list(self.names)) + '(' + str(self.subclasses) + ')'
+        return self.format()
     
     def __str__(self):
         return repr(self)
+    
+    def format(self, indent_size=0):
+        remainder = ''
+        for subclass in self.subclasses:
+            remainder += subclass.format(indent_size + 2)
+        return '{0}{1}\n{2}'.format(' ' * indent_size, self.names, remainder)
+
+def merge_trees(tree, other):
+    """
+    Combines two type trees into a single tree.
+    The new tree will contain all the children of both
+    original trees. Children that are shared will be
+    recursively merged.
+    
+    e.g.
+    Take the two trees:
+       A        A
+      / \      / \
+     B   C    D   B
+     |           / \
+     G          E   F
+    The result should be:
+         A
+        /|\
+       B C D
+      /|\
+     G E F
+    """
+    if tree.names != other.names:
+        throw_exception(
+            'CannotMergeTrees',
+            'Root value {0} is not the same as {1}'.format(tree.names, other.names)
+        )
+    combined_subclasses = {}
+    for subclass in tree.subclasses:
+        combined_subclasses[subclass.names] = subclass
+    for subclass in other.subclasses:
+        if subclass.names in combined_subclasses:
+            old_tree = combined_subclasses[subclass.names]
+            new_tree = merge_trees(old_tree, subclass)
+            combined_subclasses[subclass.names] = new_tree
+        else:
+            combined_subclasses[subclass.names] = subclass
+    result = TypeTree(*tree.names)
+    for val in combined_subclasses.values():
+        result.add_subclass(val)
+    return result
+
+def build_type_table(tree):
+    """
+    Creates a dictionary where all the nodes of a tree
+    are directly accessible by name.
+    
+    e.g.
+       A
+      / \
+     B   C
+          \
+           D
+    will become:
+    {
+        'A': (tree A containing B,C),
+        'B': (tree B),
+        'C': (tree C containing D),
+        'D': (tree D)
+    }
+    """
+    entries = {}
+    for name in tree.names:
+        entries[name] = tree
+    for subclass in tree.subclasses:
+        child_entries = build_type_table(subclass)
+        for key, val in child_entries.items():
+            if key in entries:
+                throw_exception('CannotBuildTypeTable', 'Duplicate node name {0}'.format(key))
+            else:
+                entries[key] = val
+    return entries
 
 def get_type(value):
     kind = type(value)
@@ -106,24 +184,4 @@ def generate_default_tree():
     objects.add_subclass(instances)
     objects.add_subclass(triggers)
     
-    return {
-        'Int': integers,
-        'Integer': integers,
-        'Double': doubles,
-        'Boolean': bools,
-        'String': strs,
-        'Tag': tags,
-        'Table': tables,
-        'List': lists,
-        'Ratio': ratios,
-        'Rational': ratios,
-        'Null': nulls,
-        'Void': nulls,
-        'Function': functions,
-        'Number': numbers,
-        'Sequence': sequences,
-        'Iterable': sequences,
-        'Instance': instances,
-        'Trigger': triggers,
-        'Object': objects
-    }
+    return build_type_table(objects)

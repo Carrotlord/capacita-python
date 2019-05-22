@@ -23,11 +23,15 @@ from function import extract_functions
 
 import tests
 
-def execute_program(prgm):
+def execute_program(prgm, existing_env=None):
     """Executes a program given as a string."""
     prgm, env = extract_functions(prgm)
     lines = prepare_program(prgm)
-    execute_lines(lines, env)
+    if existing_env is None:
+        execute_lines(lines, env)
+    else:
+        existing_env.merge(env.last())
+        execute_lines(lines, existing_env)
     
 def store_program():
     """
@@ -61,6 +65,9 @@ def repl():
         elif expr == ':program':
             prgm = store_program()
             execute_program(prgm)
+        elif expr == ':code':
+            prgm = store_program()
+            execute_program(prgm, env)
         elif expr == 'this':
             print(env.frames)
         elif is_statement(expr):

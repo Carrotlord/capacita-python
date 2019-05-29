@@ -2,10 +2,11 @@ import re
 
 from prepare_program import prepare_program
 from exception import throw_exception
-from execution import execute_lines
 from control_flow import find_next_end_else
-from env import Environment
 from arguments import assign_arguments
+
+import execution
+import env as environment
 
 def extract_data(defn, kind):
     match_obj = re.match(r'sub ([A-Za-z_][A-Za-z_0-9]* )?(\$?[A-Za-z_][A-Za-z_0-9]*)', defn)
@@ -42,6 +43,18 @@ def args_of_function(defn):
     arg_list = [arg.strip() for arg in args.split(',')]
     return arg_list
 
+def define_single_line_function(contents, env):
+    # TODO : allow default arguments in function definition
+    split_index = contents.find('=')
+    header = contents[0:split_index]
+    body = contents[split_index + 1:]
+    header = 'sub ' + header
+    body = 'return ' + body
+    name = name_of_function(header)
+    arg_list = args_of_function(header)
+    ret_type = return_type_of_function(header)
+    env.assign(name, Function(name, arg_list, [body], return_type=ret_type))
+
 def extract_functions(prgm, existing_env=None):
     """
     Removes all function bodies from prgm and inserts
@@ -50,7 +63,7 @@ def extract_functions(prgm, existing_env=None):
     lines = prgm.split('\n')
     lines = [line.strip() for line in lines]
     if existing_env is None:
-        env = Environment()
+        env = environment.Environment()
     else:
         env = existing_env
     i = 0
@@ -137,7 +150,7 @@ class Function(object):
         env.merge_latest(self.defined_funcs)
         # Put function arguments into environment frame:
         assign_arguments(self.args, arg_values, env)
-        result = execute_lines(self.lines, env)
+        result = execution.execute_lines(self.lines, env)
         # Remove the stack frame created by this function:
         env.pop()
         # Remove the last this pointer:

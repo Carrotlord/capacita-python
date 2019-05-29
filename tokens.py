@@ -13,6 +13,8 @@ def tokenize_statement(stmt):
         return ['import', stmt[7:]]
     elif stmt.startswith('super '):
         return ['super', stmt[6:]]
+    elif stmt.startswith('func '):
+        return ['func', stmt[5:]]
     elif stmt.startswith('show '):
         return ['show', stmt[5:]]
     elif stmt.startswith('return '):

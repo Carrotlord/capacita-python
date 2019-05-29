@@ -1,5 +1,6 @@
 from exception import throw_exception
-from execution import eval_parentheses
+
+import execution
 
 def is_grouping_argument(arg_name):
     return arg_name.startswith('[') and arg_name.endswith(']')
@@ -33,7 +34,7 @@ def assign_arguments(arg_names, arg_values, env):
                                     'Incorrect default argument syntax in {0}'.format(current_name))
                 var_name, var_expr = pieces
                 if is_out_of_bounds(i, arg_values):
-                    env.assign(var_name, eval_parentheses(var_expr, env))
+                    env.assign(var_name, execution.eval_parentheses(var_expr, env))
                 else:
                     # Instead of the default value, use the value already given
                     env.assign(var_name, arg_values[i])

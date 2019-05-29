@@ -1,0 +1,22 @@
+import math
+
+func square(x) = x * x
+func hypotenuse(x, y) = sqrt(square(x) + square(y))
+
+sub makeAdder(value)
+    func addVal(x) = x + value
+    return addVal
+end
+
+class Rectangle(x, y, width, height)
+    func getArea() = width * height
+    func getCenter() = {#x, (x + width / 2) | #y, (y + height / 2)}
+end
+
+print square(10.3)
+print hypotenuse(3, 4)
+add5 = makeAdder(5)
+print add5(100)
+r = Rectangle(20, 30, 50, 100)
+print r.getArea()
+print r.getCenter()

@@ -13,6 +13,8 @@ from control_flow import find_next_end_else
 from trigger import Trigger
 from imports import perform_import
 
+import function
+
 def dot_operator(obj, name, env):
     if type(obj) is str and re.match(r'\$?[A-Za-z_][A-Za-z_0-9]*', obj):
         obj = env.get(obj)
@@ -156,7 +158,8 @@ def is_statement(query):
        query.startswith('return ') or query.startswith(':') or \
        query == 'try' or query == 'end' or query == 'else' or \
        query.startswith('throw ') or query.startswith('catch ') or \
-       query.startswith('super ') or query.startswith('import '):
+       query.startswith('super ') or query.startswith('import ') or \
+       query.startswith('func '):
         return True
     comparators = ['==', '!=', '>=', '<=']
     ast = AST(query)
@@ -186,6 +189,8 @@ def execute_statement(stmt, env):
             env.extract(eval_parentheses(tokens[1], env))
         elif tokens[0] == 'import':
             perform_import(tokens[1], env)
+        elif tokens[0] == 'func':
+            function.define_single_line_function(tokens[1], env)
         elif tokens[0] in directives:
             return tokens
         elif tokens[1] == '=':

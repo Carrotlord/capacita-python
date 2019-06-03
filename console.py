@@ -3,6 +3,8 @@ import sys
 from table import Table
 from strtools import unescape
 
+import type_tree
+
 def display(obj, use_newline=True):
     """
     Implementation of print functionality. Strings will not be printed with
@@ -91,5 +93,7 @@ def literal(obj):
         return table_to_str(obj)
     elif type(obj) is str and obj[0] == '"' and obj[-1] == '"':
         return '"{0}"'.format(unescape(obj[1:-1]))
+    elif obj.__class__ is type_tree.TypeTree:
+        return '<type {0}>'.format(obj.get_default_name())
     else:
         return obj

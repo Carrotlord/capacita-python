@@ -51,11 +51,12 @@ class AST(object):
             '+': 5, '-': 5,
             '==': 6, '!=': 6, '>=': 6, '<=': 6,
             '>': 6, '<': 6,
-            'not ': 7,
-            ' and ': 8, ' or ': 8, ' xor ': 8
+            ' of ': 7,
+            'not ': 8,
+            ' and ': 9, ' or ': 9, ' xor ': 9
         }
         # Longer operators should be detected before shorter ones:
-        self.ordered_ops = [' and ', ' or ', ' xor ', 'not ',
+        self.ordered_ops = [' and ', ' or ', ' xor ', 'not ', ' of ',
                             '>=', '<=', '!=', '==', '<', '>',
                             '+', '-', '*', '/', '%', '^', ':', '.']
     
@@ -193,7 +194,7 @@ class AST(object):
              -> [[], [7], [5], [1, 3]]
         """
         tokens = self.parse()
-        table = [[], [], [], [], [], [], [], []]
+        table = [[], [], [], [], [], [], [], [], []]
         i = 0
         for token in tokens:
             if token in self.precedences:

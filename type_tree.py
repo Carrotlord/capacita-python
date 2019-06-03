@@ -11,6 +11,9 @@ class TypeTree(object):
     def add_subclass(self, subclass):
         self.subclasses.append(subclass)
     
+    def get_default_name(self):
+        return self.names[0]
+
     def has_name(self, name):
         return name in self.names
     
@@ -41,6 +44,11 @@ class TypeTree(object):
         for subclass in self.subclasses:
             remainder += subclass.format(indent_size + 2)
         return '{0}{1}\n{2}'.format(' ' * indent_size, self.names, remainder)
+
+    def format_as_literal(self):
+        formatted = self.format()
+        formatted = formatted.replace('(', '\\x28').replace(')', '\\x29')
+        return '"{0}"'.format(formatted)
 
 def merge_trees(tree, other):
     """

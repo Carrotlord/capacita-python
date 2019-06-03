@@ -161,6 +161,9 @@ class Environment(object):
                 return value
             else:
                 i -= 1
+        # If this variable is not defined, look in the type tree:
+        if var_name in self.all_types:
+            return self.all_types[var_name]
         throw_exception('UndefinedVariable', var_name + ' is not defined.')
         
     def has_name(self, var_name):

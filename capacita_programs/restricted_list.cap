@@ -1,0 +1,17 @@
+xs = [1, 2, 3] of Int
+ys = [3:2, 2.5, 0] of Number
+zs = ["alpha", "beta", "gamma"] of String
+xs.push(4)
+print ys.pop()
+zs.push("delta")
+for each z of zs
+    print z
+end
+print zs.length()
+print xs + ys
+print xs + ys + zs
+print [1, 2, 3] of Number + [4, 5, 6.0] of Number
+// Warning: incorrect behavior for next 2 lines
+print [1, 2, 3] + ([4, 5] of Int)
+print ([1, 2, 3]) + ([4, 5] of Int)
+print ([4, 5] of Int) + ([1, 2, 3])

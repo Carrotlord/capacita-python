@@ -14,12 +14,14 @@ from trigger import Trigger
 from imports import perform_import
 
 import function
+import type_restrict
+import type_tree
 
 def dot_operator(obj, name, env):
     if type(obj) is str and re.match(r'\$?[A-Za-z_][A-Za-z_0-9]*', obj):
         obj = env.get(obj)
     obj = convert_value(obj, env)
-    if type(obj) is list:
+    if type_restrict.is_considered_list(obj):
         if name == 'length' or name == 'size':
             length = len(obj)
             return BuiltinFunction('constant', [], lambda: length)
@@ -53,6 +55,10 @@ def dot_operator(obj, name, env):
             return BuiltinFunction('constant', [], lambda: obj.keys())
         elif name == 'hasKey':
             return BuiltinFunction('hasKey', ['key'], lambda key: obj.has_key(key))
+    elif obj.__class__ is type_tree.TypeTree:
+        # This method allows us to view the type tree of a given environment
+        if name == 'format':
+            return BuiltinFunction('constant', [], lambda: obj.format_as_literal())
     throw_exception('NoSuchAttribute', str(obj) + ' object has no attribute ' + name)
 
 def execute_lines(lines, env):
@@ -267,7 +273,9 @@ def index_lists(tokens, env):
     while i < len(tokens):
         prev = get_name(tokens[i - 1], env)
         current = get_name(tokens[i], env)
-        if type(prev) is list and type(current) is list and \
+        # For an expression such as x[i], x is 'prev' and [i] is 'current',
+        # so [i] should always be a generic list, not a restricted one.
+        if type_restrict.is_considered_list(prev) and type(current) is list and \
            len(current) == 1:
             index = get_name(current[0], env)
             if type(index) is int:
@@ -357,6 +365,8 @@ def evaluate_operators(tokens, indices, env):
             tokens[idx-1 : idx+2] = [(left and not right) or ((not left) and right)]
         elif op == 'not ':
             tokens[idx : idx+2] = [not right]
+        elif op == ' of ':
+            tokens[idx-1 : idx+2] = [type_restrict.type_restrict(left, right, env)]
         elif op == '.':
             tokens[idx-1 : idx+2] = [left[right]]
     stage = 0

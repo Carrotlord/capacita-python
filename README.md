@@ -7,6 +7,7 @@ This language is imperative and object-oriented. You can expect features such as
 Declaring types is optional in Capacita. This makes the language differ from many others. Instead of being forced to use types or leave them out, you can make the choice for each individual variable and function. It is possible to mix-and-match static typing and dynamic typing within a single program.
 
 To start the REPL, use `python capacita.py` (you will need Python 2, not Python 3)
+
 To run a Capacita program, use `python capacita.py NAME_OF_PROGRAM.cap`
 
 ## Example Programs

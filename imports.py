@@ -43,6 +43,7 @@ def import_math(env):
     env.assign('ln', BuiltinFunction('ln', ['x'], lambda x: math.log(x)))
     env.assign('binomialChoose', BuiltinFunction('binomialChoose', ['n', 'k'], binomial_choose))
     env.assign('fib', BuiltinFunction('fib', ['n'], fib))
+    env.assign('factorial', BuiltinFunction('factorial', ['n'], math.factorial))
 
 def import_functional(env):
     def compose(f, g):

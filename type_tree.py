@@ -124,7 +124,7 @@ def build_type_table(tree):
 
 def get_type(value):
     kind = type(value)
-    if kind is int:
+    if kind is int or kind is long:
         return 'Int'
     elif kind is float:
         return 'Double'

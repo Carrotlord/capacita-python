@@ -1,0 +1,27 @@
+sub myFactorial(n)
+    if n == 1 or n == 0
+        return 1
+    else
+        return n * myFactorial(n - 1)
+    end
+end
+
+sub fibonacci(n)
+    when n == 0 or n == 1
+        return n
+    isOdd = (n % 2) == 1
+    if isOdd
+        k = intDiv(n + 1, 2)
+        return fibonacci(k) ^ 2 + fibonacci(k - 1) ^ 2
+    else
+        k = intDiv(n, 2)
+        fibK = fibonacci(k)
+        return 2 * fibonacci(k - 1) * fibK + fibK ^ 2
+    end
+end
+
+print myFactorial(123)
+print fibonacci(100)
+import math
+print factorial(123)
+print fib(100)

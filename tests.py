@@ -4,6 +4,7 @@ import os
 import fileio
 
 import type_tree
+import exception
 
 def test_all(path, has_delay=True):
     files = [f for f in os.listdir(path) if f.endswith('.cap')]
@@ -16,6 +17,8 @@ def test_all(path, has_delay=True):
         contents = fileio.file_to_str(full_path)
         try:
             capacita.execute_program(contents)
+        except NameError as ex:
+            exception.throw_exception('UnexpectedNameError', str(ex))
         except BaseException as ex:
             print '===== Exception: ' + str(ex.__class__)
     print '===== Done.'

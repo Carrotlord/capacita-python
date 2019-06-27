@@ -25,3 +25,4 @@ print fibonacci(100)
 import math
 print factorial(123)
 print fib(100)
+print fib(100).next()

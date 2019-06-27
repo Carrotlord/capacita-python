@@ -16,50 +16,7 @@ from imports import perform_import
 import function
 import type_restrict
 import type_tree
-
-def dot_operator(obj, name, env):
-    if type(obj) is str and re.match(r'\$?[A-Za-z_][A-Za-z_0-9]*', obj):
-        obj = env.get(obj)
-    obj = convert_value(obj, env)
-    if type_restrict.is_considered_list(obj):
-        if name == 'length' or name == 'size':
-            length = len(obj)
-            return BuiltinFunction('constant', [], lambda: length)
-        elif name == 'pop':
-            last_elem = obj.pop()
-            return BuiltinFunction('constant', [], lambda: last_elem)
-        elif name == 'push':
-            def func_push(new_elem):
-                obj.append(new_elem)
-                return obj
-            return BuiltinFunction('list', ['new_elem'], func_push)
-    elif type(obj) is dict:
-        # This is a method call
-        if obj[name].__class__ is BuiltinFunction:
-            # Built in functions don't need a this pointer
-            return obj[name]
-        else:
-            env.new_this(obj)
-            method = obj[name]
-            method.activate_method()
-            return method
-    elif type(obj) in [int, float]:
-        if name == 'next':
-            return BuiltinFunction('constant', [], lambda: obj + 1)
-        elif name == 'previous':
-            return BuiltinFunction('constant', [], lambda: obj - 1)
-    elif obj.__class__ is Table:
-        if name == 'length' or name == 'size':
-            return BuiltinFunction('constant', [], lambda: len(obj))
-        elif name == 'keys':
-            return BuiltinFunction('constant', [], lambda: obj.keys())
-        elif name == 'hasKey':
-            return BuiltinFunction('hasKey', ['key'], lambda key: obj.has_key(key))
-    elif obj.__class__ is type_tree.TypeTree:
-        # This method allows us to view the type tree of a given environment
-        if name == 'format':
-            return BuiltinFunction('constant', [], lambda: obj.format_as_literal())
-    throw_exception('NoSuchAttribute', str(obj) + ' object has no attribute ' + name)
+import builtin_method
 
 def execute_lines(lines, env):
     """
@@ -468,7 +425,7 @@ def call_functions(tokens, env):
             arg_values = [eval_parentheses(arg, env) for arg in arg_list]
             if prev_token == '.':
                 obj_name = tokens[i - 2]
-                func_obj = dot_operator(obj_name, func_name, env)
+                func_obj = builtin_method.dot_operator(obj_name, func_name, env)
             else:
                 func_obj = env.get(func_name)
             return_val = func_obj.execute(arg_values, env)

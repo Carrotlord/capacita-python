@@ -1,0 +1,8 @@
+xs = [1, 2, 3]
+print [xs.length(), xs.size()]
+print xs.pop()
+print xs.push(4)
+print xs.removeAt(1)
+print xs.insertAt(-1, 5)
+print xs.reverse()
+print xs.find(5)

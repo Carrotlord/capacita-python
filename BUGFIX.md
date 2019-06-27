@@ -9,6 +9,7 @@
 - Methods called on list literals such as ``[1,2,3].pop()`` do not work.
 - Strings such as ``'\\'`` and ``"\\"`` do not work.
 - A single quote in a comment causes an error.
+- Attempting an expression such as ``(3.0 * 10 ^ 20) + 1`` fails, while ``3.0 * 10 ^ 20 + 1`` succeeds. Note that this has to do with parenthetical evaluation and how very large (or very small) floats are formatted with an exponent (such as ``3e+20`` or ``3e-20``).
 
 ## Fixed
 

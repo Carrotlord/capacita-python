@@ -7,7 +7,6 @@ from ratio import Ratio
 from console import display
 from exception import throw_exception
 from strtools import find_matching, escape
-from builtin_function import BuiltinFunction
 from table import Table
 from control_flow import find_next_end_else
 from trigger import Trigger

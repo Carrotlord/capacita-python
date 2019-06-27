@@ -3,9 +3,10 @@ import execution
 import type_restrict
 import type_tree
 
-from builtin_function import BuiltinFunction
 from table import Table
 from exception import throw_exception
+
+import builtin_function
 
 # None is used as a return value to indicate that no corresponding method was found
 # for the name.
@@ -13,27 +14,27 @@ from exception import throw_exception
 def list_methods(obj, name, env):
     if name == 'length' or name == 'size':
         length = len(obj)
-        return BuiltinFunction('constant', [], lambda: length)
+        return builtin_function.BuiltinFunction('constant', [], lambda: length)
     elif name == 'pop':
         last_elem = obj.pop()
-        return BuiltinFunction('constant', [], lambda: last_elem)
+        return builtin_function.BuiltinFunction('constant', [], lambda: last_elem)
     elif name == 'push':
         def func_push(new_elem):
             obj.append(new_elem)
             return obj
-        return BuiltinFunction('list', ['newElem'], func_push)
+        return builtin_function.BuiltinFunction('list', ['newElem'], func_push)
     elif name == 'removeAt':
-        return BuiltinFunction('constant', ['index'], lambda i: obj.pop(i))
+        return builtin_function.BuiltinFunction('constant', ['index'], lambda i: obj.pop(i))
     elif name == 'insertAt':
         def insert_at(index, elem):
             obj.insert(index, elem)
             return obj
-        return BuiltinFunction('insertAt', ['index', 'elem'], insert_at)
+        return builtin_function.BuiltinFunction('insertAt', ['index', 'elem'], insert_at)
     elif name == 'reverse':
         def reverse_list():
             obj.reverse()
             return obj
-        return BuiltinFunction('reverse', [], reverse_list)
+        return builtin_function.BuiltinFunction('reverse', [], reverse_list)
     elif name == 'find':
         # Returns the position of the element in the list.
         # If the element is not found, returns null.
@@ -42,12 +43,19 @@ def list_methods(obj, name, env):
                 return obj.index(elem)
             except ValueError:
                 return None
-        return BuiltinFunction('find', ['elem'], find)
+        return builtin_function.BuiltinFunction('find', ['elem'], find)
+    elif name == 'slice':
+        def slice(start, stop=None):
+            if stop is None:
+                return obj[start:]
+            else:
+                return obj[start:stop]
+        return builtin_function.BuiltinFunction('slice', ['start', 'stop?'], slice)
     return None
 
 def obj_methods(obj, name, env):
     # This is a method call
-    if obj[name].__class__ is BuiltinFunction:
+    if obj[name].__class__ is builtin_function.BuiltinFunction:
         # Built in functions don't need a this pointer
         return obj[name]
     else:
@@ -59,24 +67,24 @@ def obj_methods(obj, name, env):
 
 def number_methods(obj, name, env):
     if name == 'next':
-        return BuiltinFunction('constant', [], lambda: obj + 1)
+        return builtin_function.BuiltinFunction('constant', [], lambda: obj + 1)
     elif name == 'previous':
-        return BuiltinFunction('constant', [], lambda: obj - 1)
+        return builtin_function.BuiltinFunction('constant', [], lambda: obj - 1)
     return None
 
 def table_methods(obj, name, env):
     if name == 'length' or name == 'size':
-        return BuiltinFunction('constant', [], lambda: len(obj))
+        return builtin_function.BuiltinFunction('constant', [], lambda: len(obj))
     elif name == 'keys':
-        return BuiltinFunction('constant', [], lambda: obj.keys())
+        return builtin_function.BuiltinFunction('constant', [], lambda: obj.keys())
     elif name == 'hasKey':
-        return BuiltinFunction('hasKey', ['key'], lambda key: obj.has_key(key))
+        return builtin_function.BuiltinFunction('hasKey', ['key'], lambda key: obj.has_key(key))
     return None
 
 def type_tree_methods(obj, name, env):
     # This method allows us to view the type tree of a given environment
     if name == 'format':
-        return BuiltinFunction('constant', [], lambda: obj.format_as_literal())
+        return builtin_function.BuiltinFunction('constant', [], lambda: obj.format_as_literal())
     return None
 
 def dot_operator(obj, name, env):

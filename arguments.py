@@ -16,6 +16,25 @@ def is_out_of_bounds(index, lst):
     list_len = len(lst)
     return index >= list_len or index < -list_len
 
+def min_and_max_args(arg_names):
+    """
+    Returns the minimum and maximum number of arguments,
+    for a built-in function, as a tuple.
+    """
+    if arg_names is None:
+        return (None, None)
+    min_args = 0
+    max_args = 0
+    for name in arg_names:
+        if name.endswith('?'):
+            max_args += 1
+        elif is_grouping_argument(name):
+            max_args = float('inf')
+        else:
+            min_args += 1
+            max_args += 1
+    return (min_args, max_args)
+
 def assign_arguments(arg_names, arg_values, env):
     num_grouping_args = count_grouping_arguments(arg_names)
     if num_grouping_args == 0:

@@ -35,6 +35,15 @@ def is_positive_numeric(val):
 def is_digit(val):
     return val in '0123456789'
 
+def is_float_exponent_header(val):
+    """
+    Returns True if val begins a floating point literal with
+    an exponent field, such as '3.0e' or '5e'.
+    """
+    if len(val) < 2:
+        return False
+    return (val.endswith('e') or val.endswith('E')) and is_digit(val[-2])
+
 class AST(object):
     """
     Abstract syntax tree with strongly binding operators at the bottom.
@@ -162,7 +171,7 @@ class AST(object):
         buffer_contents = buffer.strip()
         if len(buffer_contents) > 0:
             tokens.append(buffer_contents)
-        return self.merge_negatives(tokens)
+        return self.merge_exponent_notation(self.merge_negatives(tokens))
     
     def merge_negatives(self, tokens):
         """
@@ -183,7 +192,28 @@ class AST(object):
                 max_len = len(tokens) - 2
             i += 1
         return tokens
-    
+
+    def merge_exponent_notation(self, tokens):
+        """
+        Allows for proper expression of float literals
+        with exponent fields, such as 3e-20.
+        e.g. ['-3.0e5', '+', '186e', '-', '20', '*', '1e', '-', '6']
+             -> ['-3.0e5', '+', '186e-20', '*', '1e-6']
+        """
+        i = 0
+        while i < len(tokens):
+            current_token = tokens[i]
+            if is_float_exponent_header(current_token):
+                # Combine the next one or two tokens with the current one
+                num_tokens = None
+                if tokens[i + 1] in ['+', '-']:
+                    num_tokens = 3
+                else:
+                    num_tokens = 2
+                tokens[i : i+num_tokens] = [''.join(tokens[i : i+num_tokens])]
+            i += 1
+        return tokens
+
     def build_indices(self):
         """
         Takes a list of tokens and collects indices of operators

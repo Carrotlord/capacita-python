@@ -206,6 +206,11 @@ def main():
                 z = "https://example.com"
             """
             print(preprocess(sample))
+        elif first_arg == '--test10':
+            ast = AST('-3.0e5 + 186e-20 * 1e-6 / 28.8e+6 + 34.4e+99')
+            print(ast.parse())
+            ast = AST('-3.0E5 + 186E-20 * 1E-6 / 28.8e+6 + 34.4E+99')
+            print(ast.parse())
         elif first_arg == '--test-tree-merge':
             tests.test_tree_merge()
         elif first_arg == '--test-all':

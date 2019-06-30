@@ -1,0 +1,18 @@
+print 1e-6 * 200.1e12
+print 5E-3 + 18E-3
+print (36.6e2 / 57.6e+4) ^ 5e-1
+print 3e80 + 45e80
+
+import math
+
+func square(x) = x^2
+
+func g(x) = integrate(square, 0, x, 60)
+func h(x) = integrate(g, 0, x, 60)
+func gPrime(x) = x^3 / 3
+func hPrime(x) = x^4 / 12
+
+print g(1e2)
+print h(1e2)
+print gPrime(100)
+print hPrime(1E2)

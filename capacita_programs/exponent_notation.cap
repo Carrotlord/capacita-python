@@ -2,6 +2,11 @@ print 1e-6 * 200.1e12
 print 5E-3 + 18E-3
 print (36.6e2 / 57.6e+4) ^ 5e-1
 print 3e80 + 45e80
+print -3e80 + -45.0e80
+
+z2e = 500
+print z2e+5
+print z2e-5
 
 import math
 

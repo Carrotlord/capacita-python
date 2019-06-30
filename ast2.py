@@ -42,7 +42,10 @@ def is_float_exponent_header(val):
     """
     if len(val) < 2:
         return False
-    return (val.endswith('e') or val.endswith('E')) and is_digit(val[-2])
+    if val.startswith('-'):
+        val = val[1:]
+    return (val.endswith('e') or val.endswith('E')) and \
+           is_digit(val[-2]) and is_digit(val[0])
 
 class AST(object):
     """

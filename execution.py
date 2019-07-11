@@ -113,7 +113,29 @@ def find_catch(directive_list, lines, prgm_counter, env):
         prgm_counter += 1
     # Cannot finish try catch:
     return None
-            
+
+def is_assignment_statement(line):
+    i = 0
+    length = len(line)
+    # The operators !=, >=, and <= start with !, >, or <
+    starters = '!><'
+    while i < length:
+        current_char = line[i]
+        if current_char == '=':
+            if i == 0 or i == length - 1:
+                throw_exception(
+                    'SyntaxError',
+                    'Statement begins or ends with an equals sign: ' + line
+                )
+            elif line[i + 1] == '=':
+                # Double equals sign. Skip the next character.
+                i += 1
+            elif line[i - 1] not in starters:
+                # This must be an assignment statement.
+                return True
+        i += 1
+    return False
+
 def is_statement(query):
     """Returns True if query is a statement, else False."""
     if query.startswith('print ') or query.startswith('show ') or \
@@ -123,13 +145,7 @@ def is_statement(query):
        query.startswith('super ') or query.startswith('import ') or \
        query.startswith('func '):
         return True
-    comparators = ['==', '!=', '>=', '<=']
-    ast = AST(query)
-    tokens = ast.parse()
-    for token in tokens:
-        if '=' in token and token not in comparators:
-            return True
-    return False
+    return is_assignment_statement(query)
 
 def execute_statement(stmt, env):
     """Executes a statement in a given environment."""

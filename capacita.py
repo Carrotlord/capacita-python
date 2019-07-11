@@ -18,7 +18,8 @@ from execution import execute_statement, \
                       evaluate_expression, \
                       execute_lines, \
                       eval_parentheses, \
-                      is_statement
+                      is_statement, \
+                      is_assignment_statement
 from function import extract_functions
 
 import tests
@@ -211,6 +212,11 @@ def main():
             print(ast.parse())
             ast = AST('-3.0E5 + 186E-20 * 1E-6 / 28.8e+6 + 34.4E+99')
             print(ast.parse())
+        elif first_arg == '--test11':
+            print(is_assignment_statement('a = 5'))
+            print(is_assignment_statement('a=5==6'))
+            print(is_assignment_statement('not (5==6) and (8>=7)'))
+            print(is_assignment_statement('z='))
         elif first_arg == '--test-tree-merge':
             tests.test_tree_merge()
         elif first_arg == '--test-all':

@@ -149,6 +149,9 @@ class Environment(object):
             throw_exception('UndefinedVariable', var_name + ' is not defined.')
         
     def get(self, var_name):
+        if var_name == 'input':
+            # Read a line from the console
+            return '"{0}"'.format(raw_input())
         last_this = self.last_this()
         if var_name in last_this:
             return last_this[var_name]

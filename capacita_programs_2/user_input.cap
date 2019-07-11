@@ -1,0 +1,7 @@
+show "Enter your name: "
+name = input
+print "Your name is " + name + "."
+
+print "Enter 3 lines of data:"
+items = [input, input, input]
+print items

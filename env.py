@@ -8,6 +8,16 @@ from type_tree import get_type, \
                       build_type_table
 
 import re
+import os
+
+def normalize_file_name(file_name):
+    """
+    Normalize the file path, so that different paths which point
+    to the same file are just considered 'the same file'.
+    A more robust solution would be to use os.path.samefile,
+    but this only works on Unix systems for Python 2.x.
+    """
+    return os.path.normcase(os.path.normpath(file_name))
 
 class Environment(object):
     """
@@ -23,7 +33,12 @@ class Environment(object):
         self.this_pointers = []
         self.exception_stack = []
         self.last_assigned = None
-    
+        self.already_imported = set()
+        # The starting directory of the program we are running.
+        # This value exists make sure that imports are relative to the
+        # Capacita program, not the Python interpreter for Capacita.
+        self.starting_dir = None
+
     def merge(self, dictionary):
         for key in dictionary:
             self.frames[-1][key] = dictionary[key]
@@ -214,6 +229,24 @@ class Environment(object):
         for parent in parents:
             parent_tree = self.all_types[parent]
             parent_tree.add_subclass(child_tree)
+    
+    def has_starting_dir(self):
+        return self.starting_dir is not None
+    
+    def add_import(self, file_name):
+        if not self.has_starting_dir():
+            # No files have been imported. Set the starting directory.
+            self.starting_dir = os.path.dirname(file_name)
+        normalized_file_name = normalize_file_name(file_name)
+        self.already_imported.add(normalized_file_name)
+    
+    def is_already_imported(self, file_name):
+        return normalize_file_name(file_name) in self.already_imported
+    
+    def set_correct_directory(self, file_name):
+        if not self.has_starting_dir():
+            return file_name
+        return os.path.join(self.starting_dir, file_name)
 
     def __repr__(self):
         return str(self.frames)

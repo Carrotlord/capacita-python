@@ -3,6 +3,7 @@ import math
 from exception import throw_exception
 
 import builtin_function
+import capacita
 
 def import_math(env):
     def binomial_choose(n, k):
@@ -143,6 +144,9 @@ def perform_import(library, env):
         import_math(env)
     elif library == 'functional':
         import_functional(env)
+    elif library.startswith('"') and library.endswith('"'):
+        # Import a program from the file system
+        capacita.execute_file(library[1:-1], env)
     else:
         throw_exception('NoExistingLibrary', 'No library named {0}'.format(library))
     if obj is not None:

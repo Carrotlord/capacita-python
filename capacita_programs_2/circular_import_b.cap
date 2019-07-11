@@ -1,0 +1,8 @@
+import "circular_import_a.cap"
+
+sub b(argument)
+    print "Executing b."
+    when argument == #base_case
+        return #b_success
+    return a(#base_case)
+end

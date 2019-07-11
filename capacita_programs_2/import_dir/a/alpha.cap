@@ -1,0 +1,10 @@
+print "Alpha was imported."
+
+/* For now, all imports are relative to the folder
+ * where the root program resides, which is folder_import.cap
+ * in this case.
+ * An alternative feature would be to allow relative imports,
+ * which would import relative to the 'current program' alpha.cap instead
+ * of the root program.
+ */
+import "import_dir/b/beta.cap"

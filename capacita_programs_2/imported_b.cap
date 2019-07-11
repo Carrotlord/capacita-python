@@ -1,0 +1,3 @@
+class B() inherits A
+    super A()
+end

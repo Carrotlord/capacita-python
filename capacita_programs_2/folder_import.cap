@@ -1,0 +1,3 @@
+import "import_dir/a/alpha.cap"
+// The following should not do anything, as beta.cap was already imported by alpha.cap
+import "import_dir/b/beta.cap"

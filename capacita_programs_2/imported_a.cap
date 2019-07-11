@@ -1,0 +1,5 @@
+class A()
+    sub method()
+        print "Hello world!"
+    end
+end

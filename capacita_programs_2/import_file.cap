@@ -1,0 +1,10 @@
+import math
+import functional
+import "imported_a.cap"
+import "imported_b.cap"
+
+A().method()
+B().method()
+
+// Importing self should do nothing
+import "import_file.cap"

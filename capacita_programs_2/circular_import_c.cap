@@ -1,0 +1,4 @@
+import "circular_import_a.cap"
+
+print a(0)
+print b(0)

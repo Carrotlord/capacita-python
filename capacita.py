@@ -8,27 +8,33 @@ from ratio import Ratio
 from ast2 import AST
 from control_flow import prepare_control_flow
 from ribbon import Ribbon
-from env import Environment
 from console import display, literal
 from tokens import tokenize_statement
 from fileio import file_to_str
 from exception import throw_exception
 from prepare_program import prepare_program, preprocess
-from execution import execute_statement, \
-                      evaluate_expression, \
-                      execute_lines, \
-                      eval_parentheses, \
-                      is_statement, \
-                      is_assignment_statement
-from function import extract_functions
 
 import tests
+import env as environment
+import execution
+import function
+
+def execute_file(file_name, existing_env=None):
+    if existing_env is None:
+        existing_env = environment.Environment()
+    file_name = existing_env.set_correct_directory(file_name)
+    if not existing_env.is_already_imported(file_name):
+        existing_env.add_import(file_name)
+        try:
+            execute_program(file_to_str(file_name), existing_env)
+        except IOError:
+            print('Could not read file: ' + file_name)
 
 def execute_program(prgm, existing_env=None):
     """Executes a program given as a string."""
-    prgm, env = extract_functions(prgm, existing_env)
+    prgm, env = function.extract_functions(prgm, existing_env)
     lines = prepare_program(prgm)
-    execute_lines(lines, env)
+    execution.execute_lines(lines, env)
     
 def store_program():
     """
@@ -49,7 +55,7 @@ def repl():
     the ':program' directive, ending with ':end'.
     Use the 'this' keyword to see the current environment frames.
     """
-    env = Environment()
+    env = environment.Environment()
     while True:
         expr = raw_input('Capacita> ')
         # Treat expr as a single-line program:
@@ -67,26 +73,26 @@ def repl():
             execute_program(prgm, env)
         elif expr == 'this':
             print(env.frames)
-        elif is_statement(expr):
-            execute_statement(expr, env)
+        elif execution.is_statement(expr):
+            execution.execute_statement(expr, env)
         else:
-            print(literal(eval_parentheses(expr, env)))
+            print(literal(execution.eval_parentheses(expr, env)))
 
 def main():
     """Main function - includes tests and runs the REPL."""
     if len(sys.argv) > 1:
         first_arg = sys.argv[1]
         if first_arg == '--test':
-            env = Environment()
-            execute_statement('x = 3', env)
-            execute_statement('x+=7', env)
-            execute_statement('y=9.23', env)
+            env = environment.Environment()
+            execution.execute_statement('x = 3', env)
+            execution.execute_statement('x+=7', env)
+            execution.execute_statement('y=9.23', env)
             env.new_frame()
-            execute_statement('x = 5', env)
+            execution.execute_statement('x = 5', env)
             print(env.frames)
-            execute_statement('z="hello world"', env)
-            execute_statement('z +="!!!"', env)
-            execute_statement('a= `gelatin`', env)
+            execution.execute_statement('z="hello world"', env)
+            execution.execute_statement('z +="!!!"', env)
+            execution.execute_statement('a= `gelatin`', env)
             print(env.frames)
             ast = AST("3*4+5 ^ 7")
             print(ast.parse())
@@ -95,12 +101,12 @@ def main():
             print(ast.parse())
             print(ast.collapse_indices(ast.build_indices()))
 
-            print(evaluate_expression('1+2+3+4', Environment()))
-            print(evaluate_expression('45+7*8', Environment()))
-            print(evaluate_expression('3.2+18^2-7', Environment()))
-            print(evaluate_expression('1:2 + 1:3 + 1:5', Environment()))
-            print(evaluate_expression('2:3 + 3^3 - 1:5', Environment()))
-            print(evaluate_expression('1234', Environment()))
+            print(execution.evaluate_expression('1+2+3+4', environment.Environment()))
+            print(execution.evaluate_expression('45+7*8', environment.Environment()))
+            print(execution.evaluate_expression('3.2+18^2-7', environment.Environment()))
+            print(execution.evaluate_expression('1:2 + 1:3 + 1:5', environment.Environment()))
+            print(execution.evaluate_expression('2:3 + 3^3 - 1:5', environment.Environment()))
+            print(execution.evaluate_expression('1234', environment.Environment()))
             
             ast = AST("3 + 1 == 4")
             print(ast.parse())
@@ -113,9 +119,9 @@ def main():
             ast = AST("y = 3 > 4")
             print(ast.parse())
             
-            env2 = Environment()
-            execute_statement('x = 3+5*4', env2)
-            execute_statement('y = x + 19 - 3*6', env2)
+            env2 = environment.Environment()
+            execution.execute_statement('x = 3+5*4', env2)
+            execution.execute_statement('y = x + 19 - 3*6', env2)
             print(env2.frames)
         elif first_arg == '--test2':
             ast = AST('x = "ice cream, eggs, and milk" + "...alpha or beta"')
@@ -150,7 +156,7 @@ def main():
             ast = AST('3.1')
             print(ast.parse())
         elif first_arg == '--test5':
-            env = Environment()
+            env = environment.Environment()
             env.new_type(['Number'], 'ComplexNumber')
             c = {'$type': 'ComplexNumber', 'real': 1, 'imag': 2}
             print(env.value_is_a(c, 'ComplexNumber'))
@@ -213,10 +219,10 @@ def main():
             ast = AST('-3.0E5 + 186E-20 * 1E-6 / 28.8e+6 + 34.4E+99')
             print(ast.parse())
         elif first_arg == '--test11':
-            print(is_assignment_statement('a = 5'))
-            print(is_assignment_statement('a=5==6'))
-            print(is_assignment_statement('not (5==6) and (8>=7)'))
-            print(is_assignment_statement('z='))
+            print(execution.is_assignment_statement('a = 5'))
+            print(execution.is_assignment_statement('a=5==6'))
+            print(execution.is_assignment_statement('not (5==6) and (8>=7)'))
+            print(execution.is_assignment_statement('z='))
         elif first_arg == '--test-tree-merge':
             tests.test_tree_merge()
         elif first_arg == '--test-all':
@@ -226,10 +232,7 @@ def main():
         else:
             # Run a program from a text file:
             file_name = first_arg
-            try:
-                execute_program(file_to_str(file_name))
-            except IOError:
-                print("Could not read file: " + file_name)
+            execute_file(file_name)
         exit()
     repl()
         

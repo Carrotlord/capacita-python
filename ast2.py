@@ -261,13 +261,26 @@ class AST(object):
         for index in all:
             j = i + 1
             for checked_index in all[i+1:]:
-                # Indices that are greater than
-                # the current should be moved over 2 slots:
-                if type(index) is tuple and index[0] < checked_index:
-                    # Unary operator:
-                    self.reduce_index(all, j, 1)
-                elif index < checked_index:
-                    self.reduce_index(all, j, 2)
+                is_unary = type(index) is tuple
+                # Pull values out of tuples so they can be compared properly.
+                if is_unary:
+                    raw_index = index[0]
+                else:
+                    raw_index = index
+                if type(checked_index) is tuple:
+                    raw_checked_index = checked_index[0]
+                else:
+                    raw_checked_index = checked_index
+                # When the current raw_index is processed via operator
+                # evaluation, it will reduce the length of the token list
+                # by 2 (or by 1, if the opeator is unary).
+                # In this case, all indices greater than raw_index
+                # must be reduced by either 2 or 1.
+                if raw_index < raw_checked_index:
+                    if is_unary:
+                        self.reduce_index(all, j, 1)
+                    else:
+                        self.reduce_index(all, j, 2)
                 j += 1
             i += 1
         for i in xrange(len(all)):

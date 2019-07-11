@@ -351,6 +351,13 @@ Carol studies at school.
 Carol calls Alice.
 Carol rides a bicycle to home.
 Carol studies at home.
+===== Testing capacita_programs/not_operator.cap
+true
+true
+false
+true
+false
+true
 ===== Testing capacita_programs/objects.cap
 Object{#car, 1 | #cdr, 2}
 1

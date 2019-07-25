@@ -16,6 +16,7 @@ import function
 import type_restrict
 import type_tree
 import builtin_method
+import prepare_program
 
 def execute_lines(lines, env):
     """
@@ -119,20 +120,24 @@ def is_assignment_statement(line):
     length = len(line)
     # The operators !=, >=, and <= start with !, >, or <
     starters = '!><'
+    in_quotes = False
     while i < length:
-        current_char = line[i]
-        if current_char == '=':
-            if i == 0 or i == length - 1:
-                throw_exception(
-                    'SyntaxError',
-                    'Statement begins or ends with an equals sign: ' + line
-                )
-            elif line[i + 1] == '=':
-                # Double equals sign. Skip the next character.
-                i += 1
-            elif line[i - 1] not in starters:
-                # This must be an assignment statement.
-                return True
+        if prepare_program.is_quote(line, i):
+            in_quotes = not in_quotes
+        if not in_quotes:
+            current_char = line[i]
+            if current_char == '=':
+                if i == 0 or i == length - 1:
+                    throw_exception(
+                        'SyntaxError',
+                        'Statement begins or ends with an equals sign: ' + line
+                    )
+                elif line[i + 1] == '=':
+                    # Double equals sign. Skip the next character.
+                    i += 1
+                elif line[i - 1] not in starters:
+                    # This must be an assignment statement.
+                    return True
         i += 1
     return False
 

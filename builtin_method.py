@@ -65,7 +65,7 @@ def str_methods(obj, name, env):
             if i < -true_length or i >= true_length:
                 throw_exception(
                      'StringIndexOutOfBounds',
-                     'Index {0} is out of bounds for {1}'.format(obj)
+                     'Index {0} is out of bounds for {1}'.format(i, obj)
                 )
             # Compensate for quotes:
             elif i >= 0:

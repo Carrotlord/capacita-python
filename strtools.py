@@ -76,3 +76,11 @@ def unescape(str_contents):
         else:
             processed += char
     return processed
+
+def convert_special_char(char):
+    if char == '(':
+        return '\\x28'
+    elif char == ')':
+        return '\\x29'
+    else:
+        return char

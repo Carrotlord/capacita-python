@@ -1,5 +1,5 @@
 from control_flow import prepare_control_flow
-from strtools import find_matching_quote
+from strtools import find_matching_quote, convert_special_char
 from exception import throw_exception
 
 import ast2
@@ -125,12 +125,7 @@ def preprocess(prgm):
             if is_quote(prgm, i):
                 in_quotes = not in_quotes
             if in_quotes:
-                if char == '(':
-                    processed += '\\x28'
-                elif char == ')':
-                    processed += '\\x29'
-                else:
-                    processed += char
+                processed += convert_special_char(char)
             else:
                 processed += char
             i += 1

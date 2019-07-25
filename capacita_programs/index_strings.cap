@@ -1,0 +1,13 @@
+x = "hello () /* hi */"
+// Iterate forwards
+for i = 0; i < x.length(); i += 1
+    show x.charAt(i)
+    show " "
+end
+print ""
+// Iterate backwards
+for i = -1; i >= -x.length(); i -= 1
+    show x.charAt(i)
+    show " "
+end
+print ""

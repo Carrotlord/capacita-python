@@ -235,6 +235,13 @@ true
 ===== Testing capacita_programs/index_strings.cap
 h e l l o   ( )   / *   h i   * / 
 / *   i h   * /   ) (   o l l e h 
+h e l l o   ( )   / *   h i   * / 
+/ *   i h   * /   ) (   o l l e h 
+s
+e
+b
+h e l l o   ( )   / *   h i   * / 
+l i t e r a l   s t r i n g 
 ===== Testing capacita_programs/inheritance.cap
 Object{#real, 1 | #i, 2 | #imag, 2 | #r, 1 | #$type, "ComplexNumber"}
 Object{#real, 3 | #i, 4 | #imag, 4 | #r, 3 | #$type, "ComplexNumber"}

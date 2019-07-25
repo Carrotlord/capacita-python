@@ -1,3 +1,5 @@
+import exception
+
 def find_matching(expr, opening='(', closing=')'):
     """
     Finds the first unmatched closing parenthesis
@@ -84,3 +86,17 @@ def convert_special_char(char):
         return '\\x29'
     else:
         return char
+
+def index_string(obj, i):
+    true_length = len(obj) - 2
+    if i < -true_length or i >= true_length:
+        exception.throw_exception(
+             'StringIndexOutOfBounds',
+             'Index {0} is out of bounds for {1}'.format(i, obj)
+        )
+    # Compensate for quotes:
+    elif i >= 0:
+        char = obj[i + 1]
+    else:
+        char = obj[i - 1]
+    return '"' + convert_special_char(char) + '"'

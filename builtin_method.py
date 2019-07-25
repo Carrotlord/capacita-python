@@ -60,20 +60,7 @@ def str_methods(obj, name, env):
         length = len(obj) - 2
         return builtin_function.BuiltinFunction('constant', [], lambda: length)
     elif name == 'charAt':
-        def index_string(i):
-            true_length = len(obj) - 2
-            if i < -true_length or i >= true_length:
-                throw_exception(
-                     'StringIndexOutOfBounds',
-                     'Index {0} is out of bounds for {1}'.format(i, obj)
-                )
-            # Compensate for quotes:
-            elif i >= 0:
-                char = obj[i + 1]
-            else:
-                char = obj[i - 1]
-            return '"' + strtools.convert_special_char(char) + '"'
-        return builtin_function.BuiltinFunction('charAt', ['i'], index_string)
+        return builtin_function.BuiltinFunction('charAt', ['i'], lambda i: strtools.index_string(obj, i))
     elif name == '$internals':
         # View internals of a string, for debugging purposes.
         print(repr(obj))

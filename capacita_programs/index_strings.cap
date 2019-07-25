@@ -11,3 +11,32 @@ for i = -1; i >= -x.length(); i -= 1
     show " "
 end
 print ""
+
+// Iterate forwards
+for i = 0; i < x.length(); i += 1
+    show x[i]
+    show " "
+end
+print ""
+// Iterate backwards
+for i = -1; i >= -x.length(); i -= 1
+    show x[i]
+    show " "
+end
+print ""
+
+print "string"[0]
+print "alice"[-1]
+print "bob"[2]
+
+for each char of x
+    show char
+    show " "
+end
+print ""
+
+for each char of "literal string"
+    show char
+    show " "
+end
+print ""

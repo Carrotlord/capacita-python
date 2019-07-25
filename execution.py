@@ -6,7 +6,7 @@ from ribbon import Ribbon
 from ratio import Ratio
 from console import display
 from exception import throw_exception
-from strtools import find_matching, escape
+from strtools import find_matching, escape, index_string
 from table import Table
 from control_flow import find_next_end_else
 from trigger import Trigger
@@ -240,6 +240,9 @@ def get_name(name, env):
         return env.get(name)
     return name
 
+def is_index_valid(current):
+    return type(current) is list and len(current) == 1
+
 def index_lists(tokens, env):
     i = 1
     while i < len(tokens):
@@ -247,15 +250,19 @@ def index_lists(tokens, env):
         current = get_name(tokens[i], env)
         # For an expression such as x[i], x is 'prev' and [i] is 'current',
         # so [i] should always be a generic list, not a restricted one.
-        if type_restrict.is_considered_list(prev) and type(current) is list and \
-           len(current) == 1:
-            index = get_name(current[0], env)
-            if type(index) is int:
-                tokens[i-1 : i+1] = [prev[index]]
-        elif prev.__class__ is Table and type(current) is list and \
-             len(current) == 1:
-             key = get_name(current[0], env)
-             tokens[i-1 : i+1] = [prev.get(key)]
+        if is_index_valid(current):
+            if type_restrict.is_considered_list(prev):
+                index = get_name(current[0], env)
+                if type(index) is int:
+                    tokens[i-1 : i+1] = [prev[index]]
+            elif is_string(prev):
+                index = get_name(current[0], env)
+                tokens[i-1 : i+1] = [index_string(prev, index)]
+            elif prev.__class__ is Table:
+                key = get_name(current[0], env)
+                tokens[i-1 : i+1] = [prev.get(key)]
+            else:
+                i += 1
         else:
             i += 1
     return tokens

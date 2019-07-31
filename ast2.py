@@ -4,6 +4,23 @@ from exception import throw_exception
 import re
 
 compound_operators = ['+=', '-=', '*=', '/=', '%=', '^=', ':=']
+precedences = {
+    '.': 1,
+    ':': 2,
+    '^': 3,
+    '*': 4, '/': 4, '%': 4,
+    '+': 5, '-': 5,
+    '==': 6, '!=': 6, '>=': 6, '<=': 6,
+    '>': 6, '<': 6,
+    ' of ': 7,
+    'not ': 8,
+    ' and ': 9, ' or ': 9, ' xor ': 9
+}
+# Longer operators should be detected before shorter ones:
+ordered_ops = [' and ', ' or ', ' xor ', 'not ', ' of ',
+               '>=', '<=', '!=', '==', '<', '>',
+               '+', '-', '*', '/', '%', '^', ':', '.']
+starters = ' n><!=+-*/%^:.'
 
 def is_numeric(val):
     """
@@ -55,23 +72,9 @@ class AST(object):
     def __init__(self, expr):
         """Setup expression and precedences of operators."""
         self.expr = expr
-        self.precedences = {
-            '.': 1,
-            ':': 2,
-            '^': 3,
-            '*': 4, '/': 4, '%': 4,
-            '+': 5, '-': 5,
-            '==': 6, '!=': 6, '>=': 6, '<=': 6,
-            '>': 6, '<': 6,
-            ' of ': 7,
-            'not ': 8,
-            ' and ': 9, ' or ': 9, ' xor ': 9
-        }
-        # Longer operators should be detected before shorter ones:
-        self.ordered_ops = [' and ', ' or ', ' xor ', 'not ', ' of ',
-                            '>=', '<=', '!=', '==', '<', '>',
-                            '+', '-', '*', '/', '%', '^', ':', '.']
-        self.starters = ' n><!=+-*/%^:.'
+        self.precedences = precedences
+        self.ordered_ops = ordered_ops
+        self.starters = starters
     
     def weakest(self):
         """
@@ -97,7 +100,7 @@ class AST(object):
                 lst.append(elem)
         results = []
         buffer = ''
-        delimiters = ['[', ']', ',', '{', '}', '|']
+        delimiters = '[],{}|'
         i = 0
         while i < len(self.expr):
             char = self.expr[i]

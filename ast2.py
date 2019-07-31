@@ -71,6 +71,7 @@ class AST(object):
         self.ordered_ops = [' and ', ' or ', ' xor ', 'not ', ' of ',
                             '>=', '<=', '!=', '==', '<', '>',
                             '+', '-', '*', '/', '%', '^', ':', '.']
+        self.starters = ' n><!=+-*/%^:.'
     
     def weakest(self):
         """
@@ -150,11 +151,11 @@ class AST(object):
                 i += paren_close
             else:
                 op_detected = False
-                if not in_quotes:
+                if (not in_quotes) and next_char in self.starters:
                     for op in self.ordered_ops:
                         op_length = len(op)
-                        if not(op == '.' and is_digit(expr[i+op_length : i+op_length+1])) and \
-                           expr[i : i+op_length] == op:
+                        if expr[i : i+op_length] == op and \
+                           not(op == '.' and is_digit(expr[i+1 : i+2])):
                             buffer_contents = buffer.strip()
                             if len(buffer_contents) > 0:
                                 tokens.append(buffer_contents)
@@ -165,10 +166,7 @@ class AST(object):
                             break
                 if not op_detected:
                     if next_char == '"':
-                        if in_quotes:
-                            in_quotes = False
-                        else:
-                            in_quotes = True
+                        in_quotes = not in_quotes
                     buffer += next_char
                     i += 1
         buffer_contents = buffer.strip()

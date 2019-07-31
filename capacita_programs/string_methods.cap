@@ -1,0 +1,21 @@
+ord_a = "a".charNum()
+ord_A = "A".charNum()
+print [ord_a, ord_A, ord_a.toChar(), ord_A.toChar()]
+print "abcde".insertAt(2, " word ")
+print "abcde".insertAt(-2, " word ")
+print "abcdefghi".slice(3, 5)
+print "abcdefghi".slice(-6)
+print "abcdefghi".slice(-5, -2)
+print "abcdefghi".slice(-8, 7)
+print "abcdefghi".replaceSlice(3, 5, " word ")
+print "abcdefghi".replaceSlice(-5, -2, " word ")
+print "abcdefghi".replaceSlice(-8, 7, " word ")
+print "these are words".split()
+print "hxexlxlxo".split("x")
+print "hxxxxxxxo".split("x")
+print "h       o".split(" ")
+print "h       o".split()
+print "hello".find("ello")
+print "hello".find("zy")
+
+print "".ord()   // should throw an exception

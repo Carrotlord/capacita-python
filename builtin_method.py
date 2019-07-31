@@ -59,12 +59,63 @@ def str_methods(obj, name, env):
         # Subtract 2 to compensate for quotes at start and end.
         length = len(obj) - 2
         return builtin_function.BuiltinFunction('constant', [], lambda: length)
+    elif name == 'ord' or name == 'charNum':
+        def char_num(string):
+            if len(string) == 2:
+                throw_exception(
+                    'StringEmpty',
+                    'Cannot convert first character to integer when string is empty'
+                )
+            return ord(string[1])
+        return builtin_function.BuiltinFunction('charNum', [], lambda: char_num(obj))
     elif name == 'charAt':
         return builtin_function.BuiltinFunction('charAt', ['i'], lambda i: strtools.index_string(obj, i))
+    elif name == 'insertAt':
+        def insert_at(index, substr):
+            strtools.validate_string_index(obj, index)
+            substr = substr[1:-1]
+            # Adjust indices so that leading/trailing quotes don't need to be removed
+            i = strtools.compensate_index(index)
+            return obj[0:i] + substr + obj[i:]
+        return builtin_function.BuiltinFunction('insertAt', ['index', 'substr'], insert_at)
     elif name == '$internals':
         # View internals of a string, for debugging purposes.
         print(repr(obj))
         return builtin_function.BuiltinFunction('constant', [], lambda: None)
+    elif name == 'slice':
+        def slice_string(start, stop=None):
+            strtools.validate_string_index(obj, start)
+            start = strtools.compensate_index(start)
+            if stop is not None:
+                strtools.validate_string_index(obj, stop)
+                stop = strtools.compensate_index(stop)
+                return strtools.wrap_string(obj[start:stop])
+            else:
+                return '"' + obj[start:]
+        return builtin_function.BuiltinFunction('slice', ['start', 'stop?'], slice_string)
+    elif name == 'replaceSlice':
+        def replace_slice(start, stop, substr):
+            strtools.validate_string_index(obj, start)
+            strtools.validate_string_index(obj, stop)
+            substr = substr[1:-1]
+            start = strtools.compensate_index(start)
+            stop = strtools.compensate_index(stop)
+            return obj[0:start] + substr + obj[stop:]
+        return builtin_function.BuiltinFunction('replaceSlice', ['start', 'stop', 'substr'], replace_slice)
+    contents = obj[1:-1]
+    if name == 'split':
+        def split_string(separator=None):
+            if separator is not None:
+                separator = separator[1:-1]
+            return map(strtools.wrap_string, contents.split(separator))
+        return builtin_function.BuiltinFunction('split', ['separator?'], split_string)
+    elif name == 'find':
+        def find_in_string(string, substr):
+            result = string.find(substr)
+            if result == -1:
+                return None
+            return result
+        return builtin_function.BuiltinFunction('find', ['substring'], lambda s: find_in_string(contents, s[1:-1]))
     return None
 
 def obj_methods(obj, name, env):
@@ -84,6 +135,8 @@ def number_methods(obj, name, env):
         return builtin_function.BuiltinFunction('constant', [], lambda: obj + 1)
     elif name == 'previous':
         return builtin_function.BuiltinFunction('constant', [], lambda: obj - 1)
+    if type(obj) in [int, long] and name == 'toChar':
+        return builtin_function.BuiltinFunction('toChar', [], lambda: strtools.wrap_string(chr(obj)))
     return None
 
 def table_methods(obj, name, env):

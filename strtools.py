@@ -87,16 +87,29 @@ def convert_special_char(char):
     else:
         return char
 
-def index_string(obj, i):
-    true_length = len(obj) - 2
+def validate_string_index(string, i):
+    true_length = len(string) - 2
     if i < -true_length or i >= true_length:
         exception.throw_exception(
              'StringIndexOutOfBounds',
-             'Index {0} is out of bounds for {1}'.format(i, obj)
+             'Index {0} is out of bounds for {1}'.format(i, string)
         )
-    # Compensate for quotes:
-    elif i >= 0:
-        char = obj[i + 1]
+
+def compensate_index(i):
+    """
+    Modify index so that strings wrapped in quotes behave
+    like strings not wrapped in quotes.
+    """
+    if i >= 0:
+        return i + 1
     else:
-        char = obj[i - 1]
-    return '"' + convert_special_char(char) + '"'
+        return i - 1
+
+def index_string(obj, i):
+    validate_string_index(obj, i)
+    # Compensate for quotes:
+    char = obj[compensate_index(i)]
+    return wrap_string(convert_special_char(char))
+
+def wrap_string(contents):
+    return '"' + contents + '"'

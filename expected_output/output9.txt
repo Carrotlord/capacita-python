@@ -459,6 +459,27 @@ abcdefghijklmnopqrstuvwxyz0123456789
 B"C"D\EA
 ABCDEFGHIJKLMNOPQRSTUVWXYZ)!@#$%^&*(
 []{}
+===== Testing capacita_programs/string_methods.cap
+[97, 65, "a", "A"]
+ab word cde
+abc word de
+de
+defghi
+efg
+bcdefg
+abc word fghi
+abcd word hi
+a word hi
+["these", "are", "words"]
+["h", "e", "l", "l", "o"]
+["h", "", "", "", "", "", "", "o"]
+["h", "", "", "", "", "", "", "o"]
+["h", "o"]
+1
+null
+StringEmpty exception
+Cannot convert first character to integer when string is empty
+===== Exception: <type 'exceptions.SystemExit'>
 ===== Testing capacita_programs/sub.cap
 20.6
 33

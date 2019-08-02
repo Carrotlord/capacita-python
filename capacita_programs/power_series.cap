@@ -1,0 +1,23 @@
+import math
+
+func termCosine(x, n) = ((-1)^n * x^(2*n)) / factorial(2*n)
+func termSine(x, n) = ((-1)^n * x^(2*n + 1)) / factorial(2*n + 1)
+
+sub series(x, termFunction, numTerms=10)
+    x = x % (2 * pi)
+    sum = 0
+    for n = 0; n < numTerms; n += 1
+        sum += termFunction(x, n)
+    end
+    return sum
+end
+
+func cosine(x) = series(x, termCosine)
+func sine(x) = series(x, termSine)
+
+import functional
+
+print map(cosine, [0, 0.1, 0.2, 0.3, 0.4, 0.5, 2e5])
+print map(cos, [0, 0.1, 0.2, 0.3, 0.4, 0.5, 2e5])
+print map(sine, [0, 0.1, 0.2, 0.3, 0.4, 0.5, 2e5])
+print map(sin, [0, 0.1, 0.2, 0.3, 0.4, 0.5, 2e5])

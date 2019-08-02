@@ -64,6 +64,8 @@ def import_math(env):
     env.assign('min', builtin_function.BuiltinFunction('min', ['n', '[args]'], min))
     env.assign('max', builtin_function.BuiltinFunction('max', ['n', '[args]'], max))
     env.assign('integrate', builtin_function.BuiltinFunction('integrate', ['f', 'a', 'b', 'numRectangles?'], integrate))
+    env.assign('sin', builtin_function.BuiltinFunction('sin', ['x'], math.sin))
+    env.assign('cos', builtin_function.BuiltinFunction('cos', ['x'], math.cos))
 
 def import_functional(env):
     def compose(f, g):

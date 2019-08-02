@@ -175,7 +175,7 @@ class AST(object):
         buffer_contents = buffer.strip()
         if len(buffer_contents) > 0:
             tokens.append(buffer_contents)
-        return self.merge_exponent_notation(self.merge_negatives(tokens))
+        return self.merge_negatives(self.merge_exponent_notation(tokens))
     
     def merge_negatives(self, tokens):
         """

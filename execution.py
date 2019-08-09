@@ -279,7 +279,7 @@ def evaluate_expression(expr, env):
     """
     ast = AST(expr)
     tokens = ast.parse()
-    indices = ast.collapse_indices(ast.build_indices())
+    indices = ast.collapse_indices(ast.build_indices(tokens))
     return evaluate_operators(tokens, indices, env)
     
 def evaluate_operators(tokens, indices, env):
@@ -380,8 +380,11 @@ def eval_parentheses(expr, env):
     Recursively evaluates expressions enclosed in parentheses,
     which change the order-of-operations for the expression.
     """
-    ast = AST(expr)
-    tokens = ast.parse()
+    tokens = env.get_from_expr_cache(expr)
+    if tokens is None:
+        ast = AST(expr)
+        tokens = ast.parse()
+        env.add_to_expr_cache(expr, tokens)
     tokens = call_functions(tokens, env)
     if tokens.__class__ is Trigger:
         return tokens

@@ -38,6 +38,21 @@ class Environment(object):
         # This value exists make sure that imports are relative to the
         # Capacita program, not the Python interpreter for Capacita.
         self.starting_dir = None
+        # Avoid repeated parsing of an expression by storing expressions
+        # in a cache.
+        self.expr_cache = {}
+
+    def add_to_expr_cache(self, expr, tokens):
+        # Because tokens is a list that is often mutated,
+        # it is necessary to make a shallow copy of tokens
+        # both when adding to the expression cache and reading
+        # from the expression cache.
+        self.expr_cache[expr] = tokens[:]
+
+    def get_from_expr_cache(self, expr):
+        if expr in self.expr_cache:
+            return (self.expr_cache[expr])[:]
+        return None
 
     def merge(self, dictionary):
         for key in dictionary:

@@ -218,7 +218,7 @@ class AST(object):
             i += 1
         return tokens
 
-    def build_indices(self):
+    def build_indices(self, parsed_tokens=None):
         """
         Takes a list of tokens and collects indices of operators
         based on their precedence. The first index encountered indicates
@@ -227,7 +227,10 @@ class AST(object):
                    indices:   0    1    2    3    4    5    6    7    8
              -> [[], [7], [5], [1, 3]]
         """
-        tokens = self.parse()
+        if parsed_tokens is None:
+            tokens = self.parse()
+        else:
+            tokens = parsed_tokens
         table = [[], [], [], [], [], [], [], [], []]
         i = 0
         for token in tokens:

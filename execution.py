@@ -278,7 +278,10 @@ def evaluate_expression(expr, env):
     and evaluating individual operators at certain indices.
     """
     ast = AST(expr)
-    tokens = ast.parse()
+    tokens = env.get_from_expr_cache(expr)
+    if tokens is None:
+        tokens = ast.parse()
+        env.add_to_expr_cache(expr, tokens)
     indices = ast.collapse_indices(ast.build_indices(tokens))
     return evaluate_operators(tokens, indices, env)
     

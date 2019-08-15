@@ -1,0 +1,20 @@
+print (3 + 4) * 7.2
+print 4:(1+1) ^ (10-9):intDiv(6, 3)
+print (3 + 4 + 5) + "string"
+print 3 + 4 + (5 + "string")
+sub quadraticFormula(a, b, c)
+    return [(-b + (b^2 - 4*a*c) ^ 1:2) / (2*a), (-b - (b*b - (a+a)*2*c) ^ 0.5) / (a+a)]
+end
+sub quadratic(a, b, c)
+    func f(x) = x*(a*x + b) + c
+    return f
+end
+xs = quadraticFormula(1, 2, 1)
+xs2 = quadraticFormula(37, 5, -20)
+print xs
+print xs2
+f = quadratic(1, 2, 1)
+g = quadratic(37, 5, -20)
+import functional
+print map(f, xs)
+print map(g, xs2)

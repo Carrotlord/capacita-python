@@ -1,7 +1,8 @@
 import re
 
-from tokens import tokenize_statement
-from ast2 import AST
+from tokens import tokenize_statement, \
+                   seek_parenthesis_in_tokens
+from ast2 import AST, precedences
 from ribbon import Ribbon
 from ratio import Ratio
 from console import display
@@ -272,16 +273,30 @@ def index_lists(tokens, env):
             i += 1
     return tokens
 
-def evaluate_expression(expr, env):
+def retrieve_tokens(expr, env, parsed_tokens=None):
+    """
+    Retrieves (ast, tokens) from a string expression.
+    tokens is the token list generated from the expression.
+    ast is the abstract syntax tree associated with the expression.
+    If parsed_tokens is provided, expr is ignored, and a generic
+    AST will be returned instead.
+    """
+    if parsed_tokens is not None:
+        return AST(), parsed_tokens
+    else:
+        ast = AST(expr)
+        tokens = env.get_from_expr_cache(expr)
+        if tokens is None:
+            tokens = ast.parse()
+            env.add_to_expr_cache(expr, tokens)
+        return ast, tokens
+
+def evaluate_expression(expr, env, parsed_tokens=None):
     """
     Evaluates an expression by converting it to an AST
     and evaluating individual operators at certain indices.
     """
-    ast = AST(expr)
-    tokens = env.get_from_expr_cache(expr)
-    if tokens is None:
-        tokens = ast.parse()
-        env.add_to_expr_cache(expr, tokens)
+    ast, tokens = retrieve_tokens(expr, env, parsed_tokens)
     indices = ast.collapse_indices(ast.build_indices(tokens))
     return evaluate_operators(tokens, indices, env)
     
@@ -317,7 +332,10 @@ def evaluate_operators(tokens, indices, env):
         if op == '+':
             tokens[idx-1 : idx+2] = [plus(left, right)]
         elif op == '-':
-            if idx == 0:
+            # TODO : here there is a check if tokens[idx - 1] is an operator
+            # a more robust method may be to apply ast.merge_negatives(tokens)
+            # to the token list before the code reaches this point
+            if idx == 0 or tokens[idx - 1] in precedences:
                 tokens[idx : idx+2] = [-right]
             else:
                 tokens[idx-1 : idx+2] = [left - right]
@@ -378,36 +396,38 @@ def evaluate_operators(tokens, indices, env):
     # Return the resulting (single) value without the outer list.
     return convert_value(tokens[0], env)
 
-def eval_parentheses(expr, env):
+def eval_parentheses(expr, env, parsed_tokens=None):
     """
     Recursively evaluates expressions enclosed in parentheses,
     which change the order-of-operations for the expression.
     """
-    tokens = env.get_from_expr_cache(expr)
-    if tokens is None:
-        ast = AST(expr)
-        tokens = ast.parse()
-        env.add_to_expr_cache(expr, tokens)
+    # List elements are sometimes already-evaluated expressions,
+    # which may be floats, ints, etc. instead of string expressions.
+    # In that case, just return the value instead of attempting
+    # to evaluate the expression.
+    if expr is not None and type(expr) is not str:
+        return expr
+    _, tokens = retrieve_tokens(expr, env, parsed_tokens)
     tokens = call_functions(tokens, env)
     if tokens.__class__ is Trigger:
         return tokens
     # For function values, do not transform the value to a string:
+    # TODO : is the following if-statement still necessary?
+    # (since intermediate values are no longer converted back to strings)
     if len(tokens) == 1 and (str(tokens[0]).startswith('<function') or \
         type(tokens[0]) is list or type(tokens[0]) is dict):
         return tokens[0]
-    expr = ''.join(str(token) for token in tokens)
-    paren_open = expr.find('(')
-    if paren_open == -1:
-        return evaluate_expression(expr, env)
+    token_index_containing_paren = seek_parenthesis_in_tokens(tokens)
+    if token_index_containing_paren is None:
+        return evaluate_expression(None, env, tokens)
     else:
-        paren_close = find_matching(expr[paren_open + 1:]) + paren_open
-        if paren_close == -1:
-            throw_exception('UnmatchedOpeningParenthesis', expr)
-        left = expr[0:paren_open]
-        center = expr[paren_open + 1:paren_close]
-        right = expr[paren_close + 1:]
-        return eval_parentheses(left + str(eval_parentheses(center, env)) + right, env)
-        
+        left_tokens = tokens[0:token_index_containing_paren]
+        right_tokens = tokens[token_index_containing_paren + 1:]
+        # Remove parentheses surrounding the center token.
+        paren_internals = tokens[token_index_containing_paren][1:-1]
+        center_result = eval_parentheses(paren_internals, env)
+        return eval_parentheses(None, env, left_tokens + [center_result] + right_tokens)
+
 def split_args(args):
     """
     Given a comma-separated argument list, returns the individual
@@ -449,7 +469,10 @@ def call_functions(tokens, env):
     i = 0
     prev_token = None
     for token in tokens:
-        match_obj = re.match(r'(\$?[A-Za-z_][A-Za-z_0-9]*)\((.*)\)', token)
+        if type(token) is not str:
+            match_obj = None
+        else:
+            match_obj = re.match(r'(\$?[A-Za-z_][A-Za-z_0-9]*)\((.*)\)', token)
         if match_obj:
             func_name = match_obj.group(1)
             func_args = match_obj.group(2)
@@ -465,19 +488,12 @@ def call_functions(tokens, env):
             # Was an exception thrown during this function?
             if return_val.__class__ is Trigger:
                 return return_val
-            # Handle function values separately from normal values
-            str_val = str(return_val)
-            if (len(str_val) > 0 and str_val.startswith('<function')) or \
-                type(return_val) is list or type(return_val) is dict:
-                if prev_token == '.':
-                    tokens[i-2 : i+1] = [return_val]
-                else:
-                    tokens[i] = return_val
+            # Replace the function call with the return value of the function
+            if prev_token == '.':
+                # Replace a method call
+                tokens[i-2 : i+1] = [return_val]
             else:
-                if prev_token == '.':
-                    tokens[i-2 : i+1] = [str_val]
-                else:
-                    tokens[i] = str_val
+                tokens[i] = return_val
         i += 1
         prev_token = token
     return tokens

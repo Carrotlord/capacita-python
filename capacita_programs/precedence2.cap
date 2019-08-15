@@ -1,0 +1,8 @@
+ys = []
+ys.push(ys)
+print ys[0] == ys
+print (ys[0])
+func f(x) = x + 1
+print (f)
+// The following does not work:
+//print ys == ys[0]

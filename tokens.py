@@ -50,3 +50,19 @@ def tokenize_statement(stmt):
                     stmt[i+len(op):].strip()
                 ]
     return []
+
+def seek_parenthesis_in_tokens(tokens):
+    """
+    Locates a parenthesis in a token list.
+    The return value is the index of the token element.
+    
+    e.g. ['x', '*', '(y+3)'] -> 2
+    
+    Returns None if there is no parenthesis in any of the tokens.
+    Because of the way that ast.parse_elem(...) works, a token containing
+    a pair of parentheses must always start and end with a parenthesis.
+    """
+    for i, token in enumerate(tokens):
+        if type(token) is str and token.startswith('('):
+            return i
+    return None

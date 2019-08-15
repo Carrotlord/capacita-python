@@ -69,7 +69,7 @@ class AST(object):
     Abstract syntax tree with strongly binding operators at the bottom.
     The smaller the precedence, the stronger the binding.
     """
-    def __init__(self, expr):
+    def __init__(self, expr=None):
         """Setup expression and precedences of operators."""
         self.expr = expr
         self.precedences = precedences
@@ -234,7 +234,7 @@ class AST(object):
         table = [[], [], [], [], [], [], [], [], []]
         i = 0
         for token in tokens:
-            if token in self.precedences:
+            if type(token) is str and token in self.precedences:
                 if token == 'not ':
                     table[self.precedences[token] - 1].append((i,))
                 else:

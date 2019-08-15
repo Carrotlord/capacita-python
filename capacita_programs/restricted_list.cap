@@ -11,7 +11,9 @@ print zs.length()
 print xs + ys
 print xs + ys + zs
 print [1, 2, 3] of Number + [4, 5, 6.0] of Number
-// Warning: incorrect behavior for next 2 lines
+// Behavior for the next 2 lines has been corrected.
+// For now, adding a generic list to a restricted list
+// results in a fully generic list.
 print [1, 2, 3] + ([4, 5] of Int)
 print ([1, 2, 3]) + ([4, 5] of Int)
 print ([4, 5] of Int) + ([1, 2, 3])

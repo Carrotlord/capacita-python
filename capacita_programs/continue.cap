@@ -1,0 +1,53 @@
+for i = 10; i >= 0; i -= 1
+    when i == 5
+        continue
+    show i + " "
+end
+print ""
+
+someNumbers = [1, 2, 8, 9.6667, 0, 15.9, 0, -3]
+for each number of someNumbers
+    when number == 0
+        continue
+    print 1 / number
+end
+
+// Print only prime numbers
+for n = 2; n < 100; n += 1
+    // Even numbers are never prime, except for 2
+    when n != 2 and n % 2 == 0
+        continue    // still performs n += 1
+    isPrime = true
+    // Check all factors up to square root of n
+    for k = 2; k <= n^0.5; k += 1
+        if n % k == 0
+            isPrime = false
+            break
+        end
+    end
+    when isPrime
+        show n + " "
+end
+print ""
+
+primes = [2, 3, 5, 7, 11, 13, 17]
+numbers = [10, 20, 25, 46, 15]
+for each n of numbers
+    i = 0
+    show "Factors for " + n + ": "
+    while n > 1
+        currentPrime = primes[i]
+        if n % currentPrime == 0
+            show currentPrime
+            show " "
+            n = intDiv(n, currentPrime)
+        else
+            i += 1
+            if i >= primes.length()
+                print "(something went wrong)"
+                continue 2
+            end
+        end
+    end
+    print ""
+end

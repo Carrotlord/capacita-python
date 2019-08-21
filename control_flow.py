@@ -13,7 +13,7 @@ def find_next_end_else(lines, start, end_only=False, allow_catch=False):
     """
     i = start
     open_clauses = 0
-    openers = ['if ', 'while ', 'for ', 'repeat ', 'switch ', 'sub ']
+    openers = ['if ', 'while ', 'for ', 'repeat ', 'switch ', 'sub ', ':for ']
     while i < len(lines):
         line = lines[i]
         if line == 'end':
@@ -33,6 +33,9 @@ def find_next_end_else(lines, start, end_only=False, allow_catch=False):
                     break
         i += 1
     throw_exception('NoEndStatement', 'Corresponding end statement does not exist.')
+
+def is_loop(line):
+    return line.startswith('while ') or line.startswith(':for ')
 
 def prepare_control_flow(lines):
     """
@@ -169,7 +172,7 @@ def prepare_control_flow(lines):
                 increment = lines[i + 2]
                 _, j = find_next_end_else(lines, i + 1, True)
                 lines[j : j+1] = [increment, 'end']
-                lines[i : i+3] = [initialization, 'while ' + condition]
+                lines[i : i+3] = [initialization, ':for ' + condition, increment]
             i += 1
         return lines
     def replace_for_each(lines):
@@ -202,7 +205,9 @@ def prepare_control_flow(lines):
                 assignment = elem_var + '=' + iterable + '[' + index_var + ']'
                 _, j = find_next_end_else(lines, i + 1, True)
                 lines[j : j+1] = [increment, 'end']
-                lines[i : i+1] = [initialization, 'while ' + condition, assignment]
+                # Temporarily place the increment statement after the :for directive,
+                # so it can be used when processing continue statements.
+                lines[i : i+1] = [initialization, ':for ' + condition, increment, assignment]
                 index_var_num += 1
             i += 1
         return lines
@@ -221,8 +226,37 @@ def prepare_control_flow(lines):
                 lines[j : j+1] = [':skiptoelse', catch_statement]
             i += 1
         return lines
+    def replace_when_continue(lines):
+        """
+        Transforms a when statement containing a continue in its clause
+        into an if statement.
+
+        when CONDITION
+            continue 2
+
+        if CONDITION
+            continue 2
+        end
+
+        This is so that continue statements can be replaced by an
+        increment statement followed by a continue, which is needed
+        in for loops and for-each loops.
+        """
+        i = 0
+        while i + 1 < len(lines):
+            current_line = lines[i]
+            next_line = lines[i + 1]
+            if current_line.startswith('when ') and next_line.startswith('continue '):
+                lines[i : i+2] = [
+                    'if ' + current_line[5:],
+                    next_line,
+                    'end'
+                ]
+            i += 1
+        return lines
     lines = prepare_else_ifs(lines)
     lines = prepare_breaks_continues(lines)
+    lines = replace_when_continue(lines)
     lines = replace_for_each(lines)
     lines = replace_for(lines)
     lines = insert_skips(lines)
@@ -251,17 +285,25 @@ def prepare_control_flow(lines):
                                     ' (aside from else-if statements).')
                 lines[end] = ':label' + str(label_counter)
             label_counter += 1
-        elif line.startswith('while '):
+        elif is_loop(line):
+            if line.startswith(':for '):
+                # Remove the increment statement, and save it for later use
+                increment_statement = lines.pop(i + 1)
+                condition_start = 5
+            else:
+                increment_statement = None
+                condition_start = 6
             # label_leave is used to exit the loop:
             label_leave = str(label_counter)
             label_counter += 1
             # label_loop is used to repeat the loop:
             label_loop = str(label_counter)
             label_counter += 1
-            lines[i : i+1] = [':cond ' + line[6:], ':jf label' + label_leave, ':label' + label_loop]
+            # Replace the existing while statement or :for directive with a :cond directive
+            lines[i : i+1] = [':cond ' + line[condition_start:], ':jf label' + label_leave, ':label' + label_loop]
             kind, j = find_next_end_else(lines, i + 3)
             if kind == 'end':
-                lines[j : j+1] = [':cond ' + line[6:], ':jt label' + label_loop, ':label' + label_leave]
+                lines[j : j+1] = [':cond ' + line[condition_start:], ':jt label' + label_loop, ':label' + label_leave]
                 k = i + 3
                 depth = 1
                 # stack for keeping track of end statements:
@@ -269,7 +311,7 @@ def prepare_control_flow(lines):
                 # Handle 'continue' and 'break' statements:
                 while k < j:
                     current = lines[k]
-                    if current.startswith('while '):
+                    if is_loop(current):
                         _, end = find_next_end_else(lines, k + 1, True)
                         depth += 1
                         stack.append(end)
@@ -280,7 +322,11 @@ def prepare_control_flow(lines):
                     elif current == 'break ' + str(depth):
                         lines[k] = ':j label' + label_leave
                     elif current == 'continue ' + str(depth):
-                        lines[k] = ':j label' + label_loop
+                        jump_to_loop_start = ':j label' + label_loop
+                        if increment_statement is not None:
+                            lines[k : k+1] = [increment_statement, jump_to_loop_start]
+                        else:
+                            lines[k] = jump_to_loop_start
                     k += 1
             else:
                 throw_exception('InvalidElseStatement',

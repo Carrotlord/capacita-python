@@ -92,6 +92,20 @@ false
 1.2
 hellohellohello
 Compound assignment operators include +=, *=, /=, ...
+===== Testing capacita_programs/continue.cap
+10 9 8 7 6 4 3 2 1 0 
+1.0
+0.5
+0.125
+0.103447919145
+0.062893081761
+-0.333333333333
+2 3 5 7 11 13 17 19 23 29 31 37 41 43 47 53 59 61 67 71 73 79 83 89 97 
+Factors for 10: 2 5 
+Factors for 20: 2 2 5 
+Factors for 25: 5 5 
+Factors for 46: 2 (something went wrong)
+Factors for 15: 3 5 
 ===== Testing capacita_programs/exceptions.cap
 Caught 4
 Caught double 1.15

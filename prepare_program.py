@@ -23,8 +23,9 @@ def remove_quoted_strings(line):
     return processed
 
 def extract_compound_operator_line(line, operators):
+    line_without_strings = remove_quoted_strings(line)
     for operator in operators:
-        if operator in remove_quoted_strings(line):
+        if operator in line_without_strings:
             return operator
     return None
 

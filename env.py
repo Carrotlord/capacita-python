@@ -19,6 +19,15 @@ def normalize_file_name(file_name):
     """
     return os.path.normcase(os.path.normpath(file_name))
 
+def get_typed_value(value):
+    """
+    Retrieve the value contained in a type tuple.
+    If not given a tuple, simply returns the value unchanged.
+    """
+    if type(value) is tuple:
+        return value[1]
+    return value
+
 class Environment(object):
     """
     A list of frames containing key-value pairs representing variable names
@@ -184,14 +193,12 @@ class Environment(object):
             return '"{0}"'.format(raw_input())
         last_this = self.last_this()
         if var_name in last_this:
-            return last_this[var_name]
+            return get_typed_value(last_this[var_name])
         i = -1
         while i >= -len(self.frames):
             if var_name in self.frames[i]:
                 value = self.frames[i][var_name]
-                if type(value) is tuple:
-                    return value[1]
-                return value
+                return get_typed_value(value)
             else:
                 i -= 1
         # If this variable is not defined, look in the type tree:

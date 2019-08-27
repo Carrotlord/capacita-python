@@ -259,8 +259,15 @@ def index_lists(tokens, env):
         if is_index_valid(current):
             if type_restrict.is_considered_list(prev):
                 index = get_name(current[0], env)
-                if type(index) is int:
+                if type(index) in [int, long]:
                     tokens[i-1 : i+1] = [prev[index]]
+                else:
+                    throw_exception(
+                        'NonIntegerIndex',
+                        'Trying to index the list {0} with a non-integer index {1}'.format(
+                            prev, index
+                        )
+                    )
             elif is_string(prev):
                 index = get_name(current[0], env)
                 tokens[i-1 : i+1] = [index_string(prev, index)]

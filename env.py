@@ -168,8 +168,14 @@ class Environment(object):
         frame_or_this['$hooks'][func_name] = value
 
     def activate_hook(self, func_name):
-        frame_or_this = self.get_frame_or_this(func_name)
+        frame_or_this = self.get_frame_or_this_with_hook(func_name)
         self.assign(func_name, frame_or_this['$hooks'][func_name])
+
+    def get_frame_or_this_with_hook(self, func_name):
+        last_this = self.last_this()
+        if '$hooks' in last_this and func_name in last_this['$hooks']:
+            return last_this
+        return self.frames[-1]
 
     def get_frame_or_this(self, var_name):
         last_this = self.last_this()

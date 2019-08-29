@@ -132,7 +132,16 @@ class Function(object):
         self.lines = prepare_program(prgm) + ['return null']
         self.supplied_env = supplied_env
         self.is_method = False
-    
+        self.is_constructor = self.check_is_constructor()
+
+    def check_is_constructor(self):
+        """
+        Returns True if this function is a constructor, else False.
+        """
+        # A function is a constructor if it defines its
+        # own type on the first line of the function body.
+        return self.lines[0].startswith('$type=')
+
     def get_num_args(self):
         return len(self.args)
 
@@ -148,13 +157,27 @@ class Function(object):
             env = self.supplied_env
         env.new_frame()
         env.merge_latest(self.defined_funcs)
+        if self.is_constructor:
+            # An empty 'this' object must be created before
+            # this constructor executes, or else this function
+            # may assign values to matching names in a previous 'this' object.
+            # Instead, all variables should be assigned to the latest
+            # scope (last element of env.frames),
+            # which will then be returned as a new object.
+            env.new_this({})
         # Put function arguments into environment frame:
         arguments.assign_arguments(self.args, arg_values, env)
-        result = execution.execute_lines(self.lines, env)
+        result = execution.execute_lines(self.lines, env, executing_constructor=self.is_constructor)
         # Remove the stack frame created by this function:
         env.pop()
-        # Remove the last this pointer:
-        if self.is_method:
+        # Remove the last 'this' pointer.
+        # This will remove the 'this' object used by a method,
+        # or it will remove the empty 'this' object used by a
+        # constructor.
+        # TODO : defining a class inside another class may cause
+        # issues, because the inner class may be considered both
+        # a method and a constructor.
+        if self.is_method or self.is_constructor:
             env.pop_this()
         if env.value_is_a(result, self.return_type):
             return result

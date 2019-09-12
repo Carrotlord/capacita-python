@@ -94,7 +94,7 @@ def repl():
         elif expr == ':code':
             prgm = store_program()
             execute_program(prgm, env)
-        elif is_clause_opener(expr):
+        elif expr.startswith('when ') or is_clause_opener(expr):
             prgm = store_code_block(expr)
             execute_program(prgm, env)
         elif expr == 'this':

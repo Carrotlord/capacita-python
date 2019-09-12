@@ -18,6 +18,7 @@ import type_restrict
 import type_tree
 import builtin_method
 import prepare_program
+import env as environment
 
 def execute_lines(lines, env, executing_constructor=False):
     """
@@ -384,7 +385,7 @@ def evaluate_operators(tokens, indices, env):
         elif op == ' of ':
             tokens[idx-1 : idx+2] = [type_restrict.type_restrict(left, right, env)]
         elif op == '.':
-            tokens[idx-1 : idx+2] = [left[right]]
+            tokens[idx-1 : idx+2] = [environment.get_typed_value(left[right])]
     stage = 0
     while len(tokens) != 1:
         if stage == 0:

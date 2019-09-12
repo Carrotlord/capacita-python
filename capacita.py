@@ -100,12 +100,17 @@ def repl():
         elif expr == 'this':
             print(env.frames)
         else:
-            # Treat expr as a single-line program:
-            expr = (prepare_program(expr))[0]
-            if execution.is_statement(expr):
-                execution.execute_statement(expr, env)
+            # Since expr could contain semicolon-separated lines of code,
+            # extract all the lines:
+            lines = prepare_program(expr)
+            if len(lines) > 1:
+                leading_lines = lines[:-1]
+                execution.execute_lines(leading_lines, env)
+            last_expr = lines[-1]
+            if execution.is_statement(last_expr):
+                execution.execute_statement(last_expr, env)
             else:
-                print(literal(execution.eval_parentheses(expr, env)))
+                print(literal(execution.eval_parentheses(last_expr, env)))
 
 def main():
     """Main function - includes tests and runs the REPL."""

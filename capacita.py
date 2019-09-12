@@ -6,7 +6,7 @@ import sys
 
 from ratio import Ratio
 from ast2 import AST
-from control_flow import prepare_control_flow
+from control_flow import prepare_control_flow, openers
 from ribbon import Ribbon
 from console import display, literal
 from tokens import tokenize_statement
@@ -49,6 +49,31 @@ def store_program():
         lines += next_line + '\n'
     return lines
 
+def store_code_block(first_line, prompt='Capacita* '):
+    """
+    Stores a code block line-by-line until all clauses have been closed.
+    """
+    if first_line.startswith('when '):
+        return first_line + '\n' + raw_input(prompt)
+    open_clauses = 1
+    lines = first_line + '\n'
+    while open_clauses > 0:
+        next_line = raw_input(prompt).strip()
+        if next_line == 'end':
+            open_clauses -= 1
+        elif is_clause_opener(next_line):
+            open_clauses += 1
+        lines += next_line + '\n'
+    return lines
+
+def is_clause_opener(line):
+    if line == 'try' or line.startswith('class '):
+        return True
+    for opener in openers:
+        if line.startswith(opener):
+            return True
+    return False
+
 def repl():
     """
     Read-eval-print loop. Whole programs can be run by using
@@ -58,8 +83,6 @@ def repl():
     env = environment.Environment()
     while True:
         expr = raw_input('Capacita> ')
-        # Treat expr as a single-line program:
-        expr = (prepare_program(expr))[0]
         expr = expr.strip()
         if expr == 'exit()':
             break
@@ -71,12 +94,18 @@ def repl():
         elif expr == ':code':
             prgm = store_program()
             execute_program(prgm, env)
+        elif is_clause_opener(expr):
+            prgm = store_code_block(expr)
+            execute_program(prgm, env)
         elif expr == 'this':
             print(env.frames)
-        elif execution.is_statement(expr):
-            execution.execute_statement(expr, env)
         else:
-            print(literal(execution.eval_parentheses(expr, env)))
+            # Treat expr as a single-line program:
+            expr = (prepare_program(expr))[0]
+            if execution.is_statement(expr):
+                execution.execute_statement(expr, env)
+            else:
+                print(literal(execution.eval_parentheses(expr, env)))
 
 def main():
     """Main function - includes tests and runs the REPL."""

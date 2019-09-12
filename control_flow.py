@@ -2,6 +2,8 @@ from exception import throw_exception
 
 import re
 
+openers = ['if ', 'while ', 'for ', 'repeat ', 'switch ', 'sub ', ':for ']
+
 def find_next_end_else(lines, start, end_only=False, allow_catch=False):
     """
     Returns the corresponding end-statement or else-statement
@@ -13,7 +15,6 @@ def find_next_end_else(lines, start, end_only=False, allow_catch=False):
     """
     i = start
     open_clauses = 0
-    openers = ['if ', 'while ', 'for ', 'repeat ', 'switch ', 'sub ', ':for ']
     while i < len(lines):
         line = lines[i]
         if line == 'end':

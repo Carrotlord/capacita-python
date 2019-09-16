@@ -130,11 +130,13 @@ class AST(object):
     def parse(self):
         results = []
         elems = self.split_list_elems()
+        prev_elem = None
         for elem in elems:
-            results += self.parse_elem(elem)
+            results += self.parse_elem(elem, prev_elem)
+            prev_elem = elem
         return results
         
-    def parse_elem(self, expr):
+    def parse_elem(self, expr, prev_elem):
         """
         Splits an expression based on its operators.
         e.g. '2 + 3*4' -> ['2', '+', '3', '*', '4']
@@ -175,9 +177,9 @@ class AST(object):
         buffer_contents = buffer.strip()
         if len(buffer_contents) > 0:
             tokens.append(buffer_contents)
-        return self.merge_negatives(self.merge_exponent_notation(tokens))
+        return self.merge_negatives(self.merge_exponent_notation(tokens), prev_elem)
     
-    def merge_negatives(self, tokens):
+    def merge_negatives(self, tokens, prev_elem):
         """
         Allows for proper expression of the unary operator '-'
         e.g. ['-', '233', '+', '-', '18', ':', '-', '1']
@@ -185,8 +187,11 @@ class AST(object):
         """
         if len(tokens) <= 1:
             return tokens
-        if tokens[0] == '-' and is_positive_numeric(tokens[1]):
-            return self.merge_negatives(['-' + str(tokens[1])] + tokens[2:])
+        # Do not merge a negative sign if the previous element was a closing bracket.
+        # This indicates the end of a list or an end of an index,
+        # so the - operator needs to be interpreted as binary, not unary.
+        if tokens[0] == '-' and is_positive_numeric(tokens[1]) and prev_elem != ']':
+            return self.merge_negatives(['-' + str(tokens[1])] + tokens[2:], None)
         i = 0
         max_len = len(tokens) - 2
         while i < max_len:

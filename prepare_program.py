@@ -133,6 +133,36 @@ def preprocess(prgm):
         return processed
     return replace_special(remove_comments(convert_single_quotes(prgm)))
 
+def convert_increment_decrement_operators(lines):
+    processed_lines = []
+    for line in lines:
+        if line.startswith('++') or line.startswith('--'):
+            # Change prefix notation to postfix notation
+            line = line[2:] + line[:2]
+        if line.endswith('++'):
+            operation = '+'
+        elif line.endswith('--'):
+            operation = '-'
+        else:
+            operation = None
+        if operation is not None:
+            if '.' in line or '[' in line:
+                # This is a complex statement, which includes
+                # a dot operator or index assignment.
+                reference = line[:-2]
+                line = '{0}={0}{1}1'.format(reference, operation)
+            else:
+                # This is a simple statement, for an ordinary
+                # variable name.
+                var_name = line[:-2]
+                if operation == '+':
+                    directive_name = 'inc'
+                else:
+                    directive_name = 'dec'
+                line = ':{0} {1}'.format(directive_name, var_name)
+        processed_lines.append(line)
+    return processed_lines
+
 def prepare_program(prgm):
     """
     Splits lines of a program and prepares control flow.
@@ -144,5 +174,6 @@ def prepare_program(prgm):
     prgm = convert_compound_operators(prgm)
     lines = prgm.split('\n')
     lines = [line.strip() for line in lines]
+    lines = convert_increment_decrement_operators(lines)
     lines = prepare_control_flow(lines)
     return lines

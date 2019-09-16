@@ -229,6 +229,16 @@ true
 35
 1
 4
+===== Testing capacita_programs/increment_decrement.cap
+3
+1
+0 1 2 3 
+27.5625 18.0625 10.5625 5.0625 1.5625 0.0625 
+[2.0, 1.0, 4.0]
+-1.0
+MismatchedType exception
+5 is not of type Double
+===== Exception: <type 'exceptions.SystemExit'>
 ===== Testing capacita_programs/indexing.cap
 1
 2

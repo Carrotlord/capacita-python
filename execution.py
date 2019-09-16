@@ -38,6 +38,14 @@ def execute_lines(lines, env, executing_constructor=False):
             elif (cond_flag and directive[0] == ':jt') or \
                  ((not cond_flag) and directive[0] == ':jf'):
                 prgm_counter = int(directive[1])
+            elif directive[0] == ':inc':
+                var_name = directive[1]
+                env.update_numeric(var_name, 1)
+                prgm_counter += 1
+            elif directive[0] == ':dec':
+                var_name = directive[1]
+                env.update_numeric(var_name, -1)
+                prgm_counter += 1
             elif directive[0] == ':skiptoelse':
                 # Nothing was thrown in this try clause
                 _, j = find_next_end_else(lines, prgm_counter + 1, False)
@@ -161,7 +169,8 @@ def is_statement(query):
 def execute_statement(stmt, env):
     """Executes a statement in a given environment."""
     directives = [':cond', ':j', ':jt', ':jf', 'return', 'try', 'throw',
-                  'catch', 'end', 'else', ':skiptoelse', ':hook']
+                  'catch', 'end', 'else', ':skiptoelse', ':hook',
+                  ':inc', ':dec']
     stmt = stmt.strip()
     if len(stmt) == 0:
         return

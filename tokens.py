@@ -9,6 +9,10 @@ def tokenize_statement(stmt):
     """
     if stmt.startswith('print '):
         return ['print', stmt[6:]]
+    elif stmt.startswith(':inc '):
+        return [':inc', stmt[5:]]
+    elif stmt.startswith(':dec '):
+        return [':dec', stmt[5:]]
     elif stmt.startswith('import '):
         return ['import', stmt[7:]]
     elif stmt.startswith('super '):

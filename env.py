@@ -144,10 +144,28 @@ class Environment(object):
                 # Is this an attribute of an object?
                 match_obj = re.match(r'(\$?[A-Za-z_][A-Za-z_0-9]*)\.(\$?[A-Za-z_][A-Za-z_0-9]*)', var_name)
                 if match_obj:
-                    obj = match_obj.group(1)
+                    obj_name = match_obj.group(1)
                     attr = match_obj.group(2)
-                    frame_or_this = self.get_frame_or_this(obj)
-                    frame_or_this[obj][attr] = value
+                    frame_or_this = self.get_frame_or_this(obj_name)
+                    obj_reference = get_typed_value(frame_or_this[obj_name])
+                    # Check for a type restriction, and enforce that restriction.
+                    # If the object attribute doesn't exist yet, or has no type restriction
+                    # in its current value, allow the new value to be assigned.
+                    # If the type restriction is already in place, make sure to keep
+                    # the restriction alongside the new value.
+                    # Otherwise, throw an exception.
+                    kind = None
+                    if attr in obj_reference:
+                        existing_value = obj_reference[attr]
+                        if type(existing_value) is tuple:
+                            existing_kind = existing_value[0]
+                            if not self.value_is_a(value, existing_kind):
+                                throw_exception('MismatchedType', str(value) + ' is not of type ' + existing_kind)
+                            kind = existing_kind
+                    if kind is None:
+                        obj_reference[attr] = value
+                    else:
+                        obj_reference[attr] = (kind, value)
                 else:
                     frame_or_this = self.get_frame_or_this(var_name)
                     if var_name in frame_or_this and type(frame_or_this[var_name]) is tuple:
@@ -192,7 +210,23 @@ class Environment(object):
             self.frames[-1][var_name] = value
         else:
             throw_exception('UndefinedVariable', var_name + ' is not defined.')
-        
+
+    def update_numeric(self, var_name, added_value):
+        """
+        Update an existing variable containing a numeric value.
+        Used for increment and decrement operators.
+        """
+        target_frame = self.get_frame_or_this(var_name)
+        if var_name in target_frame:
+            value = target_frame[var_name]
+            if type(value) is tuple:
+                kind, val = value
+                target_frame[var_name] = (kind, val + added_value)
+            else:
+                target_frame[var_name] += added_value
+        else:
+            throw_exception('UndefinedVariable', var_name + ' is not defined.')
+
     def get(self, var_name):
         if var_name == 'input':
             # Read a line from the console

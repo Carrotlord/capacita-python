@@ -74,13 +74,16 @@ def is_clause_opener(line):
             return True
     return False
 
-def repl():
+def repl(existing_env=None):
     """
     Read-eval-print loop. Whole programs can be run by using
     the ':program' directive, ending with ':end'.
     Use the 'this' keyword to see the current environment frames.
     """
-    env = environment.Environment()
+    if existing_env is None:
+        env = environment.Environment()
+    else:
+        env = existing_env
     while True:
         expr = raw_input('Capacita> ')
         expr = expr.strip()

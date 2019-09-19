@@ -4,6 +4,7 @@ from exception import throw_exception
 
 import builtin_function
 import capacita
+import pretty_print
 
 def import_math(env):
     def binomial_choose(n, k):
@@ -134,6 +135,15 @@ def import_functional(env):
     env.assign('curry', builtin_function.BuiltinFunction('curry', ['f'], curry))
     env.assign('partial', builtin_function.BuiltinFunction('partial', ['f', 'fixedArgs'], partial))
 
+def import_debugging(env):
+    env.assign('getFrames', builtin_function.BuiltinFunction('getFrames', [], lambda: env.frames))
+    env.assign('getThisFrames', builtin_function.BuiltinFunction('getThisFrames', [], lambda: env.this_pointers))
+    env.assign('repl', builtin_function.BuiltinFunction('repl', [], lambda: capacita.repl(env)))
+
+def import_pretty_print(env):
+    env.assign('prettyFormat', builtin_function.BuiltinFunction('prettyFormat', ['obj'], pretty_print.pretty_format_wrapper))
+    env.assign('prettyPrint', builtin_function.BuiltinFunction('prettyPrint', ['obj'], pretty_print.pretty_print))
+
 def perform_import(library, env):
     library = library.strip()
     obj = None
@@ -146,6 +156,10 @@ def perform_import(library, env):
         import_math(env)
     elif library == 'functional':
         import_functional(env)
+    elif library == 'debugging':
+        import_debugging(env)
+    elif library == 'prettyPrint':
+        import_pretty_print(env)
     elif library.startswith('"') and library.endswith('"'):
         # Import a program from the file system
         capacita.execute_file(library[1:-1], env)

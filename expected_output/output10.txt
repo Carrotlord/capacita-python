@@ -92,6 +92,14 @@ false
 1.2
 hellohellohello
 Compound assignment operators include +=, *=, /=, ...
+===== Testing capacita_programs/cons.cap
+#a
+#b
+1
+2
+3
+null
+[a b c d e]
 ===== Testing capacita_programs/continue.cap
 10 9 8 7 6 4 3 2 1 0 
 1.0

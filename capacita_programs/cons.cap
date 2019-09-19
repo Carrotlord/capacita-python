@@ -1,0 +1,50 @@
+sub cons(first, second)
+    func apply(selector) = selector(first, second)
+    return apply
+end
+
+sub car(cell)
+    func getFirst(first, second) = first
+    return cell(getFirst)
+end
+
+sub cdr(cell)
+    func getSecond(first, second) = second
+    return cell(getSecond)
+end
+
+pair = cons(#a, #b)
+print car(pair)
+print cdr(pair)
+xs = cons(1, cons(2, cons(3, null)))
+print car(xs)
+print car(cdr(xs))
+print car(cdr(cdr(xs)))
+print cdr(cdr(cdr(xs)))
+
+sub toLinkedList([arguments])
+    arguments.reverse()
+    linkedList = null
+    for each elem of arguments
+        linkedList = cons(elem, linkedList)
+    end
+    return linkedList
+end
+
+sub printLinkedList(linkedList)
+    show "["
+    isFirst = true
+    while linkedList != null
+        if isFirst
+            isFirst = false
+        else
+            // Display a space before each element
+            show " "
+        end
+        show car(linkedList)
+        linkedList = cdr(linkedList)
+    end
+    print "]"
+end
+
+printLinkedList(toLinkedList("a", "b", "c", "d", "e"))

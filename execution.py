@@ -65,11 +65,26 @@ def execute_lines(lines, env, executing_constructor=False):
                     # upon completion.
                     obj = env.last()
                     # Allow the object to refer to itself
+                    # TODO : assign the 'this' variable at the start
+                    # of scope creation, not when it is returned.
                     obj['this'] = obj
                     return obj
                 else:
                     value = eval_parentheses(directive[1], env)
-                    if str(value).startswith('<function'):
+                    # Functions that were defined in the current scope
+                    # using a 'sub' statement or 'func' statement
+                    # must be supplied with the current environment,
+                    # so that closures work correctly.
+                    # This does not apply to functions that were passed
+                    # in as an argument, or functions produced by other means.
+                    # In other words, existing function objects should not
+                    # be re-supplied with the current environment, only newly
+                    # created ones.
+                    if str(value).startswith('<function') and env.has_hook(value):
+                        # TODO : instead of supplying an environment when a defined
+                        # function is returned, supply it when the function is first
+                        # defined. This will allow for more complex return values,
+                        # such as a list of functions, to operate correctly as closures.
                         value = value.supply(env)
                     return value
             elif directive[0] == 'try':

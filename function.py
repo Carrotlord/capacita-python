@@ -53,7 +53,12 @@ def define_single_line_function(contents, env):
     name = name_of_function(header)
     arg_list = args_of_function(header)
     ret_type = return_type_of_function(header)
-    env.assign(name, Function(name, arg_list, [body], return_type=ret_type))
+    new_function = Function(name, arg_list, [body], return_type=ret_type)
+    env.assign(name, new_function)
+    # Save this single line function as a hook, which
+    # is important for knowing which functions require a
+    # supplied environment.
+    env.assign_hook(name, new_function)
 
 def extract_functions(prgm, existing_env=None):
     """
@@ -190,6 +195,10 @@ class Function(object):
         This provides a copy of the current function, updated
         with the correct environment.
         """
+        # TODO : one possible alternative to using env.has_hook(function_object)
+        # would be to allow each function to be supplied an environment only once.
+        # A boolean variable could keep track of which functions already possess
+        # the correct supplied environment.
         new_func = Function(self.name, self.args, [], env.copy())
         new_func.lines = self.lines
         new_func.defined_funcs = self.defined_funcs

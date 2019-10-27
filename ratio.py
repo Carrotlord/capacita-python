@@ -16,6 +16,10 @@ def prepare_frac(ratio):
 class Ratio(object):
     """Fraction object printed as numerator:denominator."""
     def __init__(self, n, d):
+        if n.__class__ is Ratio:
+            n = n.fraction
+        if d.__class__ is Ratio:
+            d = d.fraction
         self.fraction = Fraction(n, d)
         
     def __add__(self, other):

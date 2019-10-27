@@ -378,8 +378,7 @@ def evaluate_operators(tokens, indices, env):
         elif op == '*':
             tokens[idx-1 : idx+2] = [left * right]
         elif op == '/':
-            # Todo allow for better ratio and int division
-            tokens[idx-1 : idx+2] = [float(left) / float(right)]
+            tokens[idx-1 : idx+2] = [divide(left, right)]
         elif op == '%':
             tokens[idx-1 : idx+2] = [left % right]
         elif op == '^':
@@ -556,6 +555,14 @@ def plus(a, b):
         return '"{0}{1}"'.format(a, b[1:-1])
     else:
         return a + b
+
+def divide(a, b):
+    if type(a) is float or type(b) is float or \
+       (type(a) in [int, long] and type(b) in [int, long]):
+        return float(a) / float(b)
+    # Default behavior for Ratio objects, and any other numeric
+    # types (such as complex)
+    return a / b
             
 def promote_values(left, right):
     """

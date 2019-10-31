@@ -20,7 +20,7 @@ import builtin_method
 import prepare_program
 import env as environment
 
-def execute_lines(lines, env, executing_constructor=False):
+def execute_lines(lines, env, executing_constructor=False, supplied_hooks=None):
     """
     Executes lines of code in a given environment.
     """
@@ -51,11 +51,7 @@ def execute_lines(lines, env, executing_constructor=False):
                 _, j = find_next_end_else(lines, prgm_counter + 1, False)
                 prgm_counter = j + 1
             elif directive[0] == ':hook':
-                if executing_constructor:
-                    this_obj = env.pop_this()
-                env.activate_hook(directive[1])
-                if executing_constructor:
-                    env.new_this(this_obj)
+                env.activate_hook(directive[1], supplied_hooks)
                 prgm_counter += 1
             elif directive[0] == 'return':
                 if directive[1] == 'this':

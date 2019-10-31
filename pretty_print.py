@@ -32,7 +32,10 @@ def pretty_format(obj, indent_size=0):
         sorted_keys = sorted(obj.keys())
         for key in sorted_keys:
             value = obj[key]
-            lines.append('{0}{1}, {2}'.format(indentation, key, abbreviated_format(value)))
+            if key == '$hooks':
+                lines.append('{0}{1}, HookKeys{2}'.format(indentation, key, value.keys()))
+            else:
+                lines.append('{0}{1}, {2}'.format(indentation, key, abbreviated_format(value)))
         lines.append('}')
     elif type(obj) is list:
         if len(obj) == 0:

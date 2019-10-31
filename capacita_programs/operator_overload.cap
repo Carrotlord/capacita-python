@@ -1,0 +1,69 @@
+import math
+
+class Complex(real, imag) inherits Number
+    func getReal() = real
+    func getImag() = imag
+    func getMagnitude() = (getReal() ^ 2 + getImag() ^ 2) ^ 1:2
+
+    sub getAngle()
+        tangent = getImag() / getReal()
+        when getReal() < 0
+            return atan(tangent) + pi
+        return atan(tangent)
+    end
+    
+    sub $plus(other)
+        return Complex(getReal() + other.getReal(), getImag() + other.getImag())
+    end
+    
+    sub $negative()
+        return Complex(-getReal(), -getImag())
+    end
+    
+    sub $minus(other)
+        return this + (-other)
+    end
+    
+    sub $mul(other)
+        newReal = getReal() * other.getReal() - getImag() * other.getImag()
+        newImag = getImag() * other.getReal() + getReal() * other.getImag()
+        return Complex(newReal, newImag)
+    end
+    
+    sub $div(other)
+        d = other.getReal() ^ 2 + other.getImag() ^ 2
+        newReal = (getReal() * other.getReal() + getImag() * other.getImag()) / d
+        newImag = (getImag() * other.getReal() - getReal() * other.getImag()) / d
+        return Complex(newReal, newImag)
+    end
+    
+    sub toString()
+        realPart = getReal()
+        imagPart = getImag()
+        result = "" + realPart
+        if imagPart == 0
+            return result
+        else if imagPart == 1
+            when realPart == 0
+                return "i"
+            return result + "+i"
+        else if imagPart > 0
+            when realPart == 0
+                return imagPart + "i"
+            return result + "+" + imagPart + "i"
+        else
+            // imagPart is negative
+            when realPart == 0
+                return imagPart + "i"
+            return result + imagPart + "i"
+        end
+    end
+end
+
+class Vector([elements]) inherits Sequence
+end
+
+a = Complex(1, 2)
+b = Complex(3, -40)
+c = a.$plus(b)
+print c.toString()

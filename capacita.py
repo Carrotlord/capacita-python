@@ -32,7 +32,7 @@ def execute_file(file_name, existing_env=None):
 
 def execute_program(prgm, existing_env=None):
     """Executes a program given as a string."""
-    prgm, env = function.extract_functions(prgm, existing_env)
+    prgm, env, _ = function.extract_functions(prgm, existing_env)
     lines = prepare_program(prgm)
     execution.execute_lines(lines, env)
     

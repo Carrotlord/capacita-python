@@ -67,6 +67,8 @@ def import_math(env):
     env.assign('integrate', builtin_function.BuiltinFunction('integrate', ['f', 'a', 'b', 'numRectangles?'], integrate))
     env.assign('sin', builtin_function.BuiltinFunction('sin', ['x'], math.sin))
     env.assign('cos', builtin_function.BuiltinFunction('cos', ['x'], math.cos))
+    env.assign('atan', builtin_function.BuiltinFunction('atan', ['x'], math.atan))
+    env.assign('atan2', builtin_function.BuiltinFunction('atan2', ['y', 'x'], math.atan2))
 
 def import_functional(env):
     def compose(f, g):

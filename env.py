@@ -180,16 +180,26 @@ class Environment(object):
                     else:
                         # There is no type restriction given
                         frame_or_this[var_name] = value
-    
+
+    # TODO : rework how hooks operate. Most environment frames will not
+    # need a '$hooks' attribute anymore, since functions now carry their own hooks.
     def assign_hook(self, func_name, value):
         frame_or_this = self.get_frame_or_this(func_name)
         if '$hooks' not in frame_or_this:
             frame_or_this['$hooks'] = {}
         frame_or_this['$hooks'][func_name] = value
+        # Return a reference to the current pool of hooks.
+        return frame_or_this['$hooks']
 
-    def activate_hook(self, func_name):
-        frame_or_this = self.get_frame_or_this_with_hook(func_name)
-        self.assign(func_name, frame_or_this['$hooks'][func_name])
+    def activate_hook(self, func_name, supplied_hooks):
+        if supplied_hooks is not None:
+            # All function bodies carry their own hooks.
+            self.assign(func_name, supplied_hooks[func_name])
+        else:
+            # Top level code that is not wrapped in a function body
+            # uses the old style of activating hooks
+            frame_or_this = self.get_frame_or_this_with_hook(func_name)
+            self.assign(func_name, frame_or_this['$hooks'][func_name])
 
     def has_hook(self, func_obj):
         """

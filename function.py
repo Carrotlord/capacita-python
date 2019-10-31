@@ -98,6 +98,7 @@ def extract_functions(prgm, existing_env=None):
             max_len += 1
         i += 1
     i = 0
+    hooks_reference = None
     while i < len(lines):
         line = lines[i]
         if line.startswith('sub '):
@@ -106,14 +107,14 @@ def extract_functions(prgm, existing_env=None):
             ret_type = return_type_of_function(line)
             _, end = find_next_end_else(lines, i + 1, True)
             func_body = lines[i+1 : end]
-            env.assign_hook(name, Function(name, arg_list, func_body, return_type=ret_type))
+            hooks_reference = env.assign_hook(name, Function(name, arg_list, func_body, return_type=ret_type))
             # Remove the function definition from the program,
             # and replace it with a hook directive.
             lines[i : end+1] = [':hook {0}'.format(name)]
         else:
             i += 1
     prgm = '\n'.join(lines)
-    return prgm, env
+    return prgm, env, hooks_reference
 
 class Function(object):
     """
@@ -128,10 +129,12 @@ class Function(object):
         self.name = name
         self.args = args
         self.return_type = return_type
+        # TODO : setting return type to 'Object' works, but may have a negative
+        # impact on performance
         if self.return_type is None:
             self.return_type = 'Object'
         prgm = '\n'.join(lines)
-        prgm, self.defined_funcs = extract_functions(prgm)
+        prgm, self.defined_funcs, self.hooks = extract_functions(prgm)
         # All functions should return something,
         # which is null for 'void' functions.
         self.lines = prepare_program(prgm) + ['return null']
@@ -172,7 +175,12 @@ class Function(object):
             env.new_this({})
         # Put function arguments into environment frame:
         arguments.assign_arguments(self.args, arg_values, env)
-        result = execution.execute_lines(self.lines, env, executing_constructor=self.is_constructor)
+        result = execution.execute_lines(
+            self.lines,
+            env,
+            executing_constructor=self.is_constructor,
+            supplied_hooks=self.hooks
+        )
         # Remove the stack frame created by this function:
         env.pop()
         # Remove the last 'this' pointer.

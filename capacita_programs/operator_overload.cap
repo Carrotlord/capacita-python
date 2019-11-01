@@ -21,7 +21,8 @@ class Complex(real, imag) inherits Number
     end
     
     sub $minus(other)
-        return this + (-other)
+        // Warning: for some reason, the variable 'this' must be wrapped in parentheses
+        return (this) + (-other)
     end
     
     sub $mul(other)
@@ -60,10 +61,28 @@ class Complex(real, imag) inherits Number
     end
 end
 
+import functional
+
 class Vector([elements]) inherits Sequence
+    sub $mul(scalar)
+        func times(elem) = elem * scalar
+        newVector = Vector()
+        newVector.elements = map(times, elements)
+        return newVector
+    end
+
+    func $rmul(scalar) = $mul(scalar)
+    func toString() = "Vector" + elements
 end
 
 a = Complex(1, 2)
 b = Complex(3, -40)
-c = a.$plus(b)
-print c.toString()
+results = [a + b, a * b, -a, a / b]
+// Warning: Next 3 lines (commented out) do not work yet
+//c = a - b
+//print c.toString()
+//results = [a + b, a * b, a - b, -a, -b, a / b]
+func toString(obj) = obj.toString()
+print map(toString, results)
+vectors = [Vector(1, 2, 3), Vector(1, 2, 3) * 5, -10 * Vector(1, 2, 3)]
+print map(toString, vectors)

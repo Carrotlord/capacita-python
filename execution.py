@@ -19,6 +19,7 @@ import type_tree
 import builtin_method
 import prepare_program
 import env as environment
+import operator_overload
 
 def execute_lines(lines, env, executing_constructor=False, supplied_hooks=None):
     """
@@ -331,7 +332,14 @@ def evaluate_expression(expr, env, parsed_tokens=None):
     ast, tokens = retrieve_tokens(expr, env, parsed_tokens)
     indices = ast.collapse_indices(ast.build_indices(tokens))
     return evaluate_operators(tokens, indices, env)
-    
+
+def is_unary(tokens, idx):
+    """
+    Returns True if tokens[idx] has an operator that should be considered unary,
+    else False.
+    """
+    return idx == 0 or tokens[idx - 1] in precedences or tokens[idx - 1] == ','
+
 def evaluate_operators(tokens, indices, env):
     """
     Evaluates an expression based on a list of tokens,
@@ -361,13 +369,21 @@ def evaluate_operators(tokens, indices, env):
         if left in brackets or right in brackets:
             break
         left, right = promote_values(left, right)
-        if op == '+':
+        if (not is_dot) and op != ' of ' and operator_overload.ready_for_overload(op, left, right):
+            # Perform operator overloading
+            result = operator_overload.operator_overload(op, left, right, idx, tokens, env)
+            return_val = result['return_val']
+            if result['is_unary']:
+                tokens[idx : idx+2] = [return_val]
+            else:
+                tokens[idx-1 : idx+2] = [return_val]
+        elif op == '+':
             tokens[idx-1 : idx+2] = [plus(left, right)]
         elif op == '-':
             # TODO : here there is a check if tokens[idx - 1] is an operator
             # a more robust method may be to apply ast.merge_negatives(tokens)
             # to the token list before the code reaches this point
-            if idx == 0 or tokens[idx - 1] in precedences:
+            if is_unary(tokens, idx):
                 tokens[idx : idx+2] = [-right]
             else:
                 tokens[idx-1 : idx+2] = [left - right]
@@ -499,7 +515,8 @@ def call_functions(tokens, env):
     """
     i = 0
     prev_token = None
-    for token in tokens:
+    while i < len(tokens):
+        token = tokens[i]
         if type(token) is not str:
             match_obj = None
         else:
@@ -523,9 +540,12 @@ def call_functions(tokens, env):
             if prev_token == '.':
                 # Replace a method call
                 tokens[i-2 : i+1] = [return_val]
+                i -= 1
             else:
                 tokens[i] = return_val
-        i += 1
+                i += 1
+        else:
+            i += 1
         prev_token = token
     return tokens
 

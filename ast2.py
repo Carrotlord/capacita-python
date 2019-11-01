@@ -190,6 +190,8 @@ class AST(object):
         # Do not merge a negative sign if the previous element was a closing bracket.
         # This indicates the end of a list or an end of an index,
         # so the - operator needs to be interpreted as binary, not unary.
+        # TODO : prev_elem could be '}', or end with a ')'. In this case, merging a negative
+        # sign should not be done.
         if tokens[0] == '-' and is_positive_numeric(tokens[1]) and prev_elem != ']':
             return self.merge_negatives(['-' + str(tokens[1])] + tokens[2:], None)
         i = 0

@@ -632,6 +632,19 @@ string
 200, 300
 400, 500, 600
 700, 800
+===== Testing capacita_programs/unary_minus.cap
+-5
+-15
+2
+35
+[5, -7, 12]
+[-5, 7]
+-6
+-7
+[-5, -7]
+true
+true
+<function f() -> ('x = 5', 'y = ~7', 'print ~x', 'print 5 * ~3', 'print ~x + ~y', 'print x * ~y', 'print [x, y, x - y]', 'print [~x, ~y]', 'func f(x) = ~x', 'list = [~1, ~2, ~3]', 'print f(1) - x', 'print list[1] - x', 'print [~f(~x), ~f(y)]', ':cond ~1 == ~1', ':jf 16', 'print true', ':cond ~x > 0', ':jf 20', 'print false', ':j 28', '', ':cond ~x + ~y > 1.5', ':jf 25', 'print true', ':j 27', '', 'print false', '', '', 'return null')>
 ===== Testing capacita_programs/while.cap
 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 
 9 18 27 36 45 54 63 72 81 90 99 108 117 126 135 144 153 

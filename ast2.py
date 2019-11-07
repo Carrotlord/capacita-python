@@ -8,19 +8,21 @@ precedences = {
     '.': 1,
     ':': 2,
     '^': 3,
-    '*': 4, '/': 4, '%': 4,
-    '+': 5, '-': 5,
-    '==': 6, '!=': 6, '>=': 6, '<=': 6,
-    '>': 6, '<': 6,
-    ' of ': 7,
-    'not ': 8,
-    ' and ': 9, ' or ': 9, ' xor ': 9
+    '~': 4,
+    '*': 5, '/': 5, '%': 5,
+    '+': 6, '-': 6,
+    '==': 7, '!=': 7, '>=': 7, '<=': 7,
+    '>': 7, '<': 7,
+    ' of ': 8,
+    'not ': 9,
+    ' and ': 10, ' or ': 10, ' xor ': 10
 }
 # Longer operators should be detected before shorter ones:
 ordered_ops = [' and ', ' or ', ' xor ', 'not ', ' of ',
                '>=', '<=', '!=', '==', '<', '>',
-               '+', '-', '*', '/', '%', '^', ':', '.']
-starters = ' n><!=+-*/%^:.'
+               '+', '-', '*', '/', '%', '^', ':', '.', '~']
+starters = ' n><!=+-*/%^:.~'
+unary_ops = ['not ', '~']
 
 def is_numeric(val):
     """
@@ -238,11 +240,11 @@ class AST(object):
             tokens = self.parse()
         else:
             tokens = parsed_tokens
-        table = [[], [], [], [], [], [], [], [], []]
+        table = [[], [], [], [], [], [], [], [], [], []]
         i = 0
         for token in tokens:
             if type(token) is str and token in self.precedences:
-                if token == 'not ':
+                if token in unary_ops:
                     table[self.precedences[token] - 1].append((i,))
                 else:
                     table[self.precedences[token] - 1].append(i)

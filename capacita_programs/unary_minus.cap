@@ -1,0 +1,45 @@
+/*
+// Here ~ is the negative operator, which is always unary.
+// ~ does NOT mean bitwise not.
+x = 5
+y = ~7
+print ~x
+print 5 * ~3
+print ~x + ~y
+print x * ~y
+print [x, y, x - y]
+print [~x, ~y]
+func f(x) = ~x
+list = [~1, ~2, ~3]
+print f(1) - x
+print list[1] - x
+print [~f(~x), ~f(y)]
+*/
+
+sub f()
+    x = 5
+    y = -7
+    print -x
+    print 5 * -3
+    print -x + -y
+    print x * -y
+    print [x, y, x - y]
+    print [-x, -y]
+    func f(x) = -x
+    list = [-1, -2, -3]
+    print f(1) - x
+    print list[1] - x
+    print [-f(-x), -f(y)]
+    when -1 == -1
+        print true
+    if -x > 0
+        print false
+    else if -x + -y > 1.5
+        print true
+    else
+        print false
+    end
+end
+
+f()
+print f

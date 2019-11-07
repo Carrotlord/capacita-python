@@ -27,7 +27,10 @@ class Ratio(object):
     
     def __sub__(self, other):
         return frac_to_ratio(self.fraction - prepare_frac(other))
-        
+
+    def __neg__(self):
+        return frac_to_ratio(-self.fraction)
+
     def __mul__(self, other):
         return frac_to_ratio(self.fraction * prepare_frac(other))
         

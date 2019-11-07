@@ -163,6 +163,41 @@ def convert_increment_decrement_operators(lines):
         processed_lines.append(line)
     return processed_lines
 
+special_statement_starters = [
+    'print ', 'show ', 'return ',
+    'if ', 'when ', 'while ', 'for ', 'repeat ', 'switch ',
+    'else if ', 'case ', 'throw ', 'super '
+]
+
+# Any minus signs that follow one of these characters
+# (ignoring any whitespace in the line)
+# must be treated as an unary minus, not a binary minus.
+significant_chars = '><=+-*/%~^:([{,|'
+
+def detect_and_replace_unary_minus(lines):
+    def replace_for_special_statements(line):
+        for starter in special_statement_starters:
+            if line.startswith(starter):
+                without_starter = line[len(starter):]
+                if without_starter.lstrip().startswith('-'):
+                    return line.replace('-', '~', 1)
+        return line
+    processed_lines = []
+    for line in lines:
+        line = replace_for_special_statements(line)
+        last_meaningful_char = None
+        processed_line = ''
+        for char in line:
+            # Is this an unary minus sign? If so, replace with '~'.
+            if char == '-' and last_meaningful_char is not None and \
+               last_meaningful_char in significant_chars:
+                char = '~'
+            if not char.isspace():
+                last_meaningful_char = char
+            processed_line += char
+        processed_lines.append(processed_line)
+    return processed_lines
+
 def prepare_program(prgm):
     """
     Splits lines of a program and prepares control flow.
@@ -175,5 +210,6 @@ def prepare_program(prgm):
     lines = prgm.split('\n')
     lines = [line.strip() for line in lines]
     lines = convert_increment_decrement_operators(lines)
+    lines = detect_and_replace_unary_minus(lines)
     lines = prepare_control_flow(lines)
     return lines

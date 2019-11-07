@@ -15,14 +15,14 @@ method_names = {
     '<=': 'lesserEq',
     '>': 'greater',
     '<': 'lesser',
-    ' and ': 'and',
-    ' or ': 'or',
-    ' xor ': 'xor'
+    ' and ': 'booleanAnd',
+    ' or ': 'booleanOr',
+    ' xor ': 'booleanXor'
 }
 
 unary_method_names = {
-    '-': 'negative',
-    'not ': 'not'
+    '~': 'negative',
+    'not ': 'booleanNot'
 }
 
 def ready_for_overload(op, left, right):

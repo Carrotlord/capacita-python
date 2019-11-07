@@ -2,7 +2,7 @@ import re
 
 from tokens import tokenize_statement, \
                    seek_parenthesis_in_tokens
-from ast2 import AST, precedences
+from ast2 import AST, precedences, unary_ops
 from ribbon import Ribbon
 from ratio import Ratio
 from console import display
@@ -219,6 +219,27 @@ def execute_statement(stmt, env):
     # No directive to be processed:
     return None
 
+def apply_unary_ops_for_list(elems):
+    i = len(elems) - 2
+    while i >= 0:
+        elem = elems[i]
+        if elem in unary_ops:
+            if elem == '~':
+                elems[i : i+2] = [-elems[i + 1]]
+            else:
+                elems[i : i+2] = [not elems[i + 1]]
+        i -= 1
+    return elems
+
+def apply_unary_ops_to_tokens(tokens):
+    results = []
+    for token in tokens:
+        if type(token) is list:
+            results.append(apply_unary_ops_for_list(token))
+        else:
+            results.append(token)
+    return results
+
 def evaluate_list(tokens, env):
     """
     Transforms a list of tokens containing square brackets
@@ -228,6 +249,7 @@ def evaluate_list(tokens, env):
     """
     results = []
     i = 0
+    # TODO : should brackets include '{', '}'?
     brackets = ['[', ']']
     while i < len(tokens):
         token = tokens[i]
@@ -236,7 +258,9 @@ def evaluate_list(tokens, env):
             lst = []
             for elem in tokens[i+1 : i+j]:
                 if elem != ',':
-                    if elem in brackets or (type(elem) is not str):
+                    # Need to use the .keys() method of 'precedences'
+                    # or else unhashable elements (such as lists) will throw an exception
+                    if elem in brackets or elem in precedences.keys() or type(elem) is not str:
                         lst.append(elem)
                     else:
                         lst.append(eval_parentheses(elem, env))
@@ -265,7 +289,7 @@ def evaluate_list(tokens, env):
         else:
             results.append(token)
         i += 1
-    return results
+    return apply_unary_ops_to_tokens(results)
     
 def get_name(name, env):
     if type(name) is str and env.has_name(name):
@@ -417,6 +441,8 @@ def evaluate_operators(tokens, indices, env):
             tokens[idx-1 : idx+2] = [(left and not right) or ((not left) and right)]
         elif op == 'not ':
             tokens[idx : idx+2] = [not right]
+        elif op == '~':
+            tokens[idx : idx+2] = [-right]
         elif op == ' of ':
             tokens[idx-1 : idx+2] = [type_restrict.type_restrict(left, right, env)]
         elif op == '.':

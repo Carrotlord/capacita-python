@@ -1,12 +1,12 @@
 import re
 
-from prepare_program import prepare_program
 from exception import throw_exception
 from control_flow import find_next_end_else
 
 import execution
 import env as environment
 import arguments
+import prepare_program
 
 def extract_data(defn, kind):
     match_obj = re.match(r'sub ([A-Za-z_][A-Za-z_0-9]* )?(\$?[A-Za-z_][A-Za-z_0-9]*)', defn)
@@ -137,7 +137,7 @@ class Function(object):
         prgm, self.defined_funcs, self.hooks = extract_functions(prgm)
         # All functions should return something,
         # which is null for 'void' functions.
-        self.lines = prepare_program(prgm) + ['return null']
+        self.lines = prepare_program.prepare_program(prgm) + ['return null']
         self.supplied_env = supplied_env
         self.is_method = False
         self.is_constructor = self.check_is_constructor()

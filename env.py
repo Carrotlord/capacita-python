@@ -1,6 +1,5 @@
 from exception import throw_exception
 from builtin_function import int_div, make_list
-from execution import eval_parentheses
 from type_tree import get_type, \
                       generate_default_tree, \
                       TypeTree, \
@@ -9,6 +8,7 @@ from type_tree import get_type, \
 
 import re
 import os
+import execution
 
 import pretty_print
 
@@ -132,7 +132,7 @@ class Environment(object):
             match_obj = re.match(r'(\$?[A-Za-z_][A-Za-z_0-9]*)\[(.+)\]', var_name)
             if match_obj:
                 indexable = match_obj.group(1)
-                index = eval_parentheses(match_obj.group(2), self)
+                index = execution.eval_parentheses(match_obj.group(2), self)
                 frame_or_this = self.get_frame_or_this(indexable)
                 container = frame_or_this[indexable]
                 if type(container) is tuple:

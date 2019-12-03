@@ -12,12 +12,12 @@ from console import display, literal
 from tokens import tokenize_statement
 from fileio import file_to_str
 from exception import throw_exception
-from prepare_program import prepare_program, preprocess
 
 import tests
 import env as environment
 import execution
 import function
+import prepare_program
 
 def execute_file(file_name, existing_env=None):
     if existing_env is None:
@@ -33,7 +33,7 @@ def execute_file(file_name, existing_env=None):
 def execute_program(prgm, existing_env=None):
     """Executes a program given as a string."""
     prgm, env, _ = function.extract_functions(prgm, existing_env)
-    lines = prepare_program(prgm)
+    lines = prepare_program.prepare_program(prgm)
     execution.execute_lines(lines, env)
     
 def store_program():
@@ -105,7 +105,7 @@ def repl(existing_env=None):
         else:
             # Since expr could contain semicolon-separated lines of code,
             # extract all the lines:
-            lines = prepare_program(expr)
+            lines = prepare_program.prepare_program(expr)
             if len(lines) > 1:
                 leading_lines = lines[:-1]
                 execution.execute_lines(leading_lines, env)
@@ -249,7 +249,7 @@ def main():
                 */y = 6
                 z = "https://example.com"
             """
-            print(preprocess(sample))
+            print(prepare_program.preprocess(sample))
         elif first_arg == '--test10':
             ast = AST('-3.0e5 + 186e-20 * 1e-6 / 28.8e+6 + 34.4e+99')
             print(ast.parse())
@@ -260,6 +260,18 @@ def main():
             print(execution.is_assignment_statement('a=5==6'))
             print(execution.is_assignment_statement('not (5==6) and (8>=7)'))
             print(execution.is_assignment_statement('z='))
+        elif first_arg == '--test12':
+            lines = [
+                'sub this + that',
+                'func Int x + this',
+                'func x + this',
+                'func this * y',
+                'func Int -this',
+                'sub -this',
+                'sub not this',
+                'sub Boolean not this'
+            ]
+            print(prepare_program.replace_op_overload_syntax(lines))
         elif first_arg == '--test-tree-merge':
             tests.test_tree_merge()
         elif first_arg == '--test-all':

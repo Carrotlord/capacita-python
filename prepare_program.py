@@ -3,34 +3,7 @@ from strtools import find_matching_quote, convert_special_char
 from exception import throw_exception
 
 import ast2
-import re
 import operator_overload
-
-def build_op_overload_regex(is_reflected):
-    variable_regex = r'[A-Za-z_][A-Za-z_0-9]*'
-    # ?? indicates an optional group which is non-greedy
-    regex_start = r'(sub|func) ({0} )??'.format(variable_regex)
-    op_group = r'('
-    # re.escape(...) is necessary, since some operators are also regex metacharacters
-    for operator in operator_overload.method_names:
-        op_group += re.escape(operator) + '|'
-    for unary_operator in operator_overload.unary_method_names:
-        op_group += re.escape(unary_operator) + '|'
-    # Remove last | character, and close the group with a closing parenthesis
-    op_group = op_group[:-1] + r')'
-    if is_reflected:
-        # The following group is optional, to account for unary operators
-        regex_middle = r'({0})?'.format(variable_regex)
-        regex_end = r'\s*' + op_group + r'\s*this\s*'
-    else:
-        regex_middle = r'\s*this\s*' + op_group + r'\s*'
-        # There are no postfix unary operators that can be overloaded, so this
-        # group is not optional
-        regex_end = r'({0})'.format(variable_regex)
-    return regex_start + regex_middle + regex_end
-
-op_overload_regex = build_op_overload_regex(False)
-reflected_op_overload_regex = build_op_overload_regex(True)
 
 def is_quote(prgm, i):
     if i == 0:
@@ -226,48 +199,63 @@ def detect_and_replace_unary_minus(lines):
         processed_lines.append(processed_line)
     return processed_lines
 
-def construct_equivalent_function_defn(match_obj, is_reflected):
-    function_keyword = match_obj.group(1)
-    function_return_type = match_obj.group(2)
-    if function_return_type is None:
-        function_return_type = ''
-    if is_reflected:
-        arg_name = match_obj.group(3)
-        operator_to_be_overloaded = match_obj.group(4)
+def is_op_overload_syntax(line):
+    return (line.startswith('sub ') or line.startswith('func ')) and '(' not in line
+
+ordered_overloadable_ops = [op for op in ast2.ordered_ops if ' ' not in op and op not in ['.', '~']]
+
+def construct_equivalent_function_defn(line):
+    if not is_op_overload_syntax(line):
+        return line
+    if line.endswith(' -this'):
+        pieces = line.split()
+        function_keyword = pieces[0]
+        if len(pieces) == 2:
+            return '{0} $negative()'.format(function_keyword)
+        else:
+            return_type = pieces[1]
+            return '{0} {1} $negative()'.format(function_keyword, return_type)
+    elif line.endswith(' not this'):
+        pieces = line.split()
+        function_keyword = pieces[0]
+        if len(pieces) == 3:
+            return '{0} $booleanNot()'.format(function_keyword)
+        else:
+            return_type = pieces[1]
+            return '{0} {1} $booleanNot()'.format(function_keyword, return_type)
     else:
-        arg_name = match_obj.group(4)
-        operator_to_be_overloaded = match_obj.group(3)
-    if operator_to_be_overloaded in operator_overload.method_names:
-        operator_method_name = operator_overload.method_names[operator_to_be_overloaded]
-        is_unary = False
-    elif operator_to_be_overloaded in operator_overload.unary_method_names:
-        operator_method_name = operator_overload.unary_method_names[operator_to_be_overloaded]
-        is_unary = True
-    else:
-        throw_exception(
-            'UnknownOperator',
-            '{0} is an operator that cannot be overloaded'.format(operator_to_be_overloaded)
-        )
-    if is_unary or arg_name is None:
-        defn = '{0} {1}${2}()'.format(function_keyword, function_return_type, operator_method_name)
-    else:
-        defn = '{0} {1}${2}({3})'.format(function_keyword, function_return_type, operator_method_name, arg_name)
-    return defn
+        found_operator = None
+        for operator in ordered_overloadable_ops:
+            if operator in line:
+                line = line.replace(operator, ' ')
+                found_operator = operator
+                break
+        if found_operator is not None:
+            pieces = line.split()
+            function_keyword = pieces[0]
+            is_reflected = pieces[-1] == 'this'
+            method_name = operator_overload.method_names[found_operator]
+            if is_reflected:
+                method_name = 'r' + method_name
+                arg_name = pieces[-2]
+            else:
+                arg_name = pieces[-1]
+            return_type = '' if len(pieces) == 3 else pieces[1] + ' '
+            return '{0} {1}${2}({3})'.format(
+                function_keyword,
+                return_type,
+                method_name,
+                arg_name
+            )
+        else:
+            throw_exception(
+                'InvalidFunctionDefinition',
+                "'{0}' is not a valid function definition".format(line)
+            )
 
 def replace_op_overload_syntax(lines):
     # TODO : currently, this function is never called, except for test cases
-    processed_lines = []
-    for line in lines:
-        match_obj = re.match(op_overload_regex, line)
-        if match_obj:
-            processed_lines.append(construct_equivalent_function_defn(match_obj, False))
-        else:
-            match_obj = re.match(reflected_op_overload_regex, line)
-            if match_obj:
-                processed_lines.append(construct_equivalent_function_defn(match_obj, True))
-            else:
-                processed_lines.append(line)
-    return processed_lines
+    return [construct_equivalent_function_defn(line) for line in lines]
 
 def prepare_program(prgm):
     """

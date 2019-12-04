@@ -269,7 +269,12 @@ def main():
                 'func Int -this',
                 'sub -this',
                 'sub not this',
-                'sub Boolean not this'
+                'sub Boolean not this',
+                'sub this-b',
+                'sub b-this',
+                'func Int-this',
+                'func Int- this',
+                'sub Int - this'
             ]
             print(prepare_program.replace_op_overload_syntax(lines))
         elif first_arg == '--test-tree-merge':

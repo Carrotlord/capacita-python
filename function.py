@@ -67,6 +67,7 @@ def extract_functions(prgm, existing_env=None):
     """
     lines = prgm.split('\n')
     lines = [line.strip() for line in lines]
+    lines = prepare_program.replace_op_overload_syntax(lines)
     if existing_env is None:
         env = environment.Environment()
     else:

@@ -12,26 +12,26 @@ class Complex(real, imag) inherits Number
         return atan(tangent)
     end
     
-    sub $plus(other)
+    sub this + other
         return Complex(getReal() + other.getReal(), getImag() + other.getImag())
     end
     
-    sub $negative()
+    sub -this
         return Complex(-getReal(), -getImag())
     end
     
-    sub $minus(other)
+    sub this - other
         // Warning: for some reason, the variable 'this' must be wrapped in parentheses
         return (this) + (-other)
     end
     
-    sub $mul(other)
+    sub this * other
         newReal = getReal() * other.getReal() - getImag() * other.getImag()
         newImag = getImag() * other.getReal() + getReal() * other.getImag()
         return Complex(newReal, newImag)
     end
     
-    sub $div(other)
+    sub this / other
         d = other.getReal() ^ 2 + other.getImag() ^ 2
         newReal = (getReal() * other.getReal() + getImag() * other.getImag()) / d
         newImag = (getImag() * other.getReal() - getReal() * other.getImag()) / d
@@ -64,14 +64,14 @@ end
 import functional
 
 class Vector([elements]) inherits Sequence
-    sub $mul(scalar)
+    sub this * scalar
         func times(elem) = elem * scalar
         newVector = Vector()
         newVector.elements = map(times, elements)
         return newVector
     end
 
-    func $rmul(scalar) = $mul(scalar)
+    func scalar * this = this * scalar
     func toString() = "Vector" + elements
 end
 

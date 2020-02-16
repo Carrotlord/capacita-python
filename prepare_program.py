@@ -200,7 +200,7 @@ def detect_and_replace_unary_minus(lines):
     return processed_lines
 
 def is_op_overload_syntax(line):
-    return (line.startswith('sub ') or line.startswith('func ')) and '(' not in line
+    return line.startswith('sub ') and '(' not in line
 
 ordered_overloadable_ops = [op for op in ast2.ordered_ops if ' ' not in op and op not in ['.', '~']]
 
@@ -227,7 +227,8 @@ def construct_equivalent_function_defn(line):
         found_operator = None
         for operator in ordered_overloadable_ops:
             if operator in line:
-                line = line.replace(operator, ' ')
+                # Only replace the first occurrence
+                line = line.replace(operator, ' ', 1)
                 found_operator = operator
                 break
         if found_operator is not None:
@@ -253,8 +254,38 @@ def construct_equivalent_function_defn(line):
                 "'{0}' is not a valid function definition".format(line)
             )
 
+def find_assignment_operator(single_line_function):
+    defn = single_line_function
+    # 5 is the length of the string 'func '
+    i = 5
+    length = len(defn)
+    while i + 1 < length:
+        # Look for a standalone '=' operator, which should not be a part of
+        # '==', '<=', '>=', or '!='
+        if defn[i] == '=' and defn[i - 1] not in '<>=!' and defn[i + 1] != '=':
+            return i
+        i += 1
+    throw_exception(
+        'InvalidFunctionSyntax',
+        'Single line function definition has no assignment operator:\n' + defn
+    )
+
 def replace_op_overload_syntax(lines):
-    # TODO : currently, this function is never called, except for test cases
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if line.startswith('func '):
+            j = find_assignment_operator(line)
+            defn = line[5:j]
+            if '(' not in defn:
+                return_expr = line[j + 1:]
+                lines[i : i+1] = [
+                    'sub ' + defn.rstrip(),
+                    'return ' + return_expr,
+                    'end'
+                ]
+                i += 2
+        i += 1
     return [construct_equivalent_function_defn(line) for line in lines]
 
 def prepare_program(prgm):

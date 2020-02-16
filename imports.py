@@ -82,15 +82,21 @@ def import_functional(env):
     def flip(f):
         return builtin_function.BuiltinFunction('g', ['x', 'y'], lambda x, y: f.execute([y, x], env))
     def fold_left(f, lst):
-        if len(lst) == 2:
-            return f.execute(lst, env)
-        else:
-            return f.execute([fold_left(f, lst[0:-1]), lst[-1]], env)
+        if len(lst) < 2:
+            return lst[0]
+        result = f.execute(lst[:2], env)
+        lst = lst[2:]
+        for elem in lst:
+            result = f.execute([result, elem], env)
+        return result
     def fold_right(f, lst):
-        if len(lst) == 2:
-            return f.execute(lst, env)
-        else:
-            return f.execute([lst[0], fold_right(f, lst[1:])], env)
+        if len(lst) < 2:
+            return lst[0]
+        result = f.execute(lst[-2:], env)
+        lst = lst[:-2]
+        for elem in reversed(lst):
+            result = f.execute([elem, result], env)
+        return result
     def any_prime(f, lst):
         for elem in lst:
             result = f.execute([elem], env)
@@ -146,6 +152,11 @@ def import_pretty_print(env):
     env.assign('prettyFormat', builtin_function.BuiltinFunction('prettyFormat', ['obj'], pretty_print.pretty_format_wrapper))
     env.assign('prettyPrint', builtin_function.BuiltinFunction('prettyPrint', ['obj'], pretty_print.pretty_print))
 
+def import_data_structures(env):
+    def list_range(start, stop, step=1):
+        return range(start, stop + 1, step)
+    env.assign('ListRange', builtin_function.BuiltinFunction('ListRange', ['start', 'stop', 'step?'], list_range))
+
 def perform_import(library, env):
     library = library.strip()
     obj = None
@@ -158,6 +169,8 @@ def perform_import(library, env):
         import_math(env)
     elif library == 'functional':
         import_functional(env)
+    elif library == 'dataStructures':
+        import_data_structures(env)
     elif library == 'debugging':
         import_debugging(env)
     elif library == 'prettyPrint':

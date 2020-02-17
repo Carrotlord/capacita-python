@@ -63,7 +63,11 @@ def extract_functions(prgm, existing_env=None):
     Removes all function bodies from prgm and inserts
     the functions into a new environment frame.
     """
-    lines = prgm.split('\n')
+    if type(prgm) is str:
+        lines = prgm.split('\n')
+    else:
+        # We are already given a list of lines
+        lines = prgm
     lines = [line.strip() for line in lines]
     lines = prepare_program.replace_op_overload_syntax(lines)
     if existing_env is None:
@@ -127,11 +131,10 @@ class Function(object):
         self.name = name
         self.args = args
         self.return_type = return_type
-        prgm = '\n'.join(lines)
-        prgm, self.defined_funcs, self.hooks = extract_functions(prgm)
+        lines, self.defined_funcs, self.hooks = extract_functions(lines)
         # All functions should return something,
         # which is null for 'void' functions.
-        self.lines = prepare_program.prepare_program(prgm) + ['return null']
+        self.lines = prepare_program.prepare_program(lines) + ['return null']
         self.supplied_env = supplied_env
         self.is_method = False
         self.is_constructor = self.check_is_constructor()

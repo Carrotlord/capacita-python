@@ -12,9 +12,7 @@ def extract_data(defn, kind):
     match_obj = re.match(r'sub ([A-Za-z_][A-Za-z_0-9]* )?(\$?[A-Za-z_][A-Za-z_0-9]*)', defn)
     if kind == 'return_type':
         kind = match_obj.group(1)
-        if kind is None:
-            return 'Object'
-        else:
+        if kind is not None:
             return kind.strip()
     elif kind == 'func_name':
         return match_obj.group(2)
@@ -130,10 +128,6 @@ class Function(object):
         self.name = name
         self.args = args
         self.return_type = return_type
-        # TODO : setting return type to 'Object' works, but may have a negative
-        # impact on performance
-        if self.return_type is None:
-            self.return_type = 'Object'
         prgm = '\n'.join(lines)
         prgm, self.defined_funcs, self.hooks = extract_functions(prgm)
         # All functions should return something,
@@ -193,7 +187,7 @@ class Function(object):
         # a method and a constructor.
         if self.is_method or self.is_constructor:
             env.pop_this()
-        if env.value_is_a(result, self.return_type):
+        if self.return_type is None or env.value_is_a(result, self.return_type):
             return result
         else:
             throw_exception('IncorrectReturnType', '{0} is not of type {1}'.format(result, self.return_type))

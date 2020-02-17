@@ -30,8 +30,7 @@ def extract_compound_operator_line(line, operators):
             return operator
     return None
 
-def convert_compound_operators(prgm):
-    lines = prgm.split('\n')
+def convert_compound_operators(lines):
     processed_lines = []
     for line in lines:
         operator = extract_compound_operator_line(line, ast2.compound_operators)
@@ -55,7 +54,7 @@ def convert_compound_operators(prgm):
                 processed_lines.append(processed_line)
         else:
             processed_lines.append(line)
-    return '\n'.join(processed_lines)
+    return processed_lines
 
 def convert_single_quotes(prgm):
     def escape_double_quotes(prgm):
@@ -132,7 +131,11 @@ def preprocess(prgm):
                 processed += char
             i += 1
         return processed
-    return replace_special(remove_comments(convert_single_quotes(prgm)))
+    prgm = replace_special(remove_comments(convert_single_quotes(prgm)))
+    # TODO : handle semicolons embedded in string literals
+    # and semicolons in the repl.
+    prgm = prgm.replace(';', '\n')
+    return prgm
 
 def convert_increment_decrement_operators(lines):
     processed_lines = []
@@ -288,16 +291,11 @@ def replace_op_overload_syntax(lines):
         i += 1
     return [construct_equivalent_function_defn(line) for line in lines]
 
-def prepare_program(prgm):
+def prepare_program(lines):
     """
     Splits lines of a program and prepares control flow.
     """
-    # TODO : handle semicolons embedded in string literals
-    # and semicolons in the repl.
-    prgm = preprocess(prgm)
-    prgm = prgm.replace(';', '\n')
-    prgm = convert_compound_operators(prgm)
-    lines = prgm.split('\n')
+    lines = convert_compound_operators(lines)
     lines = [line.strip() for line in lines]
     lines = convert_increment_decrement_operators(lines)
     lines = detect_and_replace_unary_minus(lines)

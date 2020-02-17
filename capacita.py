@@ -30,10 +30,15 @@ def execute_file(file_name, existing_env=None):
         except IOError:
             print('Could not read file: ' + file_name)
 
+def convert_program_to_lines(prgm, existing_env=None):
+    prgm = prepare_program.preprocess(prgm)
+    lines, env, _ = function.extract_functions(prgm, existing_env)
+    lines = prepare_program.prepare_program(lines)
+    return lines, env
+
 def execute_program(prgm, existing_env=None):
     """Executes a program given as a string."""
-    prgm, env, _ = function.extract_functions(prgm, existing_env)
-    lines = prepare_program.prepare_program(prgm)
+    lines, env = convert_program_to_lines(prgm, existing_env)
     execution.execute_lines(lines, env)
     
 def store_program():
@@ -105,7 +110,7 @@ def repl(existing_env=None):
         else:
             # Since expr could contain semicolon-separated lines of code,
             # extract all the lines:
-            lines = prepare_program.prepare_program(expr)
+            lines, _ = convert_program_to_lines(expr)
             if len(lines) > 1:
                 leading_lines = lines[:-1]
                 execution.execute_lines(leading_lines, env)

@@ -112,8 +112,7 @@ def extract_functions(prgm, existing_env=None):
             lines[i : end+1] = [':hook {0}'.format(name)]
         else:
             i += 1
-    prgm = '\n'.join(lines)
-    return prgm, env, hooks_reference
+    return lines, env, hooks_reference
 
 class Function(object):
     """

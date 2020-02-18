@@ -55,9 +55,23 @@ class LineManager(object):
             end_line_num = self.internal_lines[index].end_line_num
             self.internal_lines[index] = LineData(content, line_num, end_line_num)
         self.set_last_indices(line_num, end_line_num)
-    
+
+    def subset(self, start, stop):
+        new_line_mgr = LineManager([])
+        new_line_mgr.internal_lines = self.internal_lines[start : stop]
+        return new_line_mgr
+
     def insert(self, index, line):
         self.internal_lines.insert(index, LineData(line, self.last_start_index, self.last_stop_index))
+    
+    def pop(self, index=None):
+        if index is None:
+            return self.internal_lines.pop().line
+        return self.internal_lines.pop(index).line
+
+    def format_lines(self):
+        # All functions act as if they had 'return null' as the final statement
+        return str(tuple(self.get_lines() + ['return null']))
 
     def __len__(self):
         return len(self.internal_lines)

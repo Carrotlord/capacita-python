@@ -290,6 +290,4 @@ def prepare_program(line_mgr):
     line_mgr.for_each_line(convert_compound_operator)
     line_mgr.for_each_line(convert_increment_decrement_operators)
     line_mgr.for_each_line(detect_and_replace_unary_minus)
-    lines = line_mgr.get_lines()
-    lines = prepare_control_flow(lines)
-    return lines
+    prepare_control_flow(line_mgr)

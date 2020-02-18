@@ -33,13 +33,13 @@ def execute_file(file_name, existing_env=None):
 def convert_program_to_lines(prgm, existing_env=None):
     prgm = prepare_program.preprocess(prgm)
     line_mgr, env, _ = function.extract_functions(prgm, existing_env)
-    lines = prepare_program.prepare_program(line_mgr)
-    return lines, env
+    prepare_program.prepare_program(line_mgr)
+    return line_mgr, env
 
 def execute_program(prgm, existing_env=None):
     """Executes a program given as a string."""
-    lines, env = convert_program_to_lines(prgm, existing_env)
-    execution.execute_lines(lines, env)
+    line_mgr, env = convert_program_to_lines(prgm, existing_env)
+    execution.execute_lines(line_mgr, env)
     
 def store_program():
     """

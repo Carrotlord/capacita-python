@@ -64,13 +64,20 @@ def extract_functions(prgm, existing_env=None):
     Removes all function bodies from prgm and inserts
     the functions into a new environment frame.
     """
+    is_line_mgr_given = False
     if type(prgm) is str:
         lines = prgm.split('\n')
-    else:
+    elif type(prgm) is list:
         # We are already given a list of lines
         lines = prgm
-    lines = [line.strip() for line in lines]
-    line_mgr = line_manager.LineManager(lines)
+    else:
+        is_line_mgr_given = True
+    if is_line_mgr_given:
+        # We are already given a line manager
+        line_mgr = prgm
+    else:
+        lines = [line.strip() for line in lines]
+        line_mgr = line_manager.LineManager(lines)
     prepare_program.replace_op_overload_syntax(line_mgr)
     if existing_env is None:
         env = environment.Environment()
@@ -111,7 +118,7 @@ def extract_functions(prgm, existing_env=None):
             arg_list = args_of_function(line)
             ret_type = return_type_of_function(line)
             _, end = find_next_end_else(line_mgr, i + 1, True)
-            func_body = line_mgr[i+1 : end]
+            func_body = line_mgr.subset(i + 1, end)
             hooks_reference = env.assign_hook(name, Function(name, arg_list, func_body, return_type=ret_type))
             # Remove the function definition from the program,
             # and replace it with a hook directive.
@@ -124,7 +131,7 @@ class Function(object):
     """
     Implements a callable Capacita function.
     """
-    def __init__(self, name, args, lines, supplied_env=None, return_type=None):
+    def __init__(self, name, args, line_mgr, supplied_env=None, return_type=None):
         """
         Initializes function object.
         lines are the lines of the function body
@@ -133,10 +140,9 @@ class Function(object):
         self.name = name
         self.args = args
         self.return_type = return_type
-        lines, self.defined_funcs, self.hooks = extract_functions(lines)
-        # All functions should return something,
-        # which is null for 'void' functions.
-        self.lines = prepare_program.prepare_program(lines) + ['return null']
+        line_mgr, self.defined_funcs, self.hooks = extract_functions(line_mgr)
+        self.line_mgr = line_mgr
+        prepare_program.prepare_program(self.line_mgr)
         self.supplied_env = supplied_env
         self.is_method = False
         self.is_constructor = self.check_is_constructor()
@@ -147,7 +153,9 @@ class Function(object):
         """
         # A function is a constructor if it defines its
         # own type on the first line of the function body.
-        return self.lines[0].startswith('$type=')
+        if len(self.line_mgr) == 0:
+            return False
+        return self.line_mgr[0].startswith('$type=')
 
     def get_num_args(self):
         return len(self.args)
@@ -175,7 +183,7 @@ class Function(object):
         # Put function arguments into environment frame:
         arguments.assign_arguments(self.args, arg_values, env)
         result = execution.execute_lines(
-            self.lines,
+            self.line_mgr,
             env,
             executing_constructor=self.is_constructor,
             supplied_hooks=self.hooks
@@ -207,13 +215,16 @@ class Function(object):
         # A boolean variable could keep track of which functions already possess
         # the correct supplied environment.
         new_func = Function(self.name, self.args, [], env.copy())
-        new_func.lines = self.lines
+        new_func.line_mgr = self.line_mgr
         new_func.defined_funcs = self.defined_funcs
         return new_func
         
     def __repr__(self):
-        return '<function ' + self.name + '(' + str(self.args)[1:-1] + \
-               ') -> ' + str(tuple(self.lines)) + '>'
-    
+        return '<function {0}({1}) -> {2}>'.format(
+            self.name,
+            str(self.args)[1:-1],
+            self.line_mgr.format_lines()
+        )
+
     def __str__(self):
         return repr(self)

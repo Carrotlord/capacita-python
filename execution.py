@@ -21,14 +21,14 @@ import prepare_program
 import env as environment
 import operator_overload
 
-def execute_lines(lines, env, executing_constructor=False, supplied_hooks=None):
+def execute_lines(line_mgr, env, executing_constructor=False, supplied_hooks=None):
     """
     Executes lines of code in a given environment.
     """
     prgm_counter = 0
     cond_flag = False
-    while prgm_counter < len(lines):
-        line = lines[prgm_counter]
+    while prgm_counter < len(line_mgr):
+        line = line_mgr[prgm_counter]
         directive = execute_statement(line, env)
         if directive is not None:
             if directive[0] == ':cond':
@@ -49,7 +49,7 @@ def execute_lines(lines, env, executing_constructor=False, supplied_hooks=None):
                 prgm_counter += 1
             elif directive[0] == ':skiptoelse':
                 # Nothing was thrown in this try clause
-                _, j = find_next_end_else(lines, prgm_counter + 1, False)
+                _, j = find_next_end_else(line_mgr, prgm_counter + 1, False)
                 prgm_counter = j + 1
             elif directive[0] == ':hook':
                 env.activate_hook(directive[1], supplied_hooks)
@@ -94,14 +94,14 @@ def execute_lines(lines, env, executing_constructor=False, supplied_hooks=None):
                 else:
                     original_counter = prgm_counter
                     # Look for a matching catch statement
-                    prgm_counter = find_catch(directive, lines, prgm_counter, env)
+                    prgm_counter = find_catch(directive, line_mgr, prgm_counter, env)
                     if prgm_counter is None:
                         # We can't find a catch statement.
                         # Let the exception bubble up from its current scope.
                         env.exception_push(original_counter)
                         return Trigger(directive[1])
             elif directive[0] in ['catch', 'else']:
-                kind, j = find_next_end_else(lines, prgm_counter + 1, True)
+                kind, j = find_next_end_else(line_mgr, prgm_counter + 1, True)
                 # Travel to the next end
                 prgm_counter = j + 1
             elif directive[0] == 'end':
@@ -111,16 +111,19 @@ def execute_lines(lines, env, executing_constructor=False, supplied_hooks=None):
                 prgm_counter += 1
         else:
             prgm_counter += 1
+    # All functions should return something,
+    # which is null for 'void' functions.
+    return None
 
-def find_catch(directive_list, lines, prgm_counter, env):
+def find_catch(directive_list, line_mgr, prgm_counter, env):
     """
     Finds a matching catch statement for an object that was thrown.
     Returns the program counter for the catch statement, plus 1.
     """
     # TODO : allow for nested try-catch statements
     thrown = eval_parentheses(directive_list[1], env)
-    while prgm_counter < len(lines):
-        line = lines[prgm_counter]
+    while prgm_counter < len(line_mgr):
+        line = line_mgr[prgm_counter]
         if line.startswith('catch '):
             caught = line[6:].split(' ')
             if len(caught) == 1:

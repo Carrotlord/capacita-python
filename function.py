@@ -7,6 +7,7 @@ import execution
 import env as environment
 import arguments
 import prepare_program
+import line_manager
 
 def extract_data(defn, kind):
     match_obj = re.match(r'sub ([A-Za-z_][A-Za-z_0-9]* )?(\$?[A-Za-z_][A-Za-z_0-9]*)', defn)
@@ -69,15 +70,16 @@ def extract_functions(prgm, existing_env=None):
         # We are already given a list of lines
         lines = prgm
     lines = [line.strip() for line in lines]
-    lines = prepare_program.replace_op_overload_syntax(lines)
+    line_mgr = line_manager.LineManager(lines)
+    prepare_program.replace_op_overload_syntax(line_mgr)
     if existing_env is None:
         env = environment.Environment()
     else:
         env = existing_env
     i = 0
-    max_len = len(lines)
+    max_len = len(line_mgr)
     while i < max_len:
-        line = lines[i]
+        line = line_mgr[i]
         # Transform classes into functions that return objects
         if line.startswith('class '):
             match_obj = re.match(r'class ([\$A-Za-z_][A-Za-z0-9_]*)\((.*)\)(.*)', line)
@@ -93,30 +95,30 @@ def extract_functions(prgm, existing_env=None):
                 # There were no parent classes provided.
                 # By default, this class should inherit from Object.
                 env.new_type(['Object'], child_class_name)
-            lines[i] = 'sub ' + child_class_name + '(' + arguments + ')'
-            lines.insert(i + 1, '$type="' + child_class_name + '"')
+            line_mgr[i] = 'sub ' + child_class_name + '(' + arguments + ')'
+            line_mgr.insert(i + 1, '$type="' + child_class_name + '"')
             max_len += 1
-            _, end = find_next_end_else(lines, i + 1, True)
-            lines.insert(end, 'return this')
+            _, end = find_next_end_else(line_mgr, i + 1, True)
+            line_mgr.insert(end, 'return this')
             max_len += 1
         i += 1
     i = 0
     hooks_reference = None
-    while i < len(lines):
-        line = lines[i]
+    while i < len(line_mgr):
+        line = line_mgr[i]
         if line.startswith('sub '):
             name = name_of_function(line)
             arg_list = args_of_function(line)
             ret_type = return_type_of_function(line)
-            _, end = find_next_end_else(lines, i + 1, True)
-            func_body = lines[i+1 : end]
+            _, end = find_next_end_else(line_mgr, i + 1, True)
+            func_body = line_mgr[i+1 : end]
             hooks_reference = env.assign_hook(name, Function(name, arg_list, func_body, return_type=ret_type))
             # Remove the function definition from the program,
             # and replace it with a hook directive.
-            lines[i : end+1] = [':hook {0}'.format(name)]
+            line_mgr[i : end+1] = [':hook {0}'.format(name)]
         else:
             i += 1
-    return lines, env, hooks_reference
+    return line_mgr, env, hooks_reference
 
 class Function(object):
     """

@@ -4,7 +4,7 @@ import re
 
 openers = ['if ', 'while ', 'for ', 'repeat ', 'switch ', 'sub ', ':for ']
 
-def find_next_end_else(lines, start, end_only=False, allow_catch=False):
+def find_next_end_else(line_mgr, start, end_only=False, allow_catch=False):
     """
     Returns the corresponding end-statement or else-statement
     or catch-statement
@@ -15,8 +15,8 @@ def find_next_end_else(lines, start, end_only=False, allow_catch=False):
     """
     i = start
     open_clauses = 0
-    while i < len(lines):
-        line = lines[i]
+    while i < len(line_mgr):
+        line = line_mgr[i]
         if line == 'end':
             if open_clauses == 0:
                 return ['end', i]

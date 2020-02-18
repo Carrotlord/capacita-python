@@ -22,11 +22,20 @@ class LineData(object):
         else:
             self.end_line_num = end_line
 
+    def modify_line(self, function):
+        self.line = function(self.line)
+
 class LineManager(object):
     def __init__(self, original_lines):
         self.internal_lines = []
         for line_num, line in enumerate(original_lines):
             self.internal_lines.append(LineData(line, line_num))
+        self.last_start_index = -1
+        self.last_stop_index = -1
+
+    def set_last_indices(self, start, stop):
+        self.last_start_index = start
+        self.last_stop_index = stop
 
     def __getitem__(self, index):
         if type(index) is slice:
@@ -45,9 +54,20 @@ class LineManager(object):
             line_num = self.internal_lines[index].line_num
             end_line_num = self.internal_lines[index].end_line_num
             self.internal_lines[index] = LineData(content, line_num, end_line_num)
+        self.set_last_indices(line_num, end_line_num)
+    
+    def insert(self, index, line):
+        self.internal_lines.insert(index, LineData(line, self.last_start_index, self.last_stop_index))
 
     def __len__(self):
         return len(self.internal_lines)
+
+    def for_each_line(self, function):
+        for line_data in self.internal_lines:
+            line_data.modify_line(function)
+
+    def get_lines(self):
+        return [line_data.line for line_data in self.internal_lines]
 
     def display(self):
         num_digits = 1

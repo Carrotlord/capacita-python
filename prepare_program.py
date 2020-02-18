@@ -30,31 +30,28 @@ def extract_compound_operator_line(line, operators):
             return operator
     return None
 
-def convert_compound_operators(lines):
-    processed_lines = []
-    for line in lines:
-        operator = extract_compound_operator_line(line, ast2.compound_operators)
-        if operator is not None:
-            # All compound operators take the form of '$=',
-            # where 'a $= b' expands to 'a = a $ b'
-            actual_operator = operator[0]
-            pieces = line.split(operator)
-            variable = (pieces[0]).strip()
-            right_hand_side = pieces[1]
-            if ' ' in variable:
-                throw_exception(
-                    'DeclaredTypeCompoundOperator',
-                    'Can only use compound operator {0} when variable already ' \
-                    'exists (cannot declare type of variable in this case)'.format(operator)
-                )
-            else:
-                # Expand 'a $= b' into 'a=a$ (b)'
-                # For instance, 'x *= y + z' becomes 'x=x*( y + z)'
-                processed_line = '{0}={0}{1}({2})'.format(variable, actual_operator, right_hand_side)
-                processed_lines.append(processed_line)
+def convert_compound_operator(line):
+    operator = extract_compound_operator_line(line, ast2.compound_operators)
+    if operator is not None:
+        # All compound operators take the form of '$=',
+        # where 'a $= b' expands to 'a = a $ b'
+        actual_operator = operator[0]
+        pieces = line.split(operator)
+        variable = (pieces[0]).strip()
+        right_hand_side = pieces[1]
+        if ' ' in variable:
+            throw_exception(
+                'DeclaredTypeCompoundOperator',
+                'Can only use compound operator {0} when variable already ' \
+                'exists (cannot declare type of variable in this case)'.format(operator)
+            )
         else:
-            processed_lines.append(line)
-    return processed_lines
+            # Expand 'a $= b' into 'a=a$ (b)'
+            # For instance, 'x *= y + z' becomes 'x=x*( y + z)'
+            processed_line = '{0}={0}{1}({2})'.format(variable, actual_operator, right_hand_side)
+            return processed_line
+    else:
+        return line
 
 def convert_single_quotes(prgm):
     def escape_double_quotes(prgm):
@@ -137,35 +134,32 @@ def preprocess(prgm):
     prgm = prgm.replace(';', '\n')
     return prgm
 
-def convert_increment_decrement_operators(lines):
-    processed_lines = []
-    for line in lines:
-        if line.startswith('++') or line.startswith('--'):
-            # Change prefix notation to postfix notation
-            line = line[2:] + line[:2]
-        if line.endswith('++'):
-            operation = '+'
-        elif line.endswith('--'):
-            operation = '-'
+def convert_increment_decrement_operators(line):
+    if line.startswith('++') or line.startswith('--'):
+        # Change prefix notation to postfix notation
+        line = line[2:] + line[:2]
+    if line.endswith('++'):
+        operation = '+'
+    elif line.endswith('--'):
+        operation = '-'
+    else:
+        operation = None
+    if operation is not None:
+        if '.' in line or '[' in line:
+            # This is a complex statement, which includes
+            # a dot operator or index assignment.
+            reference = line[:-2]
+            line = '{0}={0}{1}1'.format(reference, operation)
         else:
-            operation = None
-        if operation is not None:
-            if '.' in line or '[' in line:
-                # This is a complex statement, which includes
-                # a dot operator or index assignment.
-                reference = line[:-2]
-                line = '{0}={0}{1}1'.format(reference, operation)
+            # This is a simple statement, for an ordinary
+            # variable name.
+            var_name = line[:-2]
+            if operation == '+':
+                directive_name = 'inc'
             else:
-                # This is a simple statement, for an ordinary
-                # variable name.
-                var_name = line[:-2]
-                if operation == '+':
-                    directive_name = 'inc'
-                else:
-                    directive_name = 'dec'
-                line = ':{0} {1}'.format(directive_name, var_name)
-        processed_lines.append(line)
-    return processed_lines
+                directive_name = 'dec'
+            line = ':{0} {1}'.format(directive_name, var_name)
+    return line
 
 special_statement_starters = [
     'print ', 'show ', 'return ',
@@ -178,29 +172,27 @@ special_statement_starters = [
 # must be treated as an unary minus, not a binary minus.
 significant_chars = '><=+-*/%~^:([{,|'
 
-def detect_and_replace_unary_minus(lines):
-    def replace_for_special_statements(line):
-        for starter in special_statement_starters:
-            if line.startswith(starter):
-                without_starter = line[len(starter):]
-                if without_starter.lstrip().startswith('-'):
-                    return line.replace('-', '~', 1)
-        return line
-    processed_lines = []
-    for line in lines:
-        line = replace_for_special_statements(line)
-        last_meaningful_char = None
-        processed_line = ''
-        for char in line:
-            # Is this an unary minus sign? If so, replace with '~'.
-            if char == '-' and last_meaningful_char is not None and \
-               last_meaningful_char in significant_chars:
-                char = '~'
-            if not char.isspace():
-                last_meaningful_char = char
-            processed_line += char
-        processed_lines.append(processed_line)
-    return processed_lines
+def replace_for_special_statements(line):
+    for starter in special_statement_starters:
+        if line.startswith(starter):
+            without_starter = line[len(starter):]
+            if without_starter.lstrip().startswith('-'):
+                return line.replace('-', '~', 1)
+    return line
+
+def detect_and_replace_unary_minus(line):
+    line = replace_for_special_statements(line)
+    last_meaningful_char = None
+    processed_line = ''
+    for char in line:
+        # Is this an unary minus sign? If so, replace with '~'.
+        if char == '-' and last_meaningful_char is not None and \
+           last_meaningful_char in significant_chars:
+            char = '~'
+        if not char.isspace():
+            last_meaningful_char = char
+        processed_line += char
+    return processed_line
 
 def is_op_overload_syntax(line):
     return line.startswith('sub ') and '(' not in line
@@ -273,31 +265,31 @@ def find_assignment_operator(single_line_function):
         'Single line function definition has no assignment operator:\n' + defn
     )
 
-def replace_op_overload_syntax(lines):
+def replace_op_overload_syntax(line_mgr):
     i = 0
-    while i < len(lines):
-        line = lines[i]
+    while i < len(line_mgr):
+        line = line_mgr[i]
         if line.startswith('func '):
             j = find_assignment_operator(line)
             defn = line[5:j]
             if '(' not in defn:
                 return_expr = line[j + 1:]
-                lines[i : i+1] = [
+                line_mgr[i : i+1] = [
                     'sub ' + defn.rstrip(),
                     'return ' + return_expr,
                     'end'
                 ]
                 i += 2
         i += 1
-    return [construct_equivalent_function_defn(line) for line in lines]
+    line_mgr.for_each_line(construct_equivalent_function_defn)
 
-def prepare_program(lines):
+def prepare_program(line_mgr):
     """
     Splits lines of a program and prepares control flow.
     """
-    lines = convert_compound_operators(lines)
-    lines = [line.strip() for line in lines]
-    lines = convert_increment_decrement_operators(lines)
-    lines = detect_and_replace_unary_minus(lines)
+    line_mgr.for_each_line(convert_compound_operator)
+    line_mgr.for_each_line(convert_increment_decrement_operators)
+    line_mgr.for_each_line(detect_and_replace_unary_minus)
+    lines = line_mgr.get_lines()
     lines = prepare_control_flow(lines)
     return lines

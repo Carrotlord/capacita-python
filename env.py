@@ -1,4 +1,4 @@
-from exception import throw_exception
+from exception import throw_exception, throw_exception_with_line
 from builtin_function import int_div, make_list
 from type_tree import get_type, \
                       generate_default_tree, \
@@ -52,6 +52,8 @@ class Environment(object):
         # Avoid repeated parsing of an expression by storing expressions
         # in a cache.
         self.expr_cache = {}
+        self.line_mgr = None
+        self.prgm_counter = 0
 
     def add_to_expr_cache(self, expr, tokens):
         # Because tokens is a list that is often mutated,
@@ -351,6 +353,9 @@ class Environment(object):
         Displays all variables in all frames in a human readable format.
         """
         pretty_print.pretty_print(self.frames)
+
+    def throw_exception(self, kind, msg):
+        throw_exception_with_line(kind, msg, self.line_mgr, self.prgm_counter)
 
     def __repr__(self):
         return str(self.frames)

@@ -120,14 +120,36 @@ Caught double 1.15
 Caught table {1, 2 | 3, 4}
 Nothing thrown
 Nothing caught
-UncaughtException exception
+Error: UncaughtException exception
 Thrown value ['5']
+Original source code:
+    Line 55: throw 5
+Internal code:
+    Line 57: print "not printed"
+    Line 58: end
+    Line 59: :no_operation
+--> Line 60: throw 5
+    Line 61: :no_operation
 ===== Exception: <type 'exceptions.SystemExit'>
 ===== Testing capacita_programs/exceptions2.cap
 divide by zero exception
 some exception
 exception during function h: divide by zero exception
 another divide by zero exception
+===== Testing capacita_programs/exceptions3.cap
+Error: NonIntegerIndex exception
+Trying to index the list [1, 2, 3, 4] with a non-integer index "error"
+Original source code:
+    Line 4: list["error"]
+Internal code:
+    Line 5: :jf 12
+    Line 6: :no_operation
+    Line 7: elem=list[$i0]
+--> Line 8: list["error"]
+    Line 9: product=product*( elem)
+    Line 10: $i0+=1
+    Line 11: :cond $i0<list.length()
+===== Exception: <type 'exceptions.SystemExit'>
 ===== Testing capacita_programs/exponent_notation.cap
 200100000.0
 0.023

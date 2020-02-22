@@ -6,7 +6,7 @@ from ast2 import AST, precedences, unary_ops
 from ribbon import Ribbon
 from ratio import Ratio
 from console import display
-from exception import throw_exception
+from exception import throw_exception, throw_exception_with_line
 from strtools import find_matching, escape, index_string
 from table import Table
 from control_flow import find_next_end_else
@@ -27,7 +27,9 @@ def execute_lines(line_mgr, env, executing_constructor=False, supplied_hooks=Non
     """
     prgm_counter = 0
     cond_flag = False
+    env.line_mgr = line_mgr
     while prgm_counter < len(line_mgr):
+        env.prgm_counter = prgm_counter
         line = line_mgr[prgm_counter]
         directive = execute_statement(line, env)
         if directive is not None:
@@ -88,9 +90,15 @@ def execute_lines(line_mgr, env, executing_constructor=False, supplied_hooks=Non
                 env.exception_push(prgm_counter)
                 prgm_counter += 1
             elif directive[0] == 'throw':
+                last_prgm_counter = prgm_counter
                 prgm_counter = env.exception_pop()
                 if prgm_counter is None:
-                    throw_exception('UncaughtException', 'Thrown value ' + str(directive[1:]))
+                    throw_exception_with_line(
+                        'UncaughtException',
+                        'Thrown value ' + str(directive[1:]),
+                        line_mgr,
+                        last_prgm_counter
+                    )
                 else:
                     original_counter = prgm_counter
                     # Look for a matching catch statement
@@ -315,7 +323,7 @@ def index_lists(tokens, env):
                 if type(index) in [int, long]:
                     tokens[i-1 : i+1] = [prev[index]]
                 else:
-                    throw_exception(
+                    env.throw_exception(
                         'NonIntegerIndex',
                         'Trying to index the list {0} with a non-integer index {1}'.format(
                             prev, index

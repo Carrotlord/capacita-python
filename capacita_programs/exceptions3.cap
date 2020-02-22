@@ -1,0 +1,7 @@
+list = [1, 2, 3, 4]
+product = 1.0
+for each elem of list
+    list["error"]
+    product *= elem
+end
+print product

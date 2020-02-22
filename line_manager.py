@@ -56,6 +56,9 @@ class LineManager(object):
             self.internal_lines[index] = LineData(content, line_num, end_line_num)
         self.set_last_indices(line_num, end_line_num)
 
+    def get_line_data(self, index):
+        return self.internal_lines[index]
+
     def subset(self, start, stop):
         new_line_mgr = LineManager([])
         new_line_mgr.internal_lines = self.internal_lines[start : stop]

@@ -1,0 +1,15 @@
+class A()
+    b = 5
+    sub method()
+        return b
+    end
+    
+    sub method2()
+        print b
+        return notDefined
+    end
+end
+
+A a = A()
+a.method()
+a.method2()

@@ -9,6 +9,8 @@ def throw_exception(kind, msg):
 def throw_exception_with_line(kind, msg, line_mgr, prgm_counter):
     print('Error: ' + kind + ' exception')
     print(msg)
+    if line_mgr is None or prgm_counter >= len(line_mgr):
+        exit()
     line_data = line_mgr.get_line_data(prgm_counter)
     print('Original source code:')
     # First line is considered 'line 1', not 'line 0'

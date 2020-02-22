@@ -115,8 +115,8 @@ class Environment(object):
         if match_obj:
             kind = match_obj.group(1)
             if not self.value_is_a(value, kind):
-                throw_exception('MismatchedType', str(value) + ' is not of type ' + kind +
-                                '\nType tree is: ' + str(self.all_types))
+                self.throw_exception('MismatchedType', str(value) + ' is not of type ' + kind +
+                                     '\nType tree is: ' + str(self.all_types))
             var = match_obj.group(2)
             frame_or_this = self.get_frame_or_this(var)
             if var in frame_or_this:
@@ -124,9 +124,9 @@ class Environment(object):
                 if type(type_tuple) is tuple:
                     existing_kind = type_tuple[0]
                     if kind != existing_kind:
-                        throw_exception('AlreadyRestrictedType', var + ' already has type ' + existing_kind)
+                        self.throw_exception('AlreadyRestrictedType', var + ' already has type ' + existing_kind)
                 else:
-                    throw_exception('AlreadyAnyType',
+                    self.throw_exception('AlreadyAnyType',
                         var + ' already has type Any and cannot be further restricted.')
             frame_or_this[var] = (kind, value)
         else:
@@ -164,7 +164,7 @@ class Environment(object):
                         if type(existing_value) is tuple:
                             existing_kind = existing_value[0]
                             if not self.value_is_a(value, existing_kind):
-                                throw_exception('MismatchedType', str(value) + ' is not of type ' + existing_kind)
+                                self.throw_exception('MismatchedType', str(value) + ' is not of type ' + existing_kind)
                             kind = existing_kind
                     if kind is None:
                         obj_reference[attr] = value
@@ -176,7 +176,7 @@ class Environment(object):
                         # There is an existing type restriction
                         kind = frame_or_this[var_name][0]
                         if not self.value_is_a(value, kind):
-                            throw_exception('MismatchedType', str(value) + ' is not of type ' + kind +
+                            self.throw_exception('MismatchedType', str(value) + ' is not of type ' + kind +
                                             '\nType tree is: ' + str(self.all_types))
                         frame_or_this[var_name] = (kind, value)
                     else:
@@ -240,7 +240,7 @@ class Environment(object):
         if var_name in self.frames[-1]:
             self.frames[-1][var_name] = value
         else:
-            throw_exception('UndefinedVariable', var_name + ' is not defined.')
+            self.throw_exception('UndefinedVariable', var_name + ' is not defined.')
 
     def update_numeric(self, var_name, added_value):
         """
@@ -256,7 +256,7 @@ class Environment(object):
             else:
                 target_frame[var_name] += added_value
         else:
-            throw_exception('UndefinedVariable', var_name + ' is not defined.')
+            self.throw_exception('UndefinedVariable', var_name + ' is not defined.')
 
     def get(self, var_name):
         if var_name == 'input':
@@ -275,7 +275,7 @@ class Environment(object):
         # If this variable is not defined, look in the type tree:
         if var_name in self.all_types:
             return self.all_types[var_name]
-        throw_exception('UndefinedVariable', var_name + ' is not defined.')
+        self.throw_exception('UndefinedVariable', var_name + ' is not defined.')
         
     def has_name(self, var_name):
         """

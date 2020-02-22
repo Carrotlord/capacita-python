@@ -1,7 +1,7 @@
 ===== Starting tests...
 ===== Testing capacita_programs/argument_type.cap
 3three
-MismatchedType exception
+Error: MismatchedType exception
 3 is not of type String
 Type tree is: {'Function': ('Function',)
 , 'Ratio': ('Ratio', 'Rational')
@@ -266,7 +266,7 @@ true
 27.5625 18.0625 10.5625 5.0625 1.5625 0.0625 
 [2.0, 1.0, 4.0]
 -1.0
-MismatchedType exception
+Error: MismatchedType exception
 5 is not of type Double
 ===== Exception: <type 'exceptions.SystemExit'>
 ===== Testing capacita_programs/indexing.cap
@@ -306,7 +306,7 @@ Object{#real, 1 | #i, 2 | #imag, 2 | #r, 1 | #$type, "ComplexNumber"}
 Object{#real, 3 | #i, 4 | #imag, 4 | #r, 3 | #$type, "ComplexNumber"}
 Object{#$type, "PepperoniPizza"}
 Object{#$type, "ChocolatePizza"}
-MismatchedType exception
+Error: MismatchedType exception
 {'real': 1, 'i': 2, '$type': '"ComplexNumber"', 'imag': 2, 'this': {...}, 'r': 1} is not of type Pizza
 Type tree is: {'Ratio': ('Ratio', 'Rational')
 , 'Instance': ('Instance',)
@@ -667,6 +667,16 @@ string
 true
 true
 <function f() -> ('x = 5', 'y = ~7', 'print ~x', 'print 5 * ~3', 'print ~x + ~y', 'print x * ~y', 'print [x, y, x - y]', 'print [~x, ~y]', 'func f(x) = ~x', 'list = [~1, ~2, ~3]', 'print f(1) - x', 'print list[1] - x', 'print [~f(~x), ~f(y)]', ':cond ~1 == ~1', ':jf 16', 'print true', ':cond ~x > 0', ':jf 20', 'print false', ':j 28', '', ':cond ~x + ~y > 1.5', ':jf 25', 'print true', ':j 27', '', 'print false', '', '', 'return null')>
+===== Testing capacita_programs/undefined_var.cap
+5
+Error: UndefinedVariable exception
+notDefined is not defined.
+Original source code:
+    Line 9: return notDefined
+Internal code:
+    Line 1: print b
+--> Line 2: return notDefined
+===== Exception: <type 'exceptions.SystemExit'>
 ===== Testing capacita_programs/while.cap
 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 
 9 18 27 36 45 54 63 72 81 90 99 108 117 126 135 144 153 

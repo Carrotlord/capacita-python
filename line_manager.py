@@ -1,3 +1,42 @@
+import prepare_program
+
+def is_assignment_statement(line):
+    i = 0
+    length = len(line)
+    # The operators !=, >=, and <= start with !, >, or <
+    starters = '!><'
+    in_quotes = False
+    while i < length:
+        if prepare_program.is_quote(line, i):
+            in_quotes = not in_quotes
+        if not in_quotes:
+            current_char = line[i]
+            if current_char == '=':
+                if i == 0 or i == length - 1:
+                    throw_exception(
+                        'SyntaxError',
+                        'Statement begins or ends with an equals sign: ' + line
+                    )
+                elif line[i + 1] == '=':
+                    # Double equals sign. Skip the next character.
+                    i += 1
+                elif line[i - 1] not in starters:
+                    # This must be an assignment statement.
+                    return True
+        i += 1
+    return False
+
+def is_statement(query):
+    """Returns True if query is a statement, else False."""
+    if query.startswith('print ') or query.startswith('show ') or \
+       query.startswith('return ') or query.startswith(':') or \
+       query == 'try' or query == 'end' or query == 'else' or \
+       query.startswith('throw ') or query.startswith('catch ') or \
+       query.startswith('super ') or query.startswith('import ') or \
+       query.startswith('func '):
+        return True
+    return is_assignment_statement(query)
+
 def normalize_slice(slice_obj, sequence):
     length = len(sequence)
     start = 0
@@ -17,6 +56,7 @@ class LineData(object):
     def __init__(self, line, start_line, end_line=None):
         self.line = line
         self.line_num = start_line
+        self.is_statement = False
         if end_line is None:
             self.end_line_num = start_line
         else:
@@ -86,11 +126,28 @@ class LineManager(object):
     def get_lines(self):
         return [line_data.line for line_data in self.internal_lines]
 
+    def classify_statements(self):
+        for line_data in self.internal_lines:
+            line_data.is_statement = is_statement(line_data.line)
+
     def display(self):
         num_digits = 1
         for i, line_data in enumerate(self.internal_lines):
+            stmt_kind = 'stmt' if line_data.is_statement else 'expr'
             if line_data.line_num == line_data.end_line_num:
-                print '{0}: {1} {2} | {3}'.format(i, line_data.line_num, ' ' * num_digits, line_data.line)
+                print '({0}) {1}: {2} {3} | {4}'.format(
+                    stmt_kind,
+                    i,
+                    line_data.line_num,
+                    ' ' * num_digits,
+                    line_data.line
+                )
             else:
-                print '{0}: {1}-{2} | {3}'.format(i, line_data.line_num, line_data.end_line_num, line_data.line)
+                print '({0}) {1}: {2}-{3} | {4}'.format(
+                    stmt_kind,
+                    i,
+                    line_data.line_num,
+                    line_data.end_line_num,
+                    line_data.line
+                )
                 num_digits = len(str(line_data.end_line_num))

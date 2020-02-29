@@ -28,10 +28,11 @@ def execute_lines(line_mgr, env, executing_constructor=False, supplied_hooks=Non
     prgm_counter = 0
     cond_flag = False
     env.line_mgr = line_mgr
+    line_mgr.classify_statements()
     while prgm_counter < len(line_mgr):
         env.prgm_counter = prgm_counter
         line = line_mgr[prgm_counter]
-        directive = execute_statement(line, env)
+        directive = execute_statement(line_mgr.get_line_data(prgm_counter), env)
         if directive is not None:
             if directive[0] == ':cond':
                 cond_flag = eval_parentheses(directive[1], env)
@@ -152,52 +153,18 @@ def find_catch(directive_list, line_mgr, prgm_counter, env):
     # Cannot finish try catch:
     return None
 
-def is_assignment_statement(line):
-    i = 0
-    length = len(line)
-    # The operators !=, >=, and <= start with !, >, or <
-    starters = '!><'
-    in_quotes = False
-    while i < length:
-        if prepare_program.is_quote(line, i):
-            in_quotes = not in_quotes
-        if not in_quotes:
-            current_char = line[i]
-            if current_char == '=':
-                if i == 0 or i == length - 1:
-                    throw_exception(
-                        'SyntaxError',
-                        'Statement begins or ends with an equals sign: ' + line
-                    )
-                elif line[i + 1] == '=':
-                    # Double equals sign. Skip the next character.
-                    i += 1
-                elif line[i - 1] not in starters:
-                    # This must be an assignment statement.
-                    return True
-        i += 1
-    return False
+directives = [':cond', ':j', ':jt', ':jf', 'return', 'try', 'throw',
+              'catch', 'end', 'else', ':skiptoelse', ':hook',
+              ':inc', ':dec']
 
-def is_statement(query):
-    """Returns True if query is a statement, else False."""
-    if query.startswith('print ') or query.startswith('show ') or \
-       query.startswith('return ') or query.startswith(':') or \
-       query == 'try' or query == 'end' or query == 'else' or \
-       query.startswith('throw ') or query.startswith('catch ') or \
-       query.startswith('super ') or query.startswith('import ') or \
-       query.startswith('func '):
-        return True
-    return is_assignment_statement(query)
-
-def execute_statement(stmt, env):
+def execute_statement(line_data, env):
     """Executes a statement in a given environment."""
-    directives = [':cond', ':j', ':jt', ':jf', 'return', 'try', 'throw',
-                  'catch', 'end', 'else', ':skiptoelse', ':hook',
-                  ':inc', ':dec']
-    stmt = stmt.strip()
+    stmt = line_data.line
+    # Lines already have leading/trailing whitespace removed.
+    # If the line has no content, do not execute it.
     if len(stmt) == 0:
         return
-    if is_statement(stmt):
+    if line_data.is_statement:
         tokens = tokenize_statement(stmt)
         if tokens[0] == 'print':
             if tokens[1] == 'this':

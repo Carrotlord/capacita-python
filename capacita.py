@@ -110,13 +110,15 @@ def repl(existing_env=None):
         else:
             # Since expr could contain semicolon-separated lines of code,
             # extract all the lines:
-            lines, _ = convert_program_to_lines(expr)
-            if len(lines) > 1:
-                leading_lines = lines[:-1]
+            line_mgr, _ = convert_program_to_lines(expr)
+            line_mgr.classify_statements()
+            if len(line_mgr) > 1:
+                leading_lines = line_mgr[:-1]
                 execution.execute_lines(leading_lines, env)
-            last_expr = lines[-1]
-            if execution.is_statement(last_expr):
-                execution.execute_statement(last_expr, env)
+            last_expr_data = line_mgr.get_line_data(-1)
+            last_expr = last_expr_data.line
+            if last_expr_data.is_statement:
+                execution.execute_statement(last_expr_data, env)
             else:
                 print(literal(execution.eval_parentheses(last_expr, env)))
 

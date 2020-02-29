@@ -3,7 +3,6 @@ import re
 from tokens import tokenize_statement, \
                    seek_parenthesis_in_tokens
 from ast2 import AST, precedences, unary_ops
-from ribbon import Ribbon
 from ratio import Ratio
 from console import display
 from exception import throw_exception, throw_exception_with_line
@@ -612,43 +611,62 @@ def promote_values(left, right):
     else:
         return left, right
 
+def construct_valid_var_first_char_set():
+    # Variables can start with a dollar sign, underscore,
+    # or any uppercase or lowercase letter.
+    results = '$_'
+    for letter_ord in xrange(ord('A'), ord('Z') + 1):
+        results += chr(letter_ord)
+    for letter_ord in xrange(ord('a'), ord('z') + 1):
+        results += chr(letter_ord)
+    return set(results)
+
+brackets = ['[', ']']
+valid_var_first_chars = construct_valid_var_first_char_set()
+valid_digits = set('0123456789')
+
 def convert_value(val, env):
     """
     Given a value in string form, converts to an int, float, etc.
     Or, given a variable name, retrieves the value of that variable.
     """
-    brackets = ['[', ']']
     if (type(val) is not str) or val in brackets:
         return val
-    if val == 'True':
-        return True
-    if val == 'False':
-        return False
-    if val == 'None':
+    if len(val) == 0:
         return None
-    if re.match(r'\$?[A-Za-z_][A-Za-z_0-9]*', val):
+    first_char = val[0]
+    # All numeric literals start with a digit.
+    # Formats such as ".25" are not allowed: should be written as "0.25"
+    if first_char in valid_digits:
+        try:
+            return int(val)
+        except ValueError:
+            try:
+                return float(val)
+            except ValueError:
+                pass
+    elif first_char in valid_var_first_chars:
         # Grab a variable's value:
         return env.get(val)
-    if re.match(r'#\$?[A-Za-z_][A-Za-z_0-9]*', val):
+    elif first_char == '#':
         # This is a tag
         return val
-    if len(val) >= 2:
+    elif len(val) >= 2:
         if val[0] == "'" and val[-1] == "'":
             return '"{0}"'.format(escape(val[1:-1]))
         elif val[0] == '"' and val[-1] == '"':
+            # TODO : escape should only be called once for each string literal
             return escape(val)
-        elif val[0] == '`' and val[-1] == '`':
-            return Ribbon(escape(val[1:-1]))
         elif val[0] == '[' and val[-1] == ']':
             result = parse_list(val[1:-1], env)
             return result
-    try:
-        return int(val)
-    except ValueError:
-        try:
-            return float(val)
-        except ValueError:
-            return None
+    if val in precedences or val == ',':
+        # This is an operator
+        return None
+    env.throw_exception(
+        'UnrecognizedValue',
+        '{0} cannot be interpreted as an Int, Double, Tag, String, List, operator, or variable name'.format(val)
+    )
 
 def parse_list(list_contents, env):
     """

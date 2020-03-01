@@ -300,3 +300,5 @@ class AST(object):
             if type(all[i]) is tuple:
                 all[i] = all[i][0]
         return all
+
+ast_singleton = AST()

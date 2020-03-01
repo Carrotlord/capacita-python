@@ -9,6 +9,8 @@ from type_tree import get_type, \
 import re
 import os
 import execution
+import ast2
+import table
 
 import pretty_print
 
@@ -29,6 +31,15 @@ def get_typed_value(value):
     if type(value) is tuple:
         return value[1]
     return value
+
+def to_read_only(tokens):
+    result = []
+    for token in tokens:
+        if table.hashable(token):
+            result.append(token)
+        else:
+            result.append(None)
+    return tuple(result)
 
 class Environment(object):
     """
@@ -52,8 +63,19 @@ class Environment(object):
         # Avoid repeated parsing of an expression by storing expressions
         # in a cache.
         self.expr_cache = {}
+        self.indices_cache = {}
         self.line_mgr = None
         self.prgm_counter = 0
+
+    def get_indices(self, tokens):
+        ast = ast2.ast_singleton
+        cache = self.indices_cache
+        read_only_tokens = to_read_only(tokens)
+        if read_only_tokens in cache:
+            return cache[read_only_tokens]
+        indices = ast.collapse_indices(ast.build_indices(tokens))
+        cache[read_only_tokens] = indices
+        return indices
 
     def add_to_expr_cache(self, expr, tokens):
         # Because tokens is a list that is often mutated,

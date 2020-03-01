@@ -316,22 +316,22 @@ def retrieve_tokens(expr, env, parsed_tokens=None):
     AST will be returned instead.
     """
     if parsed_tokens is not None:
-        return AST(), parsed_tokens
+        return parsed_tokens
     else:
         ast = AST(expr)
         tokens = env.get_from_expr_cache(expr)
         if tokens is None:
             tokens = ast.parse()
             env.add_to_expr_cache(expr, tokens)
-        return ast, tokens
+        return tokens
 
 def evaluate_expression(expr, env, parsed_tokens=None):
     """
     Evaluates an expression by converting it to an AST
     and evaluating individual operators at certain indices.
     """
-    ast, tokens = retrieve_tokens(expr, env, parsed_tokens)
-    indices = ast.collapse_indices(ast.build_indices(tokens))
+    tokens = retrieve_tokens(expr, env, parsed_tokens)
+    indices = env.get_indices(tokens)
     return evaluate_operators(tokens, indices, env)
 
 def is_unary(tokens, idx):
@@ -451,7 +451,7 @@ def eval_parentheses(expr, env, parsed_tokens=None):
     # to evaluate the expression.
     if expr is not None and type(expr) is not str:
         return expr
-    _, tokens = retrieve_tokens(expr, env, parsed_tokens)
+    tokens = retrieve_tokens(expr, env, parsed_tokens)
     tokens = call_functions(tokens, env)
     if tokens.__class__ is Trigger:
         return tokens

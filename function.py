@@ -8,6 +8,11 @@ import env as environment
 import arguments
 import prepare_program
 import line_manager
+import builtin_function
+
+def is_function(obj):
+    obj_class = obj.__class__
+    return obj_class is Function or obj_class is builtin_function.BuiltinFunction
 
 def extract_data(defn, kind):
     match_obj = re.match(r'sub ([A-Za-z_][A-Za-z_0-9]* )?(\$?[A-Za-z_][A-Za-z_0-9]*)', defn)

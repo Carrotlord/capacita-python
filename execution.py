@@ -79,7 +79,7 @@ def execute_lines(line_mgr, env, executing_constructor=False, supplied_hooks=Non
                     # In other words, existing function objects should not
                     # be re-supplied with the current environment, only newly
                     # created ones.
-                    if str(value).startswith('<function') and env.has_hook(value):
+                    if function.is_function(value) and env.has_hook(value):
                         # TODO : instead of supplying an environment when a defined
                         # function is returned, supply it when the function is first
                         # defined. This will allow for more complex return values,
@@ -370,7 +370,9 @@ def evaluate_operators(tokens, indices, env):
         if left in brackets or right in brackets:
             break
         left, right = promote_values(left, right)
-        if (not is_dot) and op != ' of ' and operator_overload.ready_for_overload(op, left, right):
+        if op == '.':
+            tokens[idx-1 : idx+2] = [environment.get_typed_value(left[right])]
+        elif op != ' of ' and operator_overload.ready_for_overload(op, left, right):
             # Perform operator overloading
             result = operator_overload.operator_overload(op, left, right, idx, tokens, env)
             return_val = result['return_val']
@@ -381,23 +383,15 @@ def evaluate_operators(tokens, indices, env):
         elif op == '+':
             tokens[idx-1 : idx+2] = [plus(left, right)]
         elif op == '-':
-            # TODO : here there is a check if tokens[idx - 1] is an operator
-            # a more robust method may be to apply ast.merge_negatives(tokens)
-            # to the token list before the code reaches this point
-            if is_unary(tokens, idx):
-                tokens[idx : idx+2] = [-right]
-            else:
-                tokens[idx-1 : idx+2] = [left - right]
+            tokens[idx-1 : idx+2] = [left - right]
+        elif op == '~':
+            tokens[idx : idx+2] = [-right]
         elif op == '*':
             tokens[idx-1 : idx+2] = [left * right]
         elif op == '/':
             tokens[idx-1 : idx+2] = [divide(left, right)]
         elif op == '%':
             tokens[idx-1 : idx+2] = [left % right]
-        elif op == '^':
-            tokens[idx-1 : idx+2] = [left ** right]
-        elif op == ':':
-            tokens[idx-1 : idx+2] = [Ratio(left, right)]
         elif op == '==':
             tokens[idx-1 : idx+2] = [left == right]
         elif op == '!=':
@@ -414,16 +408,16 @@ def evaluate_operators(tokens, indices, env):
             tokens[idx-1 : idx+2] = [left and right]
         elif op == ' or ':
             tokens[idx-1 : idx+2] = [left or right]
-        elif op == ' xor ':
-            tokens[idx-1 : idx+2] = [(left and not right) or ((not left) and right)]
         elif op == 'not ':
             tokens[idx : idx+2] = [not right]
-        elif op == '~':
-            tokens[idx : idx+2] = [-right]
+        elif op == '^':
+            tokens[idx-1 : idx+2] = [left ** right]
+        elif op == ':':
+            tokens[idx-1 : idx+2] = [Ratio(left, right)]
         elif op == ' of ':
             tokens[idx-1 : idx+2] = [type_restrict.type_restrict(left, right, env)]
-        elif op == '.':
-            tokens[idx-1 : idx+2] = [environment.get_typed_value(left[right])]
+        elif op == ' xor ':
+            tokens[idx-1 : idx+2] = [(left and not right) or ((not left) and right)]
     stage = 0
     while len(tokens) != 1:
         if stage == 0:
@@ -461,12 +455,6 @@ def eval_parentheses(expr, env, parsed_tokens=None):
     tokens = call_functions(tokens, env)
     if tokens.__class__ is Trigger:
         return tokens
-    # For function values, do not transform the value to a string:
-    # TODO : is the following if-statement still necessary?
-    # (since intermediate values are no longer converted back to strings)
-    if len(tokens) == 1 and (str(tokens[0]).startswith('<function') or \
-        type(tokens[0]) is list or type(tokens[0]) is dict):
-        return tokens[0]
     token_index_containing_paren = seek_parenthesis_in_tokens(tokens)
     if token_index_containing_paren is None:
         return evaluate_expression(None, env, tokens)

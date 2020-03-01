@@ -77,17 +77,16 @@ class Environment(object):
         cache[read_only_tokens] = indices
         return indices
 
-    def add_to_expr_cache(self, expr, tokens):
+    def get_tokens(self, expr):
         # Because tokens is a list that is often mutated,
         # it is necessary to make a shallow copy of tokens
-        # both when adding to the expression cache and reading
-        # from the expression cache.
-        self.expr_cache[expr] = tokens[:]
-
-    def get_from_expr_cache(self, expr):
+        # when reading from the cache.
         if expr in self.expr_cache:
             return (self.expr_cache[expr])[:]
-        return None
+        ast = ast2.AST(expr)
+        tokens = ast.parse()
+        self.expr_cache[expr] = tokens
+        return tokens[:]
 
     def merge(self, dictionary):
         for key in dictionary:

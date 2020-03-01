@@ -318,12 +318,7 @@ def retrieve_tokens(expr, env, parsed_tokens=None):
     if parsed_tokens is not None:
         return parsed_tokens
     else:
-        ast = AST(expr)
-        tokens = env.get_from_expr_cache(expr)
-        if tokens is None:
-            tokens = ast.parse()
-            env.add_to_expr_cache(expr, tokens)
-        return tokens
+        return env.get_tokens(expr)
 
 def evaluate_expression(expr, env, parsed_tokens=None):
     """

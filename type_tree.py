@@ -3,6 +3,9 @@ from table import Table
 from exception import throw_exception
 from trigger import Trigger
 
+import function
+import strtools
+
 class TypeTree(object):
     def __init__(self, *names):
         self.names = names
@@ -133,28 +136,30 @@ def get_type(value):
     elif kind is str:
         if value.startswith('#'):
             return 'Tag'
-        else:
-            return 'String'
+        throw_exception('UnknownValueType', 'The type of {0} cannot be determined'.format(value))
     elif kind is list:
         return 'List'
-    if value.__class__ is Ratio:
+    val_class = value.__class__
+    if val_class is strtools.CapString:
+        return 'String'
+    if val_class is Ratio:
         return 'Ratio'
-    elif value.__class__ is Table:
+    elif val_class is Table:
         return 'Table'
     elif value is None:
         return 'Null'
     elif kind is dict:
         # This is a user-defined object
         if '$type' in value:
-            if value['$type'].startswith('"'):
-                return value['$type'][1:-1]
+            if value['$type'].__class__ is strtools.CapString:
+                return value['$type'].contents
             else:
                 return value['$type']
         else:
             return 'Instance'
-    elif str(value).startswith('<function'):
+    elif function.is_function(value):
         return 'Function'
-    elif value.__class__ is Trigger:
+    elif val_class is Trigger:
         return 'Trigger'
     throw_exception('UnknownType', str(value) + ' has an unknown type.')
     

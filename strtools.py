@@ -1,5 +1,51 @@
 import exception
 
+def concat_cap_strings(a, b):
+    return CapString(a.contents + b.contents, False)
+
+class CapString(object):
+    def __init__(self, contents, should_escape=True):
+        if should_escape:
+            self.contents = escape(contents)
+        else:
+            self.contents = contents
+
+    def __add__(self, other):
+        if other.__class__ is CapString:
+            return concat_cap_strings(self, other)
+        return CapString(self.contents + str(other), False)
+
+    def __radd__(self, other):
+        if other.__class__ is CapString:
+            return concat_cap_strings(other, self)
+        return CapString(str(other) + self.contents, False)
+
+    def __float__(self):
+        return float(self.contents)
+
+    def __str__(self):
+        return '"' + self.contents + '"'
+
+    def __repr__(self):
+        return repr(str(self))
+
+    def __eq__(self, other):
+        if other.__class__ is not CapString:
+            return False
+        return self.contents == other.contents
+
+    def __ne__(self, other):
+        return not (self == other)
+
+    def __hash__(self):
+        return hash(self.contents)
+
+    def __len__(self):
+        return len(self.contents)
+
+    def __getitem__(self, index):
+        return self.contents[index]
+
 def find_matching(expr, opening='(', closing=')'):
     """
     Finds the first unmatched closing parenthesis
@@ -88,28 +134,15 @@ def convert_special_char(char):
         return char
 
 def validate_string_index(string, i):
-    true_length = len(string) - 2
-    if i < -true_length or i >= true_length:
+    length = len(string)
+    # Indices can be negative, with -1 signifying the last char
+    if i < -length or i >= length:
         exception.throw_exception(
              'StringIndexOutOfBounds',
              'Index {0} is out of bounds for {1}'.format(i, string)
         )
 
-def compensate_index(i):
-    """
-    Modify index so that strings wrapped in quotes behave
-    like strings not wrapped in quotes.
-    """
-    if i >= 0:
-        return i + 1
-    else:
-        return i - 1
-
 def index_string(obj, i):
     validate_string_index(obj, i)
-    # Compensate for quotes:
-    char = obj[compensate_index(i)]
-    return wrap_string(convert_special_char(char))
-
-def wrap_string(contents):
-    return '"' + contents + '"'
+    char = obj[i]
+    return CapString(char, False)

@@ -8,7 +8,6 @@ from ratio import Ratio
 from ast2 import AST
 from control_flow import prepare_control_flow, openers
 from ribbon import Ribbon
-from console import display, literal
 from tokens import tokenize_statement
 from fileio import file_to_str
 from exception import throw_exception
@@ -18,6 +17,7 @@ import env as environment
 import execution
 import function
 import prepare_program
+import console
 
 def execute_file(file_name, existing_env=None):
     if existing_env is None:
@@ -120,7 +120,7 @@ def repl(existing_env=None):
             if last_expr_data.is_statement:
                 execution.execute_statement(last_expr_data, env)
             else:
-                print(literal(execution.eval_parentheses(last_expr, env)))
+                print(console.literal(execution.eval_parentheses(last_expr, env)))
 
 def main():
     """Main function - includes tests and runs the REPL."""

@@ -4,9 +4,9 @@ from tokens import tokenize_statement, \
                    seek_parenthesis_in_tokens
 from ast2 import AST, precedences, unary_ops
 from ratio import Ratio
-from console import display
 from exception import throw_exception, throw_exception_with_line
-from strtools import find_matching, escape, index_string
+from strtools import find_matching, escape, index_string, \
+                     CapString
 from table import Table
 from control_flow import find_next_end_else
 from trigger import Trigger
@@ -19,6 +19,7 @@ import builtin_method
 import prepare_program
 import env as environment
 import operator_overload
+import console
 
 def execute_lines(line_mgr, env, executing_constructor=False, supplied_hooks=None):
     """
@@ -169,9 +170,9 @@ def execute_statement(line_data, env):
             if tokens[1] == 'this':
                 print(env)
             else:
-                display(eval_parentheses(tokens[1], env))
+                console.display(eval_parentheses(tokens[1], env))
         elif tokens[0] == 'show':
-            display(eval_parentheses(tokens[1], env), False)
+            console.display(eval_parentheses(tokens[1], env), False)
         elif tokens[0] == 'super':
             env.extract(eval_parentheses(tokens[1], env))
         elif tokens[0] == 'import':
@@ -187,7 +188,7 @@ def execute_statement(line_data, env):
                 return ['throw', last_assigned.get_thrown()]
         elif tokens[1] == '+=':
             val = env.get(tokens[0])
-            env.update(tokens[0], plus(val, eval_parentheses(tokens[2], env)))
+            env.update(tokens[0], val + eval_parentheses(tokens[2], env))
     else:
         result = eval_parentheses(stmt, env)
         # An exception was thrown
@@ -336,6 +337,12 @@ def is_unary(tokens, idx):
     """
     return idx == 0 or tokens[idx - 1] in precedences or tokens[idx - 1] == ','
 
+def transform_string_literals(tokens):
+    for i in xrange(len(tokens)):
+        token = tokens[i]
+        if type(token) is str and len(token) >= 2 and token[0] == '"' and token[-1] == '"':
+            tokens[i] = CapString(token[1:-1])
+
 def evaluate_operators(tokens, indices, env):
     """
     Evaluates an expression based on a list of tokens,
@@ -343,6 +350,7 @@ def evaluate_operators(tokens, indices, env):
     environment env.
     """
     brackets = ['[', ']', '{', '}']
+    transform_string_literals(tokens)
     for idx in indices:
         # TODO : checking bounds should no longer be
         # necessary after fixing the xrange issue.
@@ -376,7 +384,7 @@ def evaluate_operators(tokens, indices, env):
             else:
                 tokens[idx-1 : idx+2] = [return_val]
         elif op == '+':
-            tokens[idx-1 : idx+2] = [plus(left, right)]
+            tokens[idx-1 : idx+2] = [left + right]
         elif op == '-':
             tokens[idx-1 : idx+2] = [left - right]
         elif op == '~':
@@ -537,26 +545,9 @@ def call_functions(tokens, env):
 
 def is_string(val):
     """
-    Returns True if val is a string surrounded in quotes,
-    else False.
+    Returns True if val is a string, else False.
     """
-    if type(val) is not str:
-        return False
-    else:
-        return len(val) >= 2 and val[0] == '"' and val[-1] == '"'
-
-def plus(a, b):
-    """Concatenates strings or returns sum of a and b."""
-    a_str = is_string(a)
-    b_str = is_string(b)
-    if a_str and b_str:
-        return '"{0}{1}"'.format(a[1:-1], b[1:-1])
-    elif a_str:
-        return '"{0}{1}"'.format(a[1:-1], b)
-    elif b_str:
-        return '"{0}{1}"'.format(a, b[1:-1])
-    else:
-        return a + b
+    return val.__class__ is CapString
 
 def divide(a, b):
     if type(a) is float or type(b) is float or \
@@ -574,9 +565,8 @@ def promote_values(left, right):
     """
     def stringify(val):
         if not is_string(val):
-            return '"{0}"'.format(val)
-        else:
-            return val
+            return CapString(str(val), False)
+        return val
     if left is None:
         return left, right
     elif is_string(left):
@@ -587,9 +577,9 @@ def promote_values(left, right):
         return left, float(right)
     elif type(right) is float:
         return float(left), right
-    elif left.__class__ is Ratio and type(right) is int:
+    elif left.__class__ is Ratio and type(right) in [int, long]:
         return left, Ratio(right, 1)
-    elif type(left) is int and right.__class__ is Ratio:
+    elif type(left) in [int, long] and right.__class__ is Ratio:
         return Ratio(left, 1), right
     else:
         return left, right
@@ -635,11 +625,9 @@ def convert_value(val, env):
         # This is a tag
         return val
     elif len(val) >= 2:
-        if val[0] == "'" and val[-1] == "'":
-            return '"{0}"'.format(escape(val[1:-1]))
-        elif val[0] == '"' and val[-1] == '"':
-            # TODO : escape should only be called once for each string literal
-            return escape(val)
+        if (val[0] == '"' and val[-1] == '"') or \
+           (val[0] == "'" and val[-1] == "'"):
+            return CapString(val[1:-1])
         elif val[0] == '[' and val[-1] == ']':
             result = parse_list(val[1:-1], env)
             return result

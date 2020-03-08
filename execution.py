@@ -280,7 +280,10 @@ def is_index_valid(current):
 def index_lists(tokens, env):
     i = 1
     while i < len(tokens):
-        prev = get_name(tokens[i - 1], env)
+        if i >= 2 and tokens[i - 2] == '.':
+            i += 1
+            continue
+        prev = convert_value(get_name(tokens[i - 1], env), env)
         current = get_name(tokens[i], env)
         # For an expression such as x[i], x is 'prev' and [i] is 'current',
         # so [i] should always be a generic list, not a restricted one.
@@ -373,7 +376,7 @@ def evaluate_operators(tokens, indices, env):
         if left in brackets or right in brackets:
             break
         left, right = promote_values(left, right)
-        if op == '.':
+        if is_dot:
             tokens[idx-1 : idx+2] = [environment.get_typed_value(left[right])]
         elif op != ' of ' and operator_overload.ready_for_overload(op, left, right):
             # Perform operator overloading

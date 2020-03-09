@@ -32,7 +32,7 @@ def execute_lines(line_mgr, env, executing_constructor=False, supplied_hooks=Non
     while prgm_counter < len(line_mgr):
         env.prgm_counter = prgm_counter
         line = line_mgr[prgm_counter]
-        directive = execute_statement(line_mgr.get_line_data(prgm_counter), env)
+        directive = execute_statement(line_mgr.get_line_data(prgm_counter), executing_constructor, env)
         if directive is not None:
             if directive[0] == ':cond':
                 cond_flag = eval_parentheses(directive[1], env)
@@ -157,7 +157,7 @@ directives = [':cond', ':j', ':jt', ':jf', 'return', 'try', 'throw',
               'catch', 'end', 'else', ':skiptoelse', ':hook',
               ':inc', ':dec']
 
-def execute_statement(line_data, env):
+def execute_statement(line_data, executing_constructor, env):
     """Executes a statement in a given environment."""
     stmt = line_data.line
     # Lines already have leading/trailing whitespace removed.
@@ -178,7 +178,7 @@ def execute_statement(line_data, env):
         elif tokens[0] == 'import':
             perform_import(tokens[1], env)
         elif tokens[0] == 'func':
-            function.define_single_line_function(tokens[1], env)
+            function.define_single_line_function(tokens[1], executing_constructor, env)
         elif tokens[0] in directives:
             return tokens
         elif tokens[1] == '=':

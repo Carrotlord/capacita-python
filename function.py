@@ -47,7 +47,7 @@ def args_of_function(defn):
     arg_list = [arg.strip() for arg in args.split(',')]
     return arg_list
 
-def define_single_line_function(contents, env):
+def define_single_line_function(contents, executing_constructor, env):
     # TODO : allow default arguments in function definition
     split_index = contents.find('=')
     header = contents[0:split_index]
@@ -58,6 +58,9 @@ def define_single_line_function(contents, env):
     arg_list = args_of_function(header)
     ret_type = return_type_of_function(header)
     new_function = Function(name, arg_list, [body], return_type=ret_type)
+    if executing_constructor:
+        # Mark this function as a method
+        new_function.defined_as_method = True
     env.assign(name, new_function)
     # Save this single line function as a hook, which
     # is important for knowing which functions require a
@@ -149,7 +152,8 @@ class Function(object):
         self.line_mgr = line_mgr
         prepare_program.prepare_program(self.line_mgr)
         self.supplied_env = supplied_env
-        self.is_method = False
+        self.called_as_method = False
+        self.defined_as_method = False
         self.is_constructor = self.check_is_constructor()
 
     def check_is_constructor(self):
@@ -166,7 +170,7 @@ class Function(object):
         return len(self.args)
 
     def activate_method(self):
-        self.is_method = True
+        self.called_as_method = True
         
     def execute(self, arg_values, env):
         """
@@ -185,6 +189,13 @@ class Function(object):
             # scope (last element of env.frames),
             # which will then be returned as a new object.
             env.new_this({})
+            if self.hooks is not None:
+                for method in self.hooks.values():
+                    method.defined_as_method = True
+        if self.defined_as_method:
+            env.is_method_stack.append(True)
+        else:
+            env.is_method_stack.append(False)
         # Put function arguments into environment frame:
         arguments.assign_arguments(self.args, arg_values, env)
         result = execution.execute_lines(
@@ -202,8 +213,15 @@ class Function(object):
         # TODO : defining a class inside another class may cause
         # issues, because the inner class may be considered both
         # a method and a constructor.
-        if self.is_method or self.is_constructor:
+        if self.called_as_method or self.is_constructor:
             env.pop_this()
+        # Reset called_as_method, since it is possible the next time
+        # we are called, we won't be called as a method.
+        # (this can happen with implicit 'this'. Another method can
+        #  invoke a method on the same object with 'method()' instead of
+        #  'this.method()')
+        self.called_as_method = False
+        env.is_method_stack.pop()
         if self.return_type is None or env.value_is_a(result, self.return_type):
             return result
         else:

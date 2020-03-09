@@ -66,6 +66,7 @@ class Environment(object):
         self.indices_cache = {}
         self.line_mgr = None
         self.prgm_counter = 0
+        self.is_method_stack = []
 
     def get_indices(self, tokens):
         ast = ast2.ast_singleton
@@ -117,7 +118,8 @@ class Environment(object):
         self.this_pointers.append(obj)
     
     def last_this(self):
-        if len(self.this_pointers) > 0:
+        # A 'this' object should not be used if we are in a non-method function
+        if len(self.is_method_stack) > 0 and self.is_method_stack[-1] and len(self.this_pointers) > 0:
             return self.this_pointers[-1]
         return {}
     

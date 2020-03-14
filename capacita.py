@@ -118,7 +118,7 @@ def repl(existing_env=None):
             last_expr_data = line_mgr.get_line_data(-1)
             last_expr = last_expr_data.line
             if last_expr_data.is_statement:
-                execution.execute_statement(last_expr_data, True, env)
+                execution.execute_statement(last_expr_data, False, env)
             else:
                 print(console.literal(execution.eval_parentheses(last_expr, env)))
 

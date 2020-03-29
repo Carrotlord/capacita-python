@@ -18,6 +18,7 @@ import execution
 import function
 import prepare_program
 import console
+import line_manager
 
 def execute_file(file_name, existing_env=None):
     if existing_env is None:
@@ -54,21 +55,30 @@ def store_program():
         lines += next_line + '\n'
     return lines
 
-def store_code_block(first_line, prompt='Capacita* '):
+def store_code_block(first_line, brace_matcher, prompt='Capacita* '):
     """
     Stores a code block line-by-line until all clauses have been closed.
     """
     if first_line.startswith('when '):
         return first_line + '\n' + raw_input(prompt)
-    open_clauses = 1
-    lines = first_line + '\n'
-    while open_clauses > 0:
+    if is_clause_opener(first_line):
+        open_clauses = 1
+        lines = first_line + '\n'
+    else:
+        open_clauses = 0
+        lines = first_line
+    while open_clauses > 0 or not brace_matcher.is_complete():
         next_line = raw_input(prompt).strip()
+        brace_matcher.match_line(next_line)
         if next_line == 'end':
             open_clauses -= 1
         elif is_clause_opener(next_line):
             open_clauses += 1
-        lines += next_line + '\n'
+        if brace_matcher.is_complete():
+            lines += next_line + '\n'
+        else:
+            # Glue lines together during brace matching
+            lines += next_line
     return lines
 
 def is_clause_opener(line):
@@ -78,6 +88,9 @@ def is_clause_opener(line):
         if line.startswith(opener):
             return True
     return False
+
+def print_evaluated_expr(expr, env):
+    print(console.literal(execution.eval_parentheses(expr, env)))
 
 def repl(existing_env=None):
     """
@@ -89,7 +102,9 @@ def repl(existing_env=None):
         env = environment.Environment()
     else:
         env = existing_env
+    brace_matcher = prepare_program.BraceMatcher()
     while True:
+        brace_matcher.reset()
         expr = raw_input('Capacita> ')
         expr = expr.strip()
         if expr == 'exit()':
@@ -102,9 +117,14 @@ def repl(existing_env=None):
         elif expr == ':code':
             prgm = store_program()
             execute_program(prgm, env)
-        elif expr.startswith('when ') or is_clause_opener(expr):
-            prgm = store_code_block(expr)
-            execute_program(prgm, env)
+        elif expr.startswith('when ') or is_clause_opener(expr) or \
+             not brace_matcher.match_line(expr).is_complete():
+            prgm = store_code_block(expr, brace_matcher)
+            if prgm.rstrip('\n').count('\n') == 0 and \
+               not line_manager.is_statement(prgm):
+                print_evaluated_expr(prgm, env)
+            else:
+                execute_program(prgm, env)
         elif expr == 'this':
             print(env.frames)
         else:
@@ -120,7 +140,7 @@ def repl(existing_env=None):
             if last_expr_data.is_statement:
                 execution.execute_statement(last_expr_data, False, env)
             else:
-                print(console.literal(execution.eval_parentheses(last_expr, env)))
+                print_evaluated_expr(last_expr, env)
 
 def main():
     """Main function - includes tests and runs the REPL."""

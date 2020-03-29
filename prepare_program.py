@@ -5,6 +5,41 @@ from exception import throw_exception
 import ast2
 import operator_overload
 
+class BraceMatcher(object):
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.open_parens = 0
+        self.open_brackets = 0
+        self.open_braces = 0
+
+    def match_line(self, line):
+        for char in line:
+            if char == '(':
+                self.open_parens += 1
+            elif char == '[':
+                self.open_brackets += 1
+            elif char == '{':
+                self.open_braces += 1
+            elif char == ')':
+                self.open_parens -= 1
+                if self.open_parens < 0:
+                    throw_exception('UnmatchedCloseParenthesis', 'On line: ' + line)
+            elif char == ']':
+                self.open_brackets -= 1
+                if self.open_brackets < 0:
+                    throw_exception('UnmatchedCloseBracket', 'On line: ' + line)
+            elif char == '}':
+                self.open_braces -= 1
+                if self.open_braces < 0:
+                    throw_exception('UnmatchedCloseBrace', 'On line: ' + line)
+        return self
+
+    def is_complete(self):
+        return self.open_parens == 0 and self.open_brackets == 0 and \
+               self.open_braces == 0
+
 def is_quote(prgm, i):
     if i == 0:
         return prgm[0] == '"'

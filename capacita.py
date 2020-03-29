@@ -55,12 +55,16 @@ def store_program():
         lines += next_line + '\n'
     return lines
 
+def make_indentation(num_open_clauses):
+    indentation = max(0, 4 * (num_open_clauses - 1))
+    return ' ' * indentation
+
 def store_code_block(first_line, brace_matcher, prompt='Capacita* '):
     """
     Stores a code block line-by-line until all clauses have been closed.
     """
     if first_line.startswith('when '):
-        return first_line + '\n' + raw_input(prompt)
+        return first_line + '\n' + raw_input(prompt + '    ')
     if is_clause_opener(first_line):
         open_clauses = 1
         lines = first_line + '\n'
@@ -68,7 +72,7 @@ def store_code_block(first_line, brace_matcher, prompt='Capacita* '):
         open_clauses = 0
         lines = first_line
     while open_clauses > 0 or not brace_matcher.is_complete():
-        next_line = raw_input(prompt).strip()
+        next_line = raw_input(prompt + make_indentation(open_clauses)).strip()
         brace_matcher.match_line(next_line)
         if next_line == 'end':
             open_clauses -= 1

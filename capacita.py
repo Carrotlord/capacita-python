@@ -42,14 +42,14 @@ def execute_program(prgm, existing_env=None):
     line_mgr, env = convert_program_to_lines(prgm, existing_env)
     execution.execute_lines(line_mgr, env)
     
-def store_program():
+def store_program(get_input):
     """
     Stores a program line-by-line until :end statement is reached.
     """
     lines = ""
     next_line = None
     while True:
-        next_line = raw_input()
+        next_line = get_input()
         if next_line == ':end':
             break
         lines += next_line + '\n'
@@ -59,12 +59,12 @@ def make_indentation(num_open_clauses):
     indentation = max(0, 4 * (num_open_clauses - 1))
     return ' ' * indentation
 
-def store_code_block(first_line, brace_matcher, prompt='Capacita* '):
+def store_code_block(get_input, first_line, brace_matcher, prompt='Capacita* '):
     """
     Stores a code block line-by-line until all clauses have been closed.
     """
     if first_line.startswith('when '):
-        return first_line + '\n' + raw_input(prompt + '    ')
+        return first_line + '\n' + get_input(prompt + '    ')
     if is_clause_opener(first_line):
         open_clauses = 1
         lines = first_line + '\n'
@@ -72,7 +72,7 @@ def store_code_block(first_line, brace_matcher, prompt='Capacita* '):
         open_clauses = 0
         lines = first_line
     while open_clauses > 0 or not brace_matcher.is_complete():
-        next_line = raw_input(prompt + make_indentation(open_clauses)).strip()
+        next_line = get_input(prompt + make_indentation(open_clauses)).strip()
         brace_matcher.match_line(next_line)
         if next_line == 'end':
             open_clauses -= 1
@@ -96,7 +96,7 @@ def is_clause_opener(line):
 def print_evaluated_expr(expr, env):
     print(console.literal(execution.eval_parentheses(expr, env)))
 
-def repl(existing_env=None):
+def repl(existing_env=None, get_input=None):
     """
     Read-eval-print loop. Whole programs can be run by using
     the ':program' directive, ending with ':end'.
@@ -106,24 +106,26 @@ def repl(existing_env=None):
         env = environment.Environment()
     else:
         env = existing_env
+    if get_input is None:
+        get_input = raw_input
     brace_matcher = prepare_program.BraceMatcher()
     while True:
         brace_matcher.reset()
-        expr = raw_input('Capacita> ')
+        expr = get_input('Capacita> ')
         expr = expr.strip()
         if expr == 'exit()':
             break
         elif len(expr) == 0:
             continue
         elif expr == ':program':
-            prgm = store_program()
+            prgm = store_program(get_input)
             execute_program(prgm)
         elif expr == ':code':
-            prgm = store_program()
+            prgm = store_program(get_input)
             execute_program(prgm, env)
         elif expr.startswith('when ') or is_clause_opener(expr) or \
              not brace_matcher.match_line(expr).is_complete():
-            prgm = store_code_block(expr, brace_matcher)
+            prgm = store_code_block(get_input, expr, brace_matcher)
             if prgm.rstrip('\n').count('\n') == 0 and \
                not line_manager.is_statement(prgm):
                 print_evaluated_expr(prgm, env)
@@ -148,7 +150,8 @@ def repl(existing_env=None):
 
 def main():
     """Main function - includes tests and runs the REPL."""
-    if len(sys.argv) > 1:
+    argc = len(sys.argv)
+    if argc > 1:
         first_arg = sys.argv[1]
         if first_arg == '--test':
             env = environment.Environment()
@@ -313,7 +316,16 @@ def main():
         elif first_arg == '--test-all':
             tests.test_all('capacita_programs')
         elif first_arg == '--test-all-fast':
-            tests.test_all('capacita_programs', False)
+            tests.test_all('capacita_programs', has_delay=False)
+        elif first_arg == '--test-repl':
+            tests.test_all('capacita_programs', has_delay=True, use_repl=True)
+        elif first_arg == '--test-repl-fast':
+            tests.test_all('capacita_programs', has_delay=False, use_repl=True)
+        elif first_arg == '--test-file' and argc > 2:
+            if argc == 4 and sys.argv[2] == '--repl':
+                tests.test_file(sys.argv[3], use_repl=True)
+            else:
+                tests.test_file(sys.argv[2], use_repl=False)
         else:
             # Run a program from a text file:
             file_name = first_arg

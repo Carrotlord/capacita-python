@@ -1,0 +1,91 @@
+grid = []
+grid.push([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+grid.push([0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+grid.push([0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+grid.push([0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+grid.push([0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+grid.push([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+sub printGrid(grid)
+    for each row of grid
+        for each cell of row
+            if cell == 0
+                show " "
+            else
+                show "#"
+            end
+        end
+        print ""
+    end
+end
+
+sub getCell(grid, i, j)
+    when i < 0 or j < 0 or j >= grid.length()
+        return 0
+    row = grid[j]
+    when i >= row.length()
+        return 0
+    return row[i]
+end
+
+sub putCell(grid, i, j)
+    row = grid[j]
+    row[i] = 1
+end
+
+sub makeGrid(height, width)
+    grid = []
+    for j = 0; j < height; j++
+        row = []
+        for i = 0; i < width; i++
+            row.push(0)
+        end
+        grid.push(row)
+    end
+    return grid
+end
+
+import functional
+func plus(a, b) = a + b
+
+sub conway(grid)
+    height = grid.length()
+    firstRow = grid[0]
+    width = firstRow.length()
+    newGrid = makeGrid(height, width)
+    for i = 0; i < width; i++
+        for j = 0; j < height; j++
+            n =  getCell(grid, i,     j - 1)
+            ne = getCell(grid, i + 1, j - 1)
+            nw = getCell(grid, i - 1, j - 1)
+            e =  getCell(grid, i + 1, j)
+            w =  getCell(grid, i - 1, j)
+            s =  getCell(grid, i,     j + 1)
+            se = getCell(grid, i + 1, j + 1)
+            sw = getCell(grid, i - 1, j + 1)
+            numNeighbors = foldRight(plus, [n, ne, nw, e, w, s, se, sw])
+            self = getCell(grid, i, j)
+            if self == 0 and numNeighbors == 3
+                putCell(newGrid, i, j)
+            else if self == 1 and (numNeighbors == 2 or numNeighbors == 3)
+                putCell(newGrid, i, j)
+            end
+        end
+    end
+    return newGrid
+end
+
+sub clear()
+    for i = 0; i < 50; i++
+        print ""
+    end
+end
+
+for i = 0; i < 40; i++
+    clear()
+    printGrid(grid)
+    print i
+    grid = conway(grid)
+end
+input  // pause
+    

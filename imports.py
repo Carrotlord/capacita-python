@@ -1,4 +1,5 @@
 import math
+import random
 
 from exception import throw_exception
 
@@ -157,6 +158,27 @@ def import_data_structures(env):
         return range(start, stop + 1, step)
     env.assign('ListRange', builtin_function.BuiltinFunction('ListRange', ['start', 'stop', 'step?'], list_range))
 
+def import_random(env):
+    def throw_select_on_empty_list():
+        throw_exception('SelectOnEmptyList', "Can't select item from empty list")
+    def select(lst):
+        if len(lst) == 0:
+            throw_select_on_empty_list()
+        return random.sample(lst, 1)[0]
+    def select_and_remove(lst):
+        if len(lst) == 0:
+            throw_select_on_empty_list()
+        index = random.randint(0, len(lst) - 1)
+        return lst.pop(index)
+    def shuffle_and_return(lst):
+        random.shuffle(lst)
+        return lst
+    env.assign('randInt', builtin_function.BuiltinFunction('randInt', ['a', 'b'], random.randint))
+    env.assign('randDouble', builtin_function.BuiltinFunction('randDouble', [], random.random))
+    env.assign('shuffle', builtin_function.BuiltinFunction('shuffle', ['lst'], shuffle_and_return))
+    env.assign('select', builtin_function.BuiltinFunction('select', ['lst'], select))
+    env.assign('selectAndRemove', builtin_function.BuiltinFunction('selectAndRemove', ['lst'], select_and_remove))
+
 def perform_import(library, env):
     library = library.strip()
     obj = None
@@ -175,6 +197,8 @@ def perform_import(library, env):
         import_debugging(env)
     elif library == 'prettyPrint':
         import_pretty_print(env)
+    elif library == 'random':
+        import_random(env)
     elif library.startswith('"') and library.endswith('"'):
         # Import a program from the file system
         capacita.execute_file(library[1:-1], env)

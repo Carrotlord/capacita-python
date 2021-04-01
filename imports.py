@@ -6,6 +6,7 @@ from exception import throw_exception
 import builtin_function
 import capacita
 import pretty_print
+import strtools
 
 def import_math(env):
     def binomial_choose(n, k):
@@ -179,6 +180,29 @@ def import_random(env):
     env.assign('select', builtin_function.BuiltinFunction('select', ['lst'], select))
     env.assign('selectAndRemove', builtin_function.BuiltinFunction('selectAndRemove', ['lst'], select_and_remove))
 
+def import_file(env):
+    def extract_string(cap_string):
+        if cap_string.__class__ is not strtools.CapString:
+            throw_exception('ExpectedString', '{0} is not a string'.format(cap_string))
+        return cap_string.contents
+    def read_entire_text_file(filename):
+        filename = extract_string(filename)
+        with open(filename, 'r') as file_obj:
+            return strtools.CapString(file_obj.read())
+    def write_entire_text_file(filename, contents):
+        filename = extract_string(filename)
+        contents = extract_string(contents)
+        with open(filename, 'w') as file_obj:
+            file_obj.write(contents)
+    env.assign(
+        'readEntireTextFile',
+        builtin_function.BuiltinFunction('readEntireTextFile', ['filename'], read_entire_text_file)
+    )
+    env.assign(
+        'writeEntireTextFile',
+        builtin_function.BuiltinFunction('writeEntireTextFile', ['filename', 'contents'], write_entire_text_file)
+    )
+
 def perform_import(library, env):
     library = library.strip()
     obj = None
@@ -199,6 +223,8 @@ def perform_import(library, env):
         import_pretty_print(env)
     elif library == 'random':
         import_random(env)
+    elif library == 'file':
+        import_file(env)
     elif library.startswith('"') and library.endswith('"'):
         # Import a program from the file system
         capacita.execute_file(library[1:-1], env)

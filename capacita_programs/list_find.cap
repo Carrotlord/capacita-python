@@ -1,0 +1,22 @@
+class Card(suit, rank)
+    sub this == other
+        return other.suit == suit and other.rank == rank
+    end
+end
+
+fiveOfHearts = Card(#hearts, 5)
+queen1 = Card(#spades, "Queen")
+queen2 = Card(#clubs, "Queen")
+
+print fiveOfHearts == fiveOfHearts
+print queen1 == queen2
+queen1 = Card(#clubs, "Queen")
+print queen1 == queen2
+
+items = [fiveOfHearts, Card(#diamonds, 7), queen1]
+print items.find(fiveOfHearts)
+print items.find(queen2)
+print items.find(Card(#diamonds, 7))
+print items.find(Card(#diamonds, 8))
+print items.find("string")
+print items.find(500)

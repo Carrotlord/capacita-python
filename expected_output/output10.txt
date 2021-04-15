@@ -387,6 +387,16 @@ Type tree is: {'Ratio': ('Ratio', 'Rational')
 [3, 4]
 [[10, 20], [30, 40]]
 [25, 64]
+===== Testing capacita_programs/list_find.cap
+true
+false
+true
+0
+2
+1
+null
+null
+null
 ===== Testing capacita_programs/methods.cap
 1+2i
 3+4i

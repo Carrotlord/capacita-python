@@ -40,6 +40,14 @@ def list_methods(obj, name, env):
         # Returns the position of the element in the list.
         # If the element is not found, returns null.
         def find(elem):
+            if type(elem) is dict and '$eq' in elem:
+                eq_method = elem['$eq']
+                # TODO : if there is no $eq method, and the $notEq (not equals) method
+                #        is defined, use the default definition $eq(a, b) = not $notEq(a, b)
+                for i, item in enumerate(obj):
+                    if eq_method.execute([item], env):
+                        return i
+                return None
             try:
                 return obj.index(elem)
             except ValueError:

@@ -68,6 +68,11 @@ def execute_lines(line_mgr, env, executing_constructor=False, supplied_hooks=Non
                     # TODO : assign the 'this' variable at the start
                     # of scope creation, not when it is returned.
                     obj['this'] = obj
+                    for key, method in obj.items():
+                        if key == '$eq' and method.__class__ is function.Function and env.has_hook(method):
+                            # Methods must remember the environment of the object
+                            # where they were defined.
+                            obj[key] = method.supply(env)
                     return obj
                 else:
                     value = eval_parentheses(directive[1], env)
@@ -376,6 +381,7 @@ def evaluate_operators(tokens, indices, env):
         if left in brackets or right in brackets:
             break
         left, right = promote_values(left, right)
+        # TODO : support user-defined methods such as $eq, $notEq when evaluating operators
         if is_dot:
             tokens[idx-1 : idx+2] = [environment.get_typed_value(left[right])]
         elif op != ' of ' and operator_overload.ready_for_overload(op, left, right):

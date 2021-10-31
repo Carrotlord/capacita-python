@@ -7,6 +7,7 @@ import builtin_function
 import capacita
 import pretty_print
 import strtools
+import function
 
 def import_math(env):
     def binomial_choose(n, k):
@@ -134,6 +135,22 @@ def import_functional(env):
         def partially_applied_f(*args):
             return f.execute(fixed_args + list(args), env)
         return builtin_function.BuiltinFunction('fPrime', arg_names, partially_applied_f)
+    def feed(*args):
+        if len(args) == 0:
+            throw_exception('NotEnoughArguments', 'Function requires at least 1 argument')
+        result = args[0]
+        for elem in args[1:]:
+            if function.is_function(elem):
+                result = elem.execute([result], env)
+            elif type(elem) is list:
+                if len(elem) == 0 or not function.is_function(elem[0]):
+                    throw_exception('InvalidArgument', 'List must contain a function as first element')
+                f = elem[0]
+                rest = list(elem[1:])
+                result = f.execute(rest + [result], env)
+            else:
+                throw_exception('InvalidArgument', 'Argument must be a list or function')
+        return result
     env.assign('compose', builtin_function.BuiltinFunction('compose', ['f', 'g'], compose))
     env.assign('map', builtin_function.BuiltinFunction('map', ['f', 'lst'], map_prime))
     env.assign('filter', builtin_function.BuiltinFunction('filter', ['predicate', 'lst'], filter_prime))
@@ -144,6 +161,7 @@ def import_functional(env):
     env.assign('all', builtin_function.BuiltinFunction('all', ['f', 'lst'], all_prime))
     env.assign('curry', builtin_function.BuiltinFunction('curry', ['f'], curry))
     env.assign('partial', builtin_function.BuiltinFunction('partial', ['f', 'fixedArgs'], partial))
+    env.assign('feed', builtin_function.BuiltinFunction('feed', ['initial', '[tasks]'], feed))
 
 def import_debugging(env):
     env.assign('getFrames', builtin_function.BuiltinFunction('getFrames', [], lambda: env.frames))

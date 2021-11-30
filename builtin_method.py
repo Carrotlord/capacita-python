@@ -132,6 +132,36 @@ def obj_methods(obj, name, env):
         return method
     return None
 
+def remove_radix_prefix(digits):
+    """
+    Removes the '0x' or '0b' prefix from a string of binary or hexadecimal digits.
+    Preserves the leading negative sign, if there is any.
+    """
+    if digits.startswith('-'):
+        # Negative sign
+        return '-' + digits[3:]
+    return digits[2:]
+
+def to_unsigned_bits(integer):
+    """
+    If the integer is positive, return it as a string of binary digits.
+    If the integer is negative, return its unsigned representation in binary by
+    indicating that there is an infinite stream of 1 bits to the left of the value.
+    
+    e.g. 123   -> "1111011"
+         (-2)  -> "...11111110"
+         (-23) -> "...111111101001"
+    """
+    if integer >= 0:
+        # Remove '0b' prefix
+        return bin(integer)[2:]
+    value = abs(integer)
+    mask = 0xf
+    while mask < value:
+        mask = (mask << 4) | 0xf
+    # Put at least 4 extra ones digits on the representation
+    return '...1111' + bin(mask & integer)[2:]
+
 def number_methods(obj, name, env):
     if name == 'next':
         return builtin_function.BuiltinFunction('constant', [], lambda: obj + 1)
@@ -154,6 +184,25 @@ def number_methods(obj, name, env):
             return builtin_function.BuiltinFunction('bitNor', ['n'], lambda n: ~(obj | n))
         elif name == 'bitXnor':
             return builtin_function.BuiltinFunction('bitXnor', ['n'], lambda n: ~(obj ^ n))
+        elif name == 'toBin':
+            # The bin function will add '0b' to the beginning of the binary string, which should be removed
+            return builtin_function.BuiltinFunction('toBin', [],
+                                                    lambda: strtools.CapString(remove_radix_prefix(bin(obj)), False))
+        elif name == 'toHex':
+            # The hex function will add '0x' to the beginning of the hexadecimal string, which should be removed
+            return builtin_function.BuiltinFunction('toHex', [],
+                                                    lambda: strtools.CapString(remove_radix_prefix(hex(obj)), False))
+        elif name == 'toUnsignedBits':
+            return builtin_function.BuiltinFunction('toUnsignedBits', [],
+                                                    lambda: strtools.CapString(to_unsigned_bits(obj), False))
+        elif name == 'getBit':
+            return builtin_function.BuiltinFunction('getBit', ['i'], lambda i: (obj & (1 << i)) >> i)
+        elif name == 'setBit':
+            return builtin_function.BuiltinFunction('setBit', ['i'], lambda i: obj | (1 << i))
+        elif name == 'resetBit':
+            return builtin_function.BuiltinFunction('resetBit', ['i'], lambda i: obj & ~(1 << i))
+        elif name == 'toggleBit':
+            return builtin_function.BuiltinFunction('toggleBit', ['i'], lambda i: obj ^ (1 << i))
     return None
 
 def table_methods(obj, name, env):

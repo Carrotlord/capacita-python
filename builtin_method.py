@@ -137,8 +137,23 @@ def number_methods(obj, name, env):
         return builtin_function.BuiltinFunction('constant', [], lambda: obj + 1)
     elif name == 'previous':
         return builtin_function.BuiltinFunction('constant', [], lambda: obj - 1)
-    if type(obj) in [int, long] and name == 'toChar':
-        return builtin_function.BuiltinFunction('toChar', [], lambda: strtools.CapString(chr(obj), False))
+    if type(obj) in [int, long]:
+        if name == 'toChar':
+            return builtin_function.BuiltinFunction('toChar', [], lambda: strtools.CapString(chr(obj), False))
+        elif name == 'bitNot':
+            return builtin_function.BuiltinFunction('bitNot', [], lambda: ~obj)
+        elif name == 'bitAnd':
+            return builtin_function.BuiltinFunction('bitAnd', ['n'], lambda n: obj & n)
+        elif name == 'bitOr':
+            return builtin_function.BuiltinFunction('bitOr', ['n'], lambda n: obj | n)
+        elif name == 'bitXor':
+            return builtin_function.BuiltinFunction('bitXor', ['n'], lambda n: obj ^ n)
+        elif name == 'bitNand':
+            return builtin_function.BuiltinFunction('bitNand', ['n'], lambda n: ~(obj & n))
+        elif name == 'bitNor':
+            return builtin_function.BuiltinFunction('bitNor', ['n'], lambda n: ~(obj | n))
+        elif name == 'bitXnor':
+            return builtin_function.BuiltinFunction('bitXnor', ['n'], lambda n: ~(obj ^ n))
     return None
 
 def table_methods(obj, name, env):

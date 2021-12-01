@@ -162,6 +162,55 @@ def to_unsigned_bits(integer):
     # Put at least 4 extra ones digits on the representation
     return '...1111' + bin(mask & integer)[2:]
 
+def is_int(n):
+    return type(n) in [int, long]
+
+def check_radix(radix):
+    if (not is_int(radix)) or radix < 2 or radix > 36:
+        throw_exception('UnsupportedBase', 'Base must be between 2 and 36 inclusive')
+
+def char_range(start, stop):
+    start = ord(start)
+    stop = ord(stop)
+    return ''.join(map(chr, xrange(start, stop + 1)))
+
+digits = char_range('0', '9') + char_range('a', 'z')
+
+def to_base(i, radix):
+    check_radix(radix)
+    if i == 0:
+        return '0'
+    result = ''
+    j = abs(i)
+    while j > 0:
+        last = j % radix
+        result = digits[last] + result
+        j /= radix
+    if i < 0:
+        return '-' + result
+    return result
+
+def get_digit(n, index, radix):
+    check_radix(radix)
+    n = abs(n)
+    # Left-shift digits in an arbitrary base
+    n /= radix ** index
+    # Get last digit
+    return n % radix
+
+def set_digit(n, index, radix, new_digit):
+    check_radix(radix)
+    sign = -1 if n < 0 else 1
+    n = abs(n)
+    if (not is_int(new_digit)) or new_digit < 0 or new_digit >= radix:
+        throw_exception('UnsupportedDigit', 'Digit must be between 0 and {0} inclusive'.format(radix - 1))
+    prev_digit = get_digit(n, index, radix)
+    scale = radix ** index
+    prev_value = prev_digit * scale
+    n -= prev_value
+    n += new_digit * scale
+    return sign * n
+
 def number_methods(obj, name, env):
     if name == 'next':
         return builtin_function.BuiltinFunction('constant', [], lambda: obj + 1)
@@ -203,6 +252,15 @@ def number_methods(obj, name, env):
             return builtin_function.BuiltinFunction('resetBit', ['i'], lambda i: obj & ~(1 << i))
         elif name == 'toggleBit':
             return builtin_function.BuiltinFunction('toggleBit', ['i'], lambda i: obj ^ (1 << i))
+        elif name == 'toBase':
+            return builtin_function.BuiltinFunction('toBase', ['base'],
+                                                    lambda base: strtools.CapString(to_base(obj, base), False))
+        elif name == 'getDigit':
+            return builtin_function.BuiltinFunction('getDigit', ['index', 'base?'],
+                                                    lambda index, base=10: get_digit(obj, index, base))
+        elif name == 'setDigit':
+            return builtin_function.BuiltinFunction('setDigit', ['index', 'newDigit', 'base?'],
+                                                    lambda index, new_digit, base=10: set_digit(obj, index, base, new_digit))
     return None
 
 def table_methods(obj, name, env):

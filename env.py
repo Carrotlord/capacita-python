@@ -1,16 +1,12 @@
 from exception import throw_exception, throw_exception_with_line
 from builtin_function import int_div, make_list
-from type_tree import get_type, \
-                      generate_default_tree, \
-                      TypeTree, \
-                      merge_trees, \
-                      build_type_table
 
 import re
 import os
 import execution
 import ast2
 import table
+import type_tree
 
 import pretty_print
 
@@ -51,7 +47,7 @@ class Environment(object):
                         'intDiv': int_div, 'makeList': make_list}]
         # Save names that shouldn't be replicated in subsequent stack frames
         self.default_names = self.frames[-1].keys()
-        self.all_types = generate_default_tree()
+        self.all_types = type_tree.generate_default_tree()
         self.this_pointers = []
         self.exception_stack = []
         self.last_assigned = None
@@ -96,7 +92,7 @@ class Environment(object):
     def merge_type_tree(self, new_types):
         current_tree = self.all_types['Object']
         new_tree = new_types['Object']
-        self.all_types = build_type_table(merge_trees(current_tree, new_tree))
+        self.all_types = type_tree.build_type_table(type_tree.merge_trees(current_tree, new_tree))
 
     def extract(self, dictionary):
         for key in dictionary:
@@ -340,14 +336,14 @@ class Environment(object):
         return new_env
         
     def value_is_a(self, value, wanted_kind):
-        kind = get_type(value)
+        kind = type_tree.get_type(value)
         if wanted_kind not in self.all_types:
             return False
         tree = self.all_types[wanted_kind]
         return tree.categorizes(kind)
     
     def new_type(self, parents, child):
-        child_tree = TypeTree(child)
+        child_tree = type_tree.TypeTree(child)
         self.all_types[child] = child_tree
         for parent in parents:
             parent_tree = self.all_types[parent]

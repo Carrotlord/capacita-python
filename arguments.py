@@ -27,6 +27,8 @@ def min_and_max_args(arg_names):
     max_args = 0
     for name in arg_names:
         if name.endswith('?'):
+            # TODO : if name contains '=' then it may be an argument
+            #        with a default value
             max_args += 1
         elif is_grouping_argument(name):
             max_args = float('inf')

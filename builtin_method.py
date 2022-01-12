@@ -60,6 +60,14 @@ def list_methods(obj, name, env):
             else:
                 return obj[start:stop]
         return builtin_function.BuiltinFunction('slice', ['start', 'stop?'], slice)
+    elif name == 'first':
+        return builtin_function.BuiltinFunction('first', [], lambda: None if len(obj) == 0 else obj[0])
+    elif name == 'last':
+        return builtin_function.BuiltinFunction('last', [], lambda: None if len(obj) == 0 else obj[-1])
+    elif name == 'rest':
+        return builtin_function.BuiltinFunction('rest', [], lambda: obj[1:])
+    elif name == 'leading':
+        return builtin_function.BuiltinFunction('leading', [], lambda: obj[:-1])
     return None
 
 def str_methods(obj, name, env):

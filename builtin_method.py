@@ -211,6 +211,20 @@ def set_digit(n, index, radix, new_digit):
     n += new_digit * scale
     return sign * n
 
+def shift_left(value, num_digits, base):
+    if num_digits < 0:
+        return shift_right(value, -num_digits, base)
+    if base == 2:
+        return value << num_digits
+    return value * (base ** num_digits)
+
+def shift_right(value, num_digits, base):
+    if num_digits < 0:
+        return shift_left(value, -num_digits, base)
+    if base == 2:
+        return value >> num_digits
+    return value / (base ** num_digits)
+
 def number_methods(obj, name, env):
     if name == 'next':
         return builtin_function.BuiltinFunction('constant', [], lambda: obj + 1)
@@ -261,6 +275,12 @@ def number_methods(obj, name, env):
         elif name == 'setDigit':
             return builtin_function.BuiltinFunction('setDigit', ['index', 'newDigit', 'base?'],
                                                     lambda index, new_digit, base=10: set_digit(obj, index, base, new_digit))
+        elif name == 'shiftLeft':
+            return builtin_function.BuiltinFunction('shiftLeft', ['numDigits', 'base?'],
+                                                    lambda num_digits, base=2: shift_left(obj, num_digits, base))
+        elif name == 'shiftRight':
+            return builtin_function.BuiltinFunction('shiftRight', ['numDigits', 'base?'],
+                                                    lambda num_digits, base=2: shift_right(obj, num_digits, base))
     return None
 
 def table_methods(obj, name, env):

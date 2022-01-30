@@ -96,6 +96,31 @@ def execute_lines(line_mgr, env, executing_constructor=False, supplied_hooks=Non
                 env.exception_push(prgm_counter)
                 prgm_counter += 1
             elif directive[0] == 'throw':
+                mirage = 'mirage'
+                if len(directive) == 2 and (directive[1].startswith(mirage + ' ') or \
+                   directive[1].startswith(mirage + '\t')):
+                    constructor_call = directive[1][len(mirage) + 1:].lstrip()
+                    directive[1] = constructor_call
+                    i = constructor_call.find('(')
+                    if i == -1:
+                        throw_exception_with_line(
+                            'InvalidSyntax',
+                            'mirage keyword must be followed by a constructor call',
+                            line_mgr,
+                            prgm_counter
+                        )
+                    class_name = constructor_call[:i]
+                    new_class = None
+                    class_body = ['$type="{0}"'.format(class_name), 'return this']
+                    if i + 1 < len(constructor_call) and constructor_call[i + 1] == ')':
+                        # No arguments
+                        new_class = function.Function(class_name, [], class_body)
+                    else:
+                        # 1 argument
+                        new_class = function.Function(class_name, ['message'], class_body)
+                    env.frames[0][class_name] = new_class
+                    # TODO : this class should inherit from Exception, not Object.
+                    env.new_type(['Object'], class_name)
                 last_prgm_counter = prgm_counter
                 prgm_counter = env.exception_pop()
                 if prgm_counter is None:

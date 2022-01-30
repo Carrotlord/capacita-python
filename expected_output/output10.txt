@@ -150,6 +150,11 @@ Internal code:
     Line 10: $i0+=1
     Line 11: :cond $i0<list.length()
 ===== Exception: <type 'exceptions.SystemExit'>
+===== Testing capacita_programs/exceptions_mirage.cap
+ok, 1
+ok, 2
+exception message
+ok, 3
 ===== Testing capacita_programs/exponent_notation.cap
 200100000.0
 0.023

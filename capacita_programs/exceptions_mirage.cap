@@ -1,0 +1,26 @@
+sub error2()
+    throw mirage MyException2("exception message")
+end
+
+sub error3()
+    throw mirage MyException3()
+end
+
+try
+    throw mirage MyException()
+catch MyException e
+    print "ok, 1"
+end
+
+try
+    error2()
+catch MyException2 e
+    print "ok, 2"
+    print e.message
+end
+
+try
+    error3()
+catch MyException3 e
+    print "ok, 3"
+end

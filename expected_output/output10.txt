@@ -572,6 +572,20 @@ null
 StringEmpty exception
 Cannot convert first character to integer when string is empty
 ===== Exception: <type 'exceptions.SystemExit'>
+===== Testing capacita_programs/str_compare.cap
+true true true true true true true true true true true true true true true 
+true true true true true true true true true true true true true true true 
+true true true true true true true true true true true true true true true 
+false false false false false false false false false false false false false false false 
+false false false false false false false false false false false false false false false 
+false false false false false false false false false false false false false false false 
+false
+true
+false
+true
+StringCompare exception
+Can't compare string "a" with non-string 1, unless the condition is equality or inequality
+===== Exception: <type 'exceptions.SystemExit'>
 ===== Testing capacita_programs/sub.cap
 20.6
 33

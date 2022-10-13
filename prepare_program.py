@@ -1,9 +1,9 @@
 from control_flow import prepare_control_flow
-from strtools import find_matching_quote, convert_special_char
 from exception import throw_exception
 
 import ast2
 import operator_overload
+import strtools
 
 class BraceMatcher(object):
     def __init__(self):
@@ -106,7 +106,7 @@ def convert_single_quotes(prgm):
         if is_quote(prgm, i):
             in_double_quotes = not in_double_quotes
         if char == "'" and not in_double_quotes:
-            j = find_matching_quote(prgm[i + 1:], "'")
+            j = strtools.find_matching_quote(prgm[i + 1:], "'")
             if j == -1:
                 throw_exception('NoClosingSingleQuote', 'No closing single quote in: ' + prgm)
             processed += '"' + escape_double_quotes(prgm[i+1 : i+j+1]) + '"'
@@ -158,7 +158,7 @@ def preprocess(prgm):
             if is_quote(prgm, i):
                 in_quotes = not in_quotes
             if in_quotes:
-                processed += convert_special_char(char)
+                processed += strtools.convert_special_char(char)
             else:
                 processed += char
             i += 1

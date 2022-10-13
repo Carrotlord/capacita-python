@@ -1,4 +1,9 @@
-from strtools import find_matching, find_matching_quote
+# Longer operators should be detected before shorter ones:
+ordered_ops = [' and ', ' or ', ' xor ', 'not ', ' of ',
+               '>=', '<=', '!=', '==', '<', '>',
+               '+', '-', '*', '/', '%', '^', ':', '.', '~']
+
+import strtools
 from exception import throw_exception
 
 import re
@@ -17,10 +22,6 @@ precedences = {
     'not ': 9,
     ' and ': 10, ' or ': 10, ' xor ': 10
 }
-# Longer operators should be detected before shorter ones:
-ordered_ops = [' and ', ' or ', ' xor ', 'not ', ' of ',
-               '>=', '<=', '!=', '==', '<', '>',
-               '+', '-', '*', '/', '%', '^', ':', '.', '~']
 starters = ' n><!=+-*/%^:.~'
 unary_ops = ['not ', '~']
 
@@ -111,14 +112,14 @@ class AST(object):
                 results.append(char)
                 buffer = ''
             elif char == '(':
-                j = find_matching(self.expr[i + 1:])
+                j = strtools.find_matching(self.expr[i + 1:])
                 if j == -1:
                     throw_exception('UnmatchedOpeningParenthesis', self.expr)
                 buffer += self.expr[i : i+j]
                 i += j
                 continue
             elif char == '"':
-                j = find_matching_quote(self.expr[i + 1:])
+                j = strtools.find_matching_quote(self.expr[i + 1:])
                 if j == -1:
                     throw_exception('UnmatchedQuote', self.expr)
                 buffer += self.expr[i : i+j+1] + '"'
@@ -151,7 +152,7 @@ class AST(object):
         while i < expr_length:
             next_char = expr[i]
             if next_char == '(':
-                paren_close = find_matching(expr[i + 1:])
+                paren_close = strtools.find_matching(expr[i + 1:])
                 if paren_close == -1:
                     throw_exception('UnmatchedOpeningParenthesis', expr)
                 buffer += '(' + expr[i+1 : i+paren_close]

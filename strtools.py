@@ -1,4 +1,5 @@
 import exception
+import console
 
 def concat_cap_strings(a, b):
     return CapString(a.contents + b.contents, False)
@@ -37,6 +38,22 @@ class CapString(object):
     def __ne__(self, other):
         return not (self == other)
 
+    def __cmp__(self, other):
+        # The methods __eq__ and __ne__ will take priority
+        # over this __cmp__ method.
+        # Comparing a string and a non-string for equality
+        # should just return False (the types are not the same).
+        # However, using less-than or greater-than operators
+        # will throw an exception if the types don't match.
+        if other.__class__ is not CapString:
+            invalid_str_compare(self, other)
+        elif self.contents < other.contents:
+            return -1
+        elif self.contents == other.contents:
+            return 0
+        else:
+            return 1
+
     def __hash__(self):
         return hash(self.contents)
 
@@ -45,6 +62,16 @@ class CapString(object):
 
     def __getitem__(self, index):
         return self.contents[index]
+
+def invalid_str_compare(cap_str, other):
+    exception.throw_exception(
+        'StringCompare',
+        ("Can't compare string {0} with non-string {1}, " +
+         "unless the condition is equality or inequality").format(
+            console.literal(cap_str),
+            console.literal(other)
+        )
+    )
 
 def find_matching(expr, opening='(', closing=')'):
     """

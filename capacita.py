@@ -5,13 +5,13 @@ import re
 import sys
 
 from ratio import Ratio
-from ast2 import AST
 from control_flow import prepare_control_flow, openers
 from ribbon import Ribbon
 from tokens import tokenize_statement
 from fileio import file_to_str
 from exception import throw_exception
 
+import ast2
 import tests
 import env as environment
 import execution
@@ -165,10 +165,10 @@ def main():
             execution.execute_statement('z +="!!!"', env)
             execution.execute_statement('a= `gelatin`', env)
             print(env.frames)
-            ast = AST("3*4+5 ^ 7")
+            ast = ast2.AST("3*4+5 ^ 7")
             print(ast.parse())
             print(ast.collapse_indices(ast.build_indices()))
-            ast = AST("18+15*9:3+10")
+            ast = ast2.AST("18+15*9:3+10")
             print(ast.parse())
             print(ast.collapse_indices(ast.build_indices()))
 
@@ -179,15 +179,15 @@ def main():
             print(execution.evaluate_expression('2:3 + 3^3 - 1:5', environment.Environment()))
             print(execution.evaluate_expression('1234', environment.Environment()))
             
-            ast = AST("3 + 1 == 4")
+            ast = ast2.AST("3 + 1 == 4")
             print(ast.parse())
-            ast = AST("3 + 1 > 4")
+            ast = ast2.AST("3 + 1 > 4")
             print(ast.parse())
-            ast = AST("18:1 != 18.2")
+            ast = ast2.AST("18:1 != 18.2")
             print(ast.parse())
-            ast = AST("x = 4")
+            ast = ast2.AST("x = 4")
             print(ast.parse())
-            ast = AST("y = 3 > 4")
+            ast = ast2.AST("y = 3 > 4")
             print(ast.parse())
             
             env2 = environment.Environment()
@@ -195,36 +195,36 @@ def main():
             execution.execute_statement('y = x + 19 - 3*6', env2)
             print(env2.frames)
         elif first_arg == '--test2':
-            ast = AST('x = "ice cream, eggs, and milk" + "...alpha or beta"')
+            ast = ast2.AST('x = "ice cream, eggs, and milk" + "...alpha or beta"')
             print(ast.parse())
-            ast = AST('y = f(1 + 1, 2 + 2, 3 + 3) - g((9+7)*2, 128/(2+2))')
+            ast = ast2.AST('y = f(1 + 1, 2 + 2, 3 + 3) - g((9+7)*2, 128/(2+2))')
             print(ast.parse())
-            ast = AST('z = f("ice cream", "eggs and milk") * g("alpha or beta", 3:8, "gamma or delta")')
+            ast = ast2.AST('z = f("ice cream", "eggs and milk") * g("alpha or beta", 3:8, "gamma or delta")')
             print(ast.parse())
-            ast = AST('makeList(1,2,3) + makeList(4,5,6)')
+            ast = ast2.AST('makeList(1,2,3) + makeList(4,5,6)')
             print(ast.parse())
-            ast = AST('[max(16, 25), max(36, max(49, 64))]')
+            ast = ast2.AST('[max(16, 25), max(36, max(49, 64))]')
             print(ast.parse())
-            ast = AST('[concat_lists([10], [20]), concat_lists([30], [40])]')
+            ast = ast2.AST('[concat_lists([10], [20]), concat_lists([30], [40])]')
             print(ast.parse())
         elif first_arg == '--test3':
-            ast = AST('[1, 2, 3]')
+            ast = ast2.AST('[1, 2, 3]')
             print(ast.split_list_elems())
-            ast = AST('[f(2), f(3), f(4)]')
+            ast = ast2.AST('[f(2), f(3), f(4)]')
             print(ast.split_list_elems())
-            ast = AST('[f(2, 3), f(3, 4, 5), f(4, 1)]')
+            ast = ast2.AST('[f(2, 3), f(3, 4, 5), f(4, 1)]')
             print(ast.split_list_elems())
-            ast = AST('1 + 2 * 3')
+            ast = ast2.AST('1 + 2 * 3')
             print(ast.split_list_elems())
             print(ast.parse())
         elif first_arg == '--test4':
-            ast = AST('x.length()')
+            ast = ast2.AST('x.length()')
             print(ast.parse())
-            ast = AST('[1,2,3].length()')
+            ast = ast2.AST('[1,2,3].length()')
             print(ast.parse())
-            ast = AST('3.01')
+            ast = ast2.AST('3.01')
             print(ast.parse())
-            ast = AST('3.1')
+            ast = ast2.AST('3.1')
             print(ast.parse())
         elif first_arg == '--test5':
             env = environment.Environment()
@@ -264,13 +264,13 @@ def main():
             print(env.value_is_a(huge_chocolate_pizza, 'ChocolatePizza'))
             print("")
         elif first_arg == '--test6':
-            ast = AST('{1, 2 | 3, 4}')
+            ast = ast2.AST('{1, 2 | 3, 4}')
             print(ast.parse())
         elif first_arg == '--test7':
-            ast = AST('throw "something"')
+            ast = ast2.AST('throw "something"')
             print(ast.parse())
         elif first_arg == '--test8':
-            ast = AST('true and not false')
+            ast = ast2.AST('true and not false')
             print(ast.parse())
             print(ast.collapse_indices(ast.build_indices()))
         elif first_arg == '--test9':
@@ -285,9 +285,9 @@ def main():
             """
             print(prepare_program.preprocess(sample))
         elif first_arg == '--test10':
-            ast = AST('-3.0e5 + 186e-20 * 1e-6 / 28.8e+6 + 34.4e+99')
+            ast = ast2.AST('-3.0e5 + 186e-20 * 1e-6 / 28.8e+6 + 34.4e+99')
             print(ast.parse())
-            ast = AST('-3.0E5 + 186E-20 * 1E-6 / 28.8e+6 + 34.4E+99')
+            ast = ast2.AST('-3.0E5 + 186E-20 * 1E-6 / 28.8e+6 + 34.4E+99')
             print(ast.parse())
         elif first_arg == '--test11':
             print(execution.is_assignment_statement('a = 5'))

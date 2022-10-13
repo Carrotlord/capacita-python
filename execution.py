@@ -2,16 +2,14 @@ import re
 
 from tokens import tokenize_statement, \
                    seek_parenthesis_in_tokens
-from ast2 import AST, precedences, unary_ops
 from ratio import Ratio
 from exception import throw_exception, throw_exception_with_line
-from strtools import find_matching, escape, index_string, \
-                     CapString
 from table import Table
 from control_flow import find_next_end_else
 from trigger import Trigger
 from imports import perform_import
 
+import ast2
 import function
 import type_restrict
 import type_tree
@@ -20,6 +18,7 @@ import prepare_program
 import env as environment
 import operator_overload
 import console
+import strtools
 
 def execute_lines(line_mgr, env, executing_constructor=False, supplied_hooks=None):
     """
@@ -231,7 +230,7 @@ def apply_unary_ops_for_list(elems):
     i = len(elems) - 2
     while i >= 0:
         elem = elems[i]
-        if elem in unary_ops:
+        if elem in ast2.unary_ops:
             if elem == '~':
                 elems[i : i+2] = [-elems[i + 1]]
             else:
@@ -262,13 +261,13 @@ def evaluate_list(tokens, env):
     while i < len(tokens):
         token = tokens[i]
         if token == '[':
-            j = find_matching(tokens[i + 1:], '[', ']')
+            j = strtools.find_matching(tokens[i + 1:], '[', ']')
             lst = []
             for elem in tokens[i+1 : i+j]:
                 if elem != ',':
                     # Need to use the .keys() method of 'precedences'
                     # or else unhashable elements (such as lists) will throw an exception
-                    if elem in brackets or elem in precedences.keys() or type(elem) is not str:
+                    if elem in brackets or elem in ast2.precedences.keys() or type(elem) is not str:
                         lst.append(elem)
                     else:
                         lst.append(eval_parentheses(elem, env))
@@ -278,7 +277,7 @@ def evaluate_list(tokens, env):
             i += j
         elif token == '{':
             # TODO : allow nested lists and tables inside table literals
-            j = find_matching(tokens[i + 1:], '{', '}')
+            j = strtools.find_matching(tokens[i + 1:], '{', '}')
             table = Table()
             is_key = True
             last_key = None
@@ -331,7 +330,7 @@ def index_lists(tokens, env):
                     )
             elif is_string(prev):
                 index = get_name(current[0], env)
-                tokens[i-1 : i+1] = [index_string(prev, index)]
+                tokens[i-1 : i+1] = [strtools.index_string(prev, index)]
             elif prev.__class__ is Table:
                 key = get_name(current[0], env)
                 tokens[i-1 : i+1] = [prev.get(key)]
@@ -368,13 +367,16 @@ def is_unary(tokens, idx):
     Returns True if tokens[idx] has an operator that should be considered unary,
     else False.
     """
-    return idx == 0 or tokens[idx - 1] in precedences or tokens[idx - 1] == ','
+    return idx == 0 or tokens[idx - 1] in ast2.precedences or tokens[idx - 1] == ','
 
 def transform_string_literals(tokens):
     for i in xrange(len(tokens)):
         token = tokens[i]
         if type(token) is str and len(token) >= 2 and token[0] == '"' and token[-1] == '"':
-            tokens[i] = CapString(token[1:-1])
+            tokens[i] = strtools.CapString(token[1:-1])
+
+def xor(left, right):
+    return (left and not right) or ((not left) and right)
 
 def evaluate_operators(tokens, indices, env):
     """
@@ -405,7 +407,7 @@ def evaluate_operators(tokens, indices, env):
             right = tokens[idx+1]
         if left in brackets or right in brackets:
             break
-        left, right = promote_values(left, right)
+        left, right = promote_values(left, right, op)
         # TODO : support user-defined methods such as $eq, $notEq when evaluating operators
         if is_dot:
             tokens[idx-1 : idx+2] = [environment.get_typed_value(left[right])]
@@ -454,7 +456,7 @@ def evaluate_operators(tokens, indices, env):
         elif op == ' of ':
             tokens[idx-1 : idx+2] = [type_restrict.type_restrict(left, right, env)]
         elif op == ' xor ':
-            tokens[idx-1 : idx+2] = [(left and not right) or ((not left) and right)]
+            tokens[idx-1 : idx+2] = [xor(left, right)]
     stage = 0
     while len(tokens) != 1:
         if stage == 0:
@@ -515,13 +517,13 @@ def split_args(args):
     while i < len(args):
         char = args[i]
         if char == '(':
-            offset = find_matching(args[i + 1:])
+            offset = strtools.find_matching(args[i + 1:])
             if offset == -1:
                 throw_exception('UnmatchedOpeningParenthesis', args)
             buffer += args[i : i+offset]
             i += offset
         elif char == '[':
-            offset = find_matching(args[i + 1:], '[', ']')
+            offset = strtools.find_matching(args[i + 1:], '[', ']')
             if offset == -1:
                 throw_exception('UnmatchedOpeningSquareBracket', args)
             buffer += args[i : i+offset]
@@ -581,7 +583,7 @@ def is_string(val):
     """
     Returns True if val is a string, else False.
     """
-    return val.__class__ is CapString
+    return val.__class__ is strtools.CapString
 
 def divide(a, b):
     if type(a) is float or type(b) is float or \
@@ -591,21 +593,29 @@ def divide(a, b):
     # types (such as complex)
     return a / b
             
-def promote_values(left, right):
+def promote_values(left, right, op):
     """
     Converts values left and right to proper types
     so that operators can act on them.
     For instance, Ratio + Integer should be a Ratio.
     """
+    # Detect the operators >, >=, <, <=
+    is_left_str = is_string(left)
+    is_right_str = is_string(right)
+    # TODO : it may be possible to remove the initial isinstance()
+    #        call by fixing the xrange issue:
+    #        evaluate_operators(tokens, xrange(len(tokens) - 1), env)
+    if isinstance(op, str) and ('>' in op or '<' in op) and xor(is_left_str, is_right_str):
+        return left, right
     def stringify(val):
         if not is_string(val):
-            return CapString(str(val), False)
+            return strtools.CapString(str(val), False)
         return val
     if left is None:
         return left, right
-    elif is_string(left):
+    elif is_left_str:
         return left, stringify(right)
-    elif is_string(right):
+    elif is_right_str:
         return stringify(left), right
     elif type(left) is float:
         return left, float(right)
@@ -661,11 +671,11 @@ def convert_value(val, env):
     elif len(val) >= 2:
         if (val[0] == '"' and val[-1] == '"') or \
            (val[0] == "'" and val[-1] == "'"):
-            return CapString(val[1:-1])
+            return strtools.CapString(val[1:-1])
         elif val[0] == '[' and val[-1] == ']':
             result = parse_list(val[1:-1], env)
             return result
-    if val in precedences or val == ',':
+    if val in ast2.precedences or val == ',':
         # This is an operator
         return None
     env.throw_exception(

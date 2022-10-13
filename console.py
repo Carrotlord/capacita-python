@@ -1,7 +1,7 @@
 import sys
+import strtools
 
 from table import Table
-from strtools import unescape, CapString, escape
 
 import type_tree
 
@@ -10,7 +10,7 @@ def display(obj, use_newline=True):
     Implementation of print functionality. Strings will not be printed with
     surrounding quotes, while other objects are printed as-is.
     """
-    if obj.__class__ is CapString:
+    if obj.__class__ is strtools.CapString:
         if use_newline:
             print(obj.contents)
         else:
@@ -91,8 +91,8 @@ def literal(obj):
         return list_to_str(obj)
     elif obj.__class__ is Table:
         return table_to_str(obj)
-    elif obj.__class__ is CapString:
-        return '"{0}"'.format(unescape(obj.contents))
+    elif obj.__class__ is strtools.CapString:
+        return '"{0}"'.format(strtools.unescape(obj.contents))
     elif obj.__class__ is type_tree.TypeTree:
         return '<type {0}>'.format(obj.get_default_name())
     else:

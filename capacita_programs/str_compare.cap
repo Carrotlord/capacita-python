@@ -1,0 +1,41 @@
+for i = 0; i < 15; i++
+    show "a" < "b"
+    show " "
+end
+print ""
+
+for i = 0; i < 15; i++
+    show "a" <= "b"
+    show " "
+end
+print ""
+
+for i = 0; i < 15; i++
+    show "a" != "b"
+    show " "
+end
+print ""
+
+for i = 0; i < 15; i++
+    show "a" > "b"
+    show " "
+end
+print ""
+
+for i = 0; i < 15; i++
+    show "a" >= "b"
+    show " "
+end
+print ""
+
+for i = 0; i < 15; i++
+    show "a" == "b"
+    show " "
+end
+print ""
+
+print "a" == 1    // false, "a" and 1 are unequal
+print "a" != 1    // true
+print "a" == []   // false, "a" is not an empty list
+print "a" != []   // true
+print "a" > 1     // error

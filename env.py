@@ -7,6 +7,7 @@ import execution
 import ast2
 import table
 import type_tree
+import line_manager
 
 import pretty_print
 
@@ -126,9 +127,90 @@ class Environment(object):
     
     def new_frame(self):
         self.frames.append({})
-    
+
+    def typed_assign(self, assign_data, value):
+        kind = assign_data.kind
+        var = assign_data.var
+        frame_or_this = self.get_frame_or_this(var)
+        if var in frame_or_this:
+            type_tuple = frame_or_this[var]
+            if type(type_tuple) is tuple:
+                existing_kind = type_tuple[0]
+                if kind != existing_kind:
+                    self.throw_exception('AlreadyRestrictedType', var + ' already has type ' + existing_kind)
+            else:
+                self.throw_exception('AlreadyAnyType',
+                    var + ' already has type Any and cannot be further restricted.')
+        frame_or_this[var] = (kind, value)
+
+    def index_assign(self, assign_data, value):
+        index = execution.eval_parentheses(assign_data.suffixes[0].ref, self)
+        indexable = assign_data.var
+        frame_or_this = self.get_frame_or_this(indexable)
+        container = frame_or_this[indexable]
+        if type(container) is tuple:
+            # Modify the iterable contained within the tuple
+            iterable = container[1]
+            iterable[index] = value
+        else:
+            # This iterable has no type restriction
+            frame_or_this[indexable][index] = value
+
+    def attr_assign(self, assign_data, value):
+        # Check for a type restriction, and enforce that restriction.
+        # If the object attribute doesn't exist yet, or has no type restriction
+        # in its current value, allow the new value to be assigned.
+        # If the type restriction is already in place, make sure to keep
+        # the restriction alongside the new value.
+        # Otherwise, throw an exception.
+        obj_name = assign_data.var
+        attr = assign_data.suffixes[0].ref
+        frame_or_this = self.get_frame_or_this(obj_name)
+        obj_reference = get_typed_value(frame_or_this[obj_name])
+        kind = None
+        if attr in obj_reference:
+            existing_value = obj_reference[attr]
+            if type(existing_value) is tuple:
+                existing_kind = existing_value[0]
+                if not self.value_is_a(value, existing_kind):
+                    self.throw_exception('MismatchedType', str(value) + ' is not of type ' + existing_kind)
+                kind = existing_kind
+        if kind is None:
+            obj_reference[attr] = value
+        else:
+            obj_reference[attr] = (kind, value)
+
+    def simple_assign(self, assign_data, value):
+        var_name = assign_data.var
+        frame_or_this = self.get_frame_or_this(var_name)
+        if var_name in frame_or_this and type(frame_or_this[var_name]) is tuple:
+            # There is an existing type restriction
+            kind = frame_or_this[var_name][0]
+            if not self.value_is_a(value, kind):
+                self.throw_exception('MismatchedType', str(value) + ' is not of type ' + kind +
+                    '\nType tree is: ' + str(self.all_types))
+            frame_or_this[var_name] = (kind, value)
+        else:
+            # There is no type restriction given
+            frame_or_this[var_name] = value
+
     def assign(self, var_name, value):
         self.last_assigned = value
+        if isinstance(var_name, line_manager.AssignmentData):
+            assign_data = var_name
+            if assign_data.kind is not None:
+                self.typed_assign(assign_data, value)
+            elif len(assign_data.suffixes) > 0:
+                first = assign_data.suffixes[0]
+                if first.kind == 'INDEX':
+                    self.index_assign(assign_data, value)
+                elif first.kind == 'ATTR':
+                    self.attr_assign(assign_data, value)
+                else:
+                    throw_exception('InvalidAssignSuffixKind', first.kind)
+            else:
+                self.simple_assign(assign_data, value)
+            return assign_data
         # Check for a type restriction
         match_obj = re.match(r'([A-Za-z_][A-Za-z_0-9]*) (\$?[A-Za-z_][A-Za-z_0-9]*)', var_name)
         if match_obj:
@@ -137,70 +219,35 @@ class Environment(object):
                 self.throw_exception('MismatchedType', str(value) + ' is not of type ' + kind +
                                      '\nType tree is: ' + str(self.all_types))
             var = match_obj.group(2)
-            frame_or_this = self.get_frame_or_this(var)
-            if var in frame_or_this:
-                type_tuple = frame_or_this[var]
-                if type(type_tuple) is tuple:
-                    existing_kind = type_tuple[0]
-                    if kind != existing_kind:
-                        self.throw_exception('AlreadyRestrictedType', var + ' already has type ' + existing_kind)
-                else:
-                    self.throw_exception('AlreadyAnyType',
-                        var + ' already has type Any and cannot be further restricted.')
-            frame_or_this[var] = (kind, value)
+            assign_data = line_manager.AssignmentData(kind, var, [])
+            self.typed_assign(assign_data, value)
+            return assign_data
         else:
             # Is this an assignment to an index?
             match_obj = re.match(r'(\$?[A-Za-z_][A-Za-z_0-9]*)\[(.+)\]', var_name)
             if match_obj:
                 indexable = match_obj.group(1)
-                index = execution.eval_parentheses(match_obj.group(2), self)
-                frame_or_this = self.get_frame_or_this(indexable)
-                container = frame_or_this[indexable]
-                if type(container) is tuple:
-                    # Modify the iterable contained within the tuple
-                    iterable = container[1]
-                    iterable[index] = value
-                else:
-                    # This iterable has no type restriction
-                    frame_or_this[indexable][index] = value
+                index_expr = match_obj.group(2)
+                assign_data = line_manager.AssignmentData(
+                    None, indexable, [line_manager.SuffixData('INDEX', index_expr)]
+                )
+                self.index_assign(assign_data, value)
+                return assign_data
             else:
                 # Is this an attribute of an object?
                 match_obj = re.match(r'(\$?[A-Za-z_][A-Za-z_0-9]*)\.(\$?[A-Za-z_][A-Za-z_0-9]*)', var_name)
                 if match_obj:
                     obj_name = match_obj.group(1)
                     attr = match_obj.group(2)
-                    frame_or_this = self.get_frame_or_this(obj_name)
-                    obj_reference = get_typed_value(frame_or_this[obj_name])
-                    # Check for a type restriction, and enforce that restriction.
-                    # If the object attribute doesn't exist yet, or has no type restriction
-                    # in its current value, allow the new value to be assigned.
-                    # If the type restriction is already in place, make sure to keep
-                    # the restriction alongside the new value.
-                    # Otherwise, throw an exception.
-                    kind = None
-                    if attr in obj_reference:
-                        existing_value = obj_reference[attr]
-                        if type(existing_value) is tuple:
-                            existing_kind = existing_value[0]
-                            if not self.value_is_a(value, existing_kind):
-                                self.throw_exception('MismatchedType', str(value) + ' is not of type ' + existing_kind)
-                            kind = existing_kind
-                    if kind is None:
-                        obj_reference[attr] = value
-                    else:
-                        obj_reference[attr] = (kind, value)
+                    assign_data = line_manager.AssignmentData(
+                        None, obj_name, [line_manager.SuffixData('ATTR', attr)]
+                    )
+                    self.attr_assign(assign_data, value)
+                    return assign_data
                 else:
-                    frame_or_this = self.get_frame_or_this(var_name)
-                    if var_name in frame_or_this and type(frame_or_this[var_name]) is tuple:
-                        # There is an existing type restriction
-                        kind = frame_or_this[var_name][0]
-                        if not self.value_is_a(value, kind):
-                            self.throw_exception('MismatchedType', str(value) + ' is not of type ' + kind +
-                                            '\nType tree is: ' + str(self.all_types))
-                        frame_or_this[var_name] = (kind, value)
-                    else:
-                        # There is no type restriction given
-                        frame_or_this[var_name] = value
+                    assign_data = line_manager.AssignmentData(None, var_name, [])
+                    self.simple_assign(assign_data, value)
+                    return assign_data
 
     # TODO : rework how hooks operate. Most environment frames will not
     # need a '$hooks' attribute anymore, since functions now carry their own hooks.

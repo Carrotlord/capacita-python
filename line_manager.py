@@ -1,4 +1,5 @@
 import prepare_program
+import exception
 
 def is_assignment_statement(line):
     i = 0
@@ -64,6 +65,25 @@ class LineData(object):
 
     def modify_line(self, function):
         self.line = function(self.line)
+
+class AssignmentData(object):
+    def __init__(self, kind, var, suffixes):
+        if kind is not None and suffixes != []:
+            exception.throw_exception(
+                'TypeRestrictionNotApplied',
+                ('Type {0} cannot be applied to {1} ' +
+                 'when it has attributes or indices: {2}').format(
+                     kind, var, suffixes
+                 )
+            )
+        self.kind = kind
+        self.var = var
+        self.suffixes = suffixes
+
+class SuffixData(object):
+    def __init__(self, kind, ref):
+        self.kind = kind
+        self.ref = ref
 
 class LineManager(object):
     def __init__(self, original_lines):

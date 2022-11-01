@@ -180,7 +180,9 @@ class AST(object):
         buffer_contents = buffer.strip()
         if len(buffer_contents) > 0:
             tokens.append(buffer_contents)
-        return self.merge_negatives(self.merge_exponent_notation(tokens), prev_elem)
+        return self.merge_time_literals(
+            self.merge_negatives(self.merge_exponent_notation(tokens), prev_elem)
+        )
     
     def merge_negatives(self, tokens, prev_elem):
         """
@@ -225,6 +227,16 @@ class AST(object):
                 else:
                     num_tokens = 2
                 tokens[i : i+num_tokens] = [''.join(tokens[i : i+num_tokens])]
+            i += 1
+        return tokens
+
+    def merge_time_literals(self, tokens):
+        i = 0
+        while i < len(tokens) - 2:
+            current_token = tokens[i]
+            if current_token.startswith('\\') and current_token[1:].isdigit() and \
+               tokens[i + 2].isdigit():
+                tokens[i : i+3] = [''.join(tokens[i : i+3])]
             i += 1
         return tokens
 

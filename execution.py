@@ -19,6 +19,7 @@ import env as environment
 import operator_overload
 import console
 import strtools
+import time_literal
 
 def execute_lines(line_mgr, env, executing_constructor=False, supplied_hooks=None):
     """
@@ -668,6 +669,9 @@ def convert_value(val, env):
     elif first_char == '#':
         # This is a tag
         return val
+    elif first_char == '\\':
+        # This is a time literal
+        return time_literal.make_duration(val[1:])
     elif len(val) >= 2:
         if (val[0] == '"' and val[-1] == '"') or \
            (val[0] == "'" and val[-1] == "'"):

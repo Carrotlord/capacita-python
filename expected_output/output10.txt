@@ -671,6 +671,21 @@ This will be printed.
 Object{#a, 10 | #moveLeft, <function moveLeft() -> ('this.x = this.x - 1', 'return null')> | #b, 20 | #moveDown, <function moveDown() -> ('this.y = this.y - 1', 'return null')> | #$type, "Point" | #$hooks, Object{#moveLeft, <function moveLeft() -> ('this.x = this.x - 1', 'return null')> | #moveRight, <function moveRight() -> ('this.x = this.x + 1', 'return null')> | #display, <function display() -> ('show "["', 'show this.x', 'show ", "', 'show this.y', 'print "]"', 'return null')> | #moveUp, <function moveUp() -> ('this.y = this.y + 1', 'return null')> | #moveDown, <function moveDown() -> ('this.y = this.y - 1', 'return null')>} | #moveRight, <function moveRight() -> ('this.x = this.x + 1', 'return null')> | #y, 21 | #x, 8 | #display, <function display() -> ('show "["', 'show this.x', 'show ", "', 'show this.y', 'print "]"', 'return null')> | #moveUp, <function moveUp() -> ('this.y = this.y + 1', 'return null')>}
 [10, 20]
 Object{#a, 10 | #moveLeft, <function moveLeft() -> ('this.x = this.x - 1', 'return null')> | #b, 20 | #moveDown, <function moveDown() -> ('this.y = this.y - 1', 'return null')> | #$type, "Point" | #$hooks, Object{#moveLeft, <function moveLeft() -> ('this.x = this.x - 1', 'return null')> | #moveRight, <function moveRight() -> ('this.x = this.x + 1', 'return null')> | #display, <function display() -> ('show "["', 'show this.x', 'show ", "', 'show this.y', 'print "]"', 'return null')> | #moveUp, <function moveUp() -> ('this.y = this.y + 1', 'return null')> | #moveDown, <function moveDown() -> ('this.y = this.y - 1', 'return null')>} | #moveRight, <function moveRight() -> ('this.x = this.x + 1', 'return null')> | #y, 20 | #x, 10 | #display, <function display() -> ('show "["', 'show this.x', 'show ", "', 'show this.y', 'print "]"', 'return null')> | #moveUp, <function moveUp() -> ('this.y = this.y + 1', 'return null')>}
+===== Testing capacita_programs/time_literals.cap
+12 hours, 30 minutes
+2 hours, 59 minutes
+0 hours, -1 minutes
+0 hours, -59 minutes
+-6 hours, 0 minutes
+-6 hours, -1 minutes
+-6 hours, -59 minutes
+-8 hours, 0 minutes
+-7 hours, -59 minutes
+0 hours, 0 minutes
+1 hour, 2 minutes
+0 hours, 56 minutes
+7 hours, 52 minutes
+8 hours, 52 minutes
 ===== Testing capacita_programs/types.cap
 [5, 15.6, 17.6]
 [500, 15.6, 300]

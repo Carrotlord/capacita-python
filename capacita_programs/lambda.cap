@@ -1,0 +1,24 @@
+f = x -> x + 1
+g = [(a,b) -> a + b, () -> 10, (d,e,f) -> d(e, f)]
+h = (h) -> h * h * h
+compose = (f,g) -> (x -> f(g(x)))
+composePrime = (f,g) -> x -> f(g(x))
+print f(2)
+k = g[0]
+print k(10,20)
+k = g[1]
+print k()
+k = g[2]
+print k(g[0], 100, 200)
+m = compose(h,f)
+print m(3)
+n = composePrime(h,h)
+print n(3)
+q = compose(arg -> arg * arg, arg -> 2 * arg)
+print q(7)
+print "a -> a + b" // (a) -> a + b
+print 'a -> a + b' // (a) -> a + b
+print 'a -> "string" + a' // 'a -> "string" + a'
+print "a -> 'string' + a" // "a -> 'string' + a"
+print "a -> \"string\" + a" // "a -> \"string\" + a"
+print 'a -> \'string\' + a' // 'a -> \'string\' + a'

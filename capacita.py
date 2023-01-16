@@ -108,7 +108,7 @@ def repl(existing_env=None, get_input=None):
         env = existing_env
     if get_input is None:
         get_input = raw_input
-    brace_matcher = prepare_program.BraceMatcher()
+    brace_matcher = prepare_program.BraceMatcher(True)
     while True:
         brace_matcher.reset()
         expr = get_input('Capacita> ')

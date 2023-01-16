@@ -126,7 +126,13 @@ class LineManager(object):
 
     def insert(self, index, line):
         self.internal_lines.insert(index, LineData(line, self.last_start_index, self.last_stop_index))
-    
+
+    def append_line_data(self, line_data):
+        self.internal_lines.append(line_data)
+
+    def enumerate_line_data(self):
+        return enumerate(self.internal_lines)
+
     def pop(self, index=None):
         if index is None:
             return self.internal_lines.pop().line

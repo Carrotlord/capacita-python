@@ -384,6 +384,20 @@ Type tree is: {'Ratio': ('Ratio', 'Rational')
   ('Table',)
 }
 ===== Exception: <type 'exceptions.SystemExit'>
+===== Testing capacita_programs/lambda.cap
+3
+30
+10
+300
+64
+19683
+196
+a -> a + b
+a -> a + b
+a -> "string" + a
+a -> 'string' + a
+a -> "string" + a
+a -> 'string' + a
 ===== Testing capacita_programs/lists.cap
 [1, 2, 3, 4, 5, 6]
 [[1, 2], [3, 4], 5, [6, 7]]

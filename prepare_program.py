@@ -1,21 +1,29 @@
 from control_flow import prepare_control_flow
 from exception import throw_exception
 
+import re
 import ast2
 import operator_overload
 import strtools
+import line_manager
 
 class BraceMatcher(object):
-    def __init__(self):
+    # TODO : This class keeps a count of open braces
+    #        for each type: '(', '[', '{'.
+    #        Consider using a stack so that mismatched
+    #        braces such as '[(])' are not considered valid.
+    def __init__(self, is_repl):
+        self.is_repl = is_repl
         self.reset()
 
     def reset(self):
         self.open_parens = 0
         self.open_brackets = 0
         self.open_braces = 0
+        self.has_error = False
 
     def match_line(self, line):
-        for char in line:
+        for i, char in enumerate(line):
             if char == '(':
                 self.open_parens += 1
             elif char == '[':
@@ -25,16 +33,28 @@ class BraceMatcher(object):
             elif char == ')':
                 self.open_parens -= 1
                 if self.open_parens < 0:
-                    throw_exception('UnmatchedCloseParenthesis', 'On line: ' + line)
+                    self.found_unmatched('Parenthesis', i, line)
             elif char == ']':
                 self.open_brackets -= 1
                 if self.open_brackets < 0:
-                    throw_exception('UnmatchedCloseBracket', 'On line: ' + line)
+                    self.found_unmatched('Bracket', i, line)
             elif char == '}':
                 self.open_braces -= 1
                 if self.open_braces < 0:
-                    throw_exception('UnmatchedCloseBrace', 'On line: ' + line)
-        return self
+                    self.found_unmatched('Brace', i, line)
+            elif char == ',' and (not self.is_repl) and self.is_complete():
+                return i  # found a comma not in any braces
+        if self.is_repl:
+            return self
+        elif self.has_error:
+            return i
+        return -1  # no character index for unmatched brace
+
+    def found_unmatched(self, brace_name, column, line):
+        if self.is_repl:
+            throw_exception('UnmatchedClose' + brace_name, 'At column {0} on line: {1}'.format(column, line))
+        else:
+            self.has_error = True
 
     def is_complete(self):
         return self.open_parens == 0 and self.open_brackets == 0 and \
@@ -317,6 +337,102 @@ def replace_op_overload_syntax(line_mgr):
                 i += 2
         i += 1
     line_mgr.for_each_line(construct_equivalent_function_defn)
+
+def find_arrow(line):
+    """
+    Finds the last -> operator in the line,
+    returning the index at which it is located.
+    Ignores any content in string literals.
+    Return -1 if there is no such operator.
+    """
+    in_double_quotes = False
+    for i in reversed(xrange(len(line))):
+        if is_quote(line, i):
+            in_double_quotes = not in_double_quotes
+        elif (not in_double_quotes) and line[i : i+2] == '->':
+            return i
+    return -1
+
+def char_range(first, last):
+    return ''.join(chr(n) for n in xrange(ord(first), ord(last) + 1))
+
+ident_chars = '_$' + char_range('A', 'Z') + char_range('a', 'z') + char_range('0', '9')
+
+def extract_lambda(line, brace_matcher):
+    arrow_index = find_arrow(line)
+    if arrow_index == -1:
+        return None
+    # TODO : for pattern matching, allow nested braces such as [args]
+    #        in an argument list
+    begin_index = arrow_index - 1
+    # Skip whitespace:
+    while begin_index > 0 and line[begin_index] in ' \t':
+        begin_index -= 1
+    args = None
+    if line[begin_index] == ')':
+        begin_index -= 1
+        while begin_index >= 0 and line[begin_index] != '(':
+            begin_index -= 1
+        args = line[begin_index : arrow_index].strip()
+    else:
+        while begin_index >= 1 and line[begin_index - 1] in ident_chars:
+            begin_index -= 1
+        args = '(' + line[begin_index : arrow_index].strip() + ')'
+    arrow_index += 2  # move past the '->' token
+    brace_matcher.reset()
+    # Find the end of the lambda
+    end_index = brace_matcher.match_line(line[arrow_index:])
+    if end_index == -1:
+        end_index = len(line)     # lambda stops at end of line
+    else:
+        end_index += arrow_index  # compensate for location of arrow
+    body = line[arrow_index : end_index].strip()
+    return args, body, begin_index, end_index
+
+def get_nested_lambda(lambda_body):
+    match_obj = re.match(r'\(*(\$lambda[0-9]+)\)*', lambda_body)
+    if match_obj:
+        return match_obj.group(1)
+    return None
+
+def lift_lambdas(line_mgr):
+    brace_matcher = BraceMatcher(False)
+    lambda_num = 0
+    new_line_mgr = line_manager.LineManager([])
+    for i, line_data in line_mgr.enumerate_line_data():
+        line = line_data.line
+        lifted = []
+        while True:
+            lambda_content = extract_lambda(line, brace_matcher)
+            if lambda_content is None:
+                break
+            args, body, begin_index, end_index = lambda_content
+            nested_lambda = get_nested_lambda(body)
+            if nested_lambda is not None:
+                if len(lifted) == 0:
+                    throw_exception(
+                        'InternalError',
+                        'Lambda {0} was never defined'.format(nested_lambda)
+                    )
+                last_lambda_def = lifted.pop()
+                # Warning: when generating these code lines, do not add
+                # any indentation (leading whitespace) inside the string
+                # literals. The code has already been preprocessed
+                # to remove such whitespace.
+                lifted.extend([
+                    'sub $lambda{0}{1}'.format(lambda_num, args),
+                    last_lambda_def,
+                    'return ' + nested_lambda,
+                    'end'
+                ])
+            else:
+                lifted.append('func $lambda{0}{1} = {2}'.format(lambda_num, args, body))
+            line = line[:begin_index] + '$lambda' + str(lambda_num) + line[end_index:]
+            lambda_num += 1
+        lifted.append(line)
+        for ln in lifted:
+            new_line_mgr.append_line_data(line_manager.LineData(ln, line_data.line_num, line_data.end_line_num))
+    return new_line_mgr
 
 def prepare_program(line_mgr):
     """

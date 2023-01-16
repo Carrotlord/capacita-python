@@ -86,6 +86,7 @@ def extract_functions(prgm, existing_env=None):
     else:
         lines = [line.strip() for line in lines]
         line_mgr = line_manager.LineManager(lines)
+    line_mgr = prepare_program.lift_lambdas(line_mgr)
     prepare_program.replace_op_overload_syntax(line_mgr)
     if existing_env is None:
         env = environment.Environment()

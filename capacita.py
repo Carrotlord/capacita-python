@@ -139,7 +139,7 @@ def repl(existing_env=None, get_input=None):
             line_mgr, _ = convert_program_to_lines(expr)
             line_mgr.classify_statements()
             if len(line_mgr) > 1:
-                leading_lines = line_mgr[:-1]
+                leading_lines = line_mgr.subset(0, -1)
                 execution.execute_lines(leading_lines, env)
             last_expr_data = line_mgr.get_line_data(-1)
             last_expr = last_expr_data.line

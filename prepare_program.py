@@ -123,7 +123,20 @@ def convert_single_quotes(prgm):
     in_double_quotes = False
     while i < length:
         char = prgm[i]
-        if is_quote(prgm, i):
+        if (not in_double_quotes) and prgm[i : i+2] in ('//', '/*'):
+            if prgm[i + 1] == '/':
+                # Scan until end of line
+                while i < length and prgm[i] != '\n':
+                    processed += prgm[i]
+                    i += 1
+                char = '\n'
+            else:
+                # Scan until end of comment
+                while i < length and prgm[i : i+2] != '*/':
+                    processed += prgm[i]
+                    i += 1
+                char = '*'
+        elif is_quote(prgm, i):
             in_double_quotes = not in_double_quotes
         if char == "'" and not in_double_quotes:
             j = strtools.find_matching_quote(prgm[i + 1:], "'")

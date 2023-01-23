@@ -496,6 +496,8 @@ true
 "
 '
 "
+Example
+string " abc
 ===== Testing capacita_programs/ratio_division.cap
 [-13:8, 60:187, -195:112, -13:8, 0.5, 1:2, 0.5, 1:2, 1:6, 1:24, 1:120]
 ===== Testing capacita_programs/recursion.cap

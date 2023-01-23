@@ -2,3 +2,8 @@ print "'"
 print '"'
 print "\'"
 print '\"'
+print "Example"   // single ' quote
+/* another '
+print "data"
+12345 " */
+print 'string " abc'    // ' a

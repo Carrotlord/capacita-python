@@ -4,6 +4,7 @@ ordered_ops = [' and ', ' or ', ' xor ', 'not ', ' of ',
                '+', '-', '*', '/', '%', '^', ':', '.', '~']
 
 import strtools
+import prepare_program
 from exception import throw_exception
 
 import re
@@ -173,7 +174,7 @@ class AST(object):
                             op_detected = True
                             break
                 if not op_detected:
-                    if next_char == '"':
+                    if prepare_program.is_quote(expr, i):
                         in_quotes = not in_quotes
                     buffer += next_char
                     i += 1

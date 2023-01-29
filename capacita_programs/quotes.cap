@@ -7,3 +7,5 @@ print "Example"   // single ' quote
 print "data"
 12345 " */
 print 'string " abc'    // ' a
+print 'string " ...'    // ' -
+print 'string " *'      // ' +

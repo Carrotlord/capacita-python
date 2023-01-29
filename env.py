@@ -64,6 +64,7 @@ class Environment(object):
         self.line_mgr = None
         self.prgm_counter = 0
         self.is_method_stack = []
+        self.lambda_num = 0
 
     def get_indices(self, tokens):
         ast = ast2.ast_singleton

@@ -408,9 +408,9 @@ def get_nested_lambda(lambda_body):
         return match_obj.group(1)
     return None
 
-def lift_lambdas(line_mgr):
+def lift_lambdas(line_mgr, env):
     brace_matcher = BraceMatcher(False)
-    lambda_num = 0
+    lambda_num = 0 if env is None else env.lambda_num
     new_line_mgr = line_manager.LineManager([])
     for i, line_data in line_mgr.enumerate_line_data():
         line = line_data.line
@@ -445,7 +445,7 @@ def lift_lambdas(line_mgr):
         lifted.append(line)
         for ln in lifted:
             new_line_mgr.append_line_data(line_manager.LineData(ln, line_data.line_num, line_data.end_line_num))
-    return new_line_mgr
+    return new_line_mgr, lambda_num
 
 def prepare_program(line_mgr):
     """

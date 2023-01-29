@@ -86,12 +86,13 @@ def extract_functions(prgm, existing_env=None):
     else:
         lines = [line.strip() for line in lines]
         line_mgr = line_manager.LineManager(lines)
-    line_mgr = prepare_program.lift_lambdas(line_mgr)
+    line_mgr, lambda_num = prepare_program.lift_lambdas(line_mgr, existing_env)
     prepare_program.replace_op_overload_syntax(line_mgr)
     if existing_env is None:
         env = environment.Environment()
     else:
         env = existing_env
+    env.lambda_num = lambda_num
     i = 0
     max_len = len(line_mgr)
     while i < max_len:

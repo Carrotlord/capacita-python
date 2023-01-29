@@ -136,7 +136,7 @@ def repl(existing_env=None, get_input=None):
         else:
             # Since expr could contain semicolon-separated lines of code,
             # extract all the lines:
-            line_mgr, _ = convert_program_to_lines(expr)
+            line_mgr, _ = convert_program_to_lines(expr, env)
             line_mgr.classify_statements()
             if len(line_mgr) > 1:
                 leading_lines = line_mgr.subset(0, -1)

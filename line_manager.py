@@ -156,6 +156,16 @@ class LineManager(object):
         for line_data in self.internal_lines:
             line_data.is_statement = is_statement(line_data.line)
 
+    def has_nothing(self):
+        return all(line == '' for line in self)
+
+    def drop_empty(self):
+        new_lines = []
+        for line, data in zip(self, self.internal_lines):
+            if line != '':
+                new_lines.append(data)
+        self.internal_lines = new_lines
+
     def display(self):
         num_digits = 1
         for i, line_data in enumerate(self.internal_lines):

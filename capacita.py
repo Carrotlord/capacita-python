@@ -138,6 +138,9 @@ def repl(existing_env=None, get_input=None):
             # extract all the lines:
             line_mgr, _ = convert_program_to_lines(expr, env)
             line_mgr.classify_statements()
+            if line_mgr.has_nothing():
+                continue
+            line_mgr.drop_empty()
             if len(line_mgr) > 1:
                 leading_lines = line_mgr.subset(0, -1)
                 execution.execute_lines(leading_lines, env)

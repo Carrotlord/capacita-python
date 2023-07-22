@@ -1,0 +1,24 @@
+xs = [+, *, -, /, ^, %, :]
+for each x of xs
+    show x(12, 5) + " "
+end
+print ""
+
+import functional
+print foldLeft(+, [1,2,3,4])
+print foldLeft(*, [1,2,3,4])
+print foldLeft(-, [1,2,3,4])
+print foldRight(-, [1,2,3,4])
+
+print ""
+
+ys = map(f -> partial(f, [5]), xs)
+for each y of ys
+    show y(2) + " "
+end
+print ""
+
+f = (+)
+str = "(+)"
+str2 = "hey,/,hi"
+print f(str, str2)

@@ -473,6 +473,15 @@ Object{#car, 20 | #cdr, Object{#car, 30 | #cdr, null}}
 ===== Testing capacita_programs/operator_overload.cap
 ["4-38i", "83-34i", "-1-2i", "-0.0478558110628+0.0285891858297i"]
 ["Vector[1, 2, 3]", "Vector[5, 10, 15]", "Vector[-10, -20, -30]"]
+===== Testing capacita_programs/operator_section.cap
+17 60 7 2.4 248832 2 12:5 
+10
+24
+-8
+-2
+
+7 10 3 2.5 25 1 5:2 
+(+)hey,/,hi
 ===== Testing capacita_programs/power_series.cap
 [1.0, 0.995004165278, 0.980066577841, 0.955336489126, 0.921060994003, 0.87758256189, 0.994672175184]
 [1.0, 0.995004165278, 0.980066577841, 0.955336489126, 0.921060994003, 0.87758256189, 0.997444046887]

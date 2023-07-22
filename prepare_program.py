@@ -408,7 +408,36 @@ def get_nested_lambda(lambda_body):
         return match_obj.group(1)
     return None
 
+def scan_delim(line, i, accept, step):
+    length = len(line)
+    while i >= 0 and i < length:
+        ch = line[i]
+        if ch not in ' \t':
+            return ch in accept
+        i += step
+    return False
+
+def substr_at(line, i, substr):
+    return line[i:].startswith(substr)
+
+section_operators = [':', '^', '*', '/', '%', '+', '-', '==', '!=', '>=', '<=', '>', '<']
+def lift_op_sections(line):
+    in_double_quotes = False
+    for i in xrange(len(line)):
+        if is_quote(line, i):
+            in_double_quotes = not in_double_quotes
+        if in_double_quotes:
+            continue
+        for op in section_operators:
+            if substr_at(line, i, op):
+                right_start = i + len(op)
+                if scan_delim(line, i - 1, ',([{', -1) and \
+                   scan_delim(line, right_start, ',)]}', 1):
+                    return line[:i] + '(a,b)->a{0}b'.format(op) + lift_op_sections(line[right_start:])
+    return line
+
 def lift_lambdas(line_mgr, env):
+    line_mgr.for_each_line(lift_op_sections)
     brace_matcher = BraceMatcher(False)
     lambda_num = 0 if env is None else env.lambda_num
     new_line_mgr = line_manager.LineManager([])

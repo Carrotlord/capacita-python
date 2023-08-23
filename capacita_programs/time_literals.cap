@@ -12,3 +12,32 @@ print \0:31 * 2
 print 8 * \0:07
 print 8 * \0:59
 print \1:00 + 8*\0:59
+
+print "==="
+
+print \1.10
+print \1.79
+print \1.79.toHours()
+print \1.79.toApproxHours()
+print \1:47.toHours()
+print \1:47.toApproxHours()
+print \2:30 + \1.10
+print \9:05 - \1.50
+print \1:30.toHours()
+print \1:59.toHours()
+print \1:30.toApproxHours()
+print \1:59.toApproxHours()
+print \15.03
+print \15.03.toApproxHours()
+print \1.02.toApproxHours()
+print \1.02.toHours()
+print \1.2.toApproxHours()
+print \1.2.toHours()
+print \1.3.toApproxHours()
+print \1.3.toHours()
+print \1.23456.toApproxHours()
+print \1.23456.toHours()
+print \1.23456
+print \56.789.toApproxHours()
+print \56.789.toHours()
+print \56.789

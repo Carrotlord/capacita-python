@@ -713,6 +713,33 @@ Object{#a, 10 | #moveLeft, <function moveLeft() -> ('this.x = this.x - 1', 'retu
 0 hours, 56 minutes
 7 hours, 52 minutes
 8 hours, 52 minutes
+===
+1 hour, 6 minutes
+1 hour, 47.4 minutes
+1.79
+1.79
+1.78333333333
+1.78
+3 hours, 36 minutes
+7 hours, 35 minutes
+1.5
+1.98333333333
+1.5
+1.98
+15 hours, 2 minutes
+15.03
+1.02
+1.01666666667
+1.2
+1.2
+1.3
+1.3
+1.23456
+1.23456
+1 hour, 14.0736 minutes
+56.789
+56.789
+56 hours, 47.34 minutes
 ===== Testing capacita_programs/types.cap
 [5, 15.6, 17.6]
 [500, 15.6, 300]

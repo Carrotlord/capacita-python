@@ -8,6 +8,7 @@ from exception import throw_exception
 
 import builtin_function
 import strtools
+import time_literal
 
 # None is used as a return value to indicate that no corresponding method was found
 # for the name.
@@ -306,6 +307,13 @@ def type_tree_methods(obj, name, env):
         return builtin_function.BuiltinFunction('constant', [], lambda: obj.format_as_literal())
     return None
 
+def duration_methods(obj, name, env):
+    if name == 'toHours':
+        return builtin_function.BuiltinFunction('constant', [], lambda: obj.to_hours())
+    elif name == 'toApproxHours':
+        return builtin_function.BuiltinFunction('constant', [], lambda: obj.to_approx_hours())
+    return None
+
 def dot_operator(obj, name, env):
     if type(obj) is str and re.match(r'\$?[A-Za-z_][A-Za-z_0-9]*', obj):
         obj = env.get(obj)
@@ -323,6 +331,8 @@ def dot_operator(obj, name, env):
         method = table_methods(obj, name, env)
     elif obj.__class__ is type_tree.TypeTree:
         method = type_tree_methods(obj, name, env)
+    elif obj.__class__ is time_literal.Duration:
+        method = duration_methods(obj, name, env)
     if method is None:
         throw_exception('NoSuchAttribute', str(obj) + ' object has no attribute ' + name)
     else:

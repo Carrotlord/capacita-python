@@ -671,7 +671,7 @@ def convert_value(val, env):
         return val
     elif first_char == '\\':
         # This is a time literal
-        return time_literal.make_duration(val[1:])
+        return time_literal.make_duration(val[1:], env)
     elif len(val) >= 2:
         if (val[0] == '"' and val[-1] == '"') or \
            (val[0] == "'" and val[-1] == "'"):

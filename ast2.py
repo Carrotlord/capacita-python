@@ -235,8 +235,8 @@ class AST(object):
         i = 0
         while i < len(tokens) - 2:
             current_token = tokens[i]
-            if current_token.startswith('\\') and current_token[1:].isdigit() and \
-               tokens[i + 2].isdigit():
+            if current_token.startswith('\\') and current_token[1:].isalnum() and \
+               tokens[i + 2].isalnum():
                 tokens[i : i+3] = [''.join(tokens[i : i+3])]
             i += 1
         return tokens

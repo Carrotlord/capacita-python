@@ -740,6 +740,21 @@ Object{#a, 10 | #moveLeft, <function moveLeft() -> ('this.x = this.x - 1', 'retu
 56.789
 56.789
 56 hours, 47.34 minutes
+10 hours, 5 minutes
+5 hours, 10 minutes
+3 hours, 10 minutes
+3 hours, 5 minutes
+10 hours, 3 minutes
+5 hours, 3 minutes
+10 hours, 30 minutes
+5 hours, 6 minutes
+3 hours, 6 minutes
+3 hours, 30 minutes
+10 hours, 18 minutes
+5 hours, 18 minutes
+InvalidTimeComponent exception
+Variable z contains 2.2 which is not an integer
+===== Exception: <type 'exceptions.SystemExit'>
 ===== Testing capacita_programs/types.cap
 [5, 15.6, 17.6]
 [500, 15.6, 300]

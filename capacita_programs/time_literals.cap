@@ -41,3 +41,23 @@ print \1.23456
 print \56.789.toApproxHours()
 print \56.789.toHours()
 print \56.789
+
+x = 10
+y = 5
+z = 2.2
+
+print \x:y
+print \y:x
+print \3:x
+print \3:y
+print \x:3
+print \y:3
+
+print \x.y
+print \y.x
+print \3.x
+print \3.y
+print \x.3
+print \y.3
+
+print \x.z

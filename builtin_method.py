@@ -127,6 +127,10 @@ def str_methods(obj, name, env):
                 return None
             return result
         return builtin_function.BuiltinFunction('find', ['substring'], lambda s: find_in_string(contents, s.contents))
+    elif name == 'startsWith':
+        return builtin_function.BuiltinFunction('startsWith', ['substring'], lambda s: contents.startswith(s.contents))
+    elif name == 'endsWith':
+        return builtin_function.BuiltinFunction('endsWith', ['substring'], lambda s: contents.endswith(s.contents))
     return None
 
 def obj_methods(obj, name, env):

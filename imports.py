@@ -73,13 +73,16 @@ def import_math(env):
     env.assign('atan', builtin_function.BuiltinFunction('atan', ['x'], math.atan))
     env.assign('atan2', builtin_function.BuiltinFunction('atan2', ['y', 'x'], math.atan2))
 
+def build_map_function(env):
+    def map_prime(f, lst):
+        return map(lambda x: f.execute([x], env), lst)
+    return builtin_function.BuiltinFunction('map', ['f', 'lst'], map_prime)
+
 def import_functional(env):
     def compose(f, g):
         def h(x):
             return f.execute([g.execute([x], env)], env)
         return builtin_function.BuiltinFunction('h', ['x'], h)
-    def map_prime(f, lst):
-        return map(lambda x: f.execute([x], env), lst)
     def filter_prime(predicate, lst):
         return filter(lambda x: predicate.execute([x], env), lst)
     def flip(f):
@@ -152,7 +155,7 @@ def import_functional(env):
                 throw_exception('InvalidArgument', 'Argument must be a list or function')
         return result
     env.assign('compose', builtin_function.BuiltinFunction('compose', ['f', 'g'], compose))
-    env.assign('map', builtin_function.BuiltinFunction('map', ['f', 'lst'], map_prime))
+    env.assign('map', build_map_function(env))
     env.assign('filter', builtin_function.BuiltinFunction('filter', ['predicate', 'lst'], filter_prime))
     env.assign('flip', builtin_function.BuiltinFunction('flip', ['f'], flip))
     env.assign('foldLeft', builtin_function.BuiltinFunction('foldLeft', ['f', 'lst'], fold_left))

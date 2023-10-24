@@ -351,18 +351,20 @@ def replace_op_overload_syntax(line_mgr):
         i += 1
     line_mgr.for_each_line(construct_equivalent_function_defn)
 
-def find_arrow(line):
+def find_op_keyword(line, op):
     """
-    Finds the last -> operator in the line,
+    Finds the last operator or keyword in the line,
     returning the index at which it is located.
     Ignores any content in string literals.
-    Return -1 if there is no such operator.
+    Return -1 if there is no such operator or keyword.
     """
+    if op not in line:
+        return -1
     in_double_quotes = False
     for i in reversed(xrange(len(line))):
         if is_quote(line, i):
             in_double_quotes = not in_double_quotes
-        elif (not in_double_quotes) and line[i : i+2] == '->':
+        elif (not in_double_quotes) and line[i : i+len(op)] == op:
             return i
     return -1
 
@@ -372,7 +374,7 @@ def char_range(first, last):
 ident_chars = '_$' + char_range('A', 'Z') + char_range('a', 'z') + char_range('0', '9')
 
 def extract_lambda(line, brace_matcher):
-    arrow_index = find_arrow(line)
+    arrow_index = find_op_keyword(line, '->')
     if arrow_index == -1:
         return None
     # TODO : for pattern matching, allow nested braces such as [args]
@@ -436,6 +438,35 @@ def lift_op_sections(line):
                     return line[:i] + '(a,b)->a{0}b'.format(op) + lift_op_sections(line[right_start:])
     return line
 
+def extract_list_comprehension(line):
+    from_index = find_op_keyword(line, ' from ')
+    if from_index == -1:
+        return None
+    begin_index = from_index - 1
+    # Skip until pipe character
+    while begin_index > 0 and line[begin_index] != '|':
+        begin_index -= 1
+    elem = line[begin_index + 1 : from_index].strip()
+    pipe_index = begin_index
+    while begin_index > 0 and line[begin_index] != '[':
+        begin_index -= 1
+    map_expr = line[begin_index + 1 : pipe_index].strip()
+    right_start = from_index + len(' from ')
+    end_index = right_start
+    while end_index < len(line) and line[end_index] != ']':
+        end_index += 1
+    source = line[right_start : end_index].strip()
+    return map_expr, elem, source, begin_index, end_index
+
+def lift_list_comprehension(line):
+    result = extract_list_comprehension(line)
+    if result is None:
+        return line
+    map_expr, elem, source, begin_index, end_index = result
+    return lift_list_comprehension(line[:begin_index]) + \
+           '$map({0} -> {1}, {2})'.format(elem, map_expr, source) + \
+           line[end_index + 1:]
+
 def lift_lambdas(line_mgr, env):
     line_mgr.for_each_line(lift_op_sections)
     brace_matcher = BraceMatcher(False)
@@ -445,6 +476,7 @@ def lift_lambdas(line_mgr, env):
         line = line_data.line
         lifted = []
         while True:
+            line = lift_list_comprehension(line)
             lambda_content = extract_lambda(line, brace_matcher)
             if lambda_content is None:
                 break

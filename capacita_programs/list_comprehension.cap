@@ -1,0 +1,28 @@
+xs = [1, 2, 3, 4, 5, -10]
+ys = ["A", "B", "C", "D"]
+zs = [2*n + 100 | n from xs]
+print zs
+print ys
+ys = [y.charNum().bitOr(32).toChar() | y from ys]
+print ys
+print [z / 4 | z from zs]
+print [z / 2 | z from zs + xs]
+print [z:2 | z from zs + xs]
+
+import math
+sub zip(left, right)
+    min_len = min(left.length(), right.length())
+    result = []
+    for i = 0; i < min_len; i++
+        elem1 = left[i]
+        elem2 = right[i]
+        result.push([elem1, elem2])
+    end
+    return result
+end
+first = x -> x[0]
+second = x -> x[1]
+
+print zip(xs, ys)
+print zip([x+1 | x from xs], ys)
+print [first(z) + second(z) | z from zip(xs, ys)]

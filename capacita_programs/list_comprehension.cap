@@ -26,3 +26,28 @@ second = x -> x[1]
 print zip(xs, ys)
 print zip([x+1 | x from xs], ys)
 print [first(z) + second(z) | z from zip(xs, ys)]
+
+import dataStructures
+import math into math
+
+sub nextFact(n, builtList)
+    when builtList.size() == 0
+        return 1
+    return n * builtList[-1]
+end
+
+sub nextFib(n, builtList)
+    when builtList.size() < 2
+        return builtList.size()
+    return builtList[-1] + builtList[-2]
+end
+
+factorials = [nextFact(n, this) | n from ListRange(0, 12)]
+fibonacci = [nextFib(n, this) | n from ListRange(0, 15)]
+factorials2 = [math.factorial(n) | n from ListRange(0, 12)]
+fibonacci2 = [math.fib(n) | n from ListRange(0, 15)]
+
+print factorials
+print factorials2
+print fibonacci
+print fibonacci2

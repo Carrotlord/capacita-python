@@ -78,6 +78,16 @@ def build_map_function(env):
         return map(lambda x: f.execute([x], env), lst)
     return builtin_function.BuiltinFunction('map', ['f', 'lst'], map_prime)
 
+def build_map_with_state_function(env):
+    def map_with_state(f, lst):
+        # The difference between this and map() is that the
+        # function given must take 2 arguments.
+        built_list = []
+        for elem in lst:
+            built_list.append(f.execute([elem, built_list], env))
+        return built_list
+    return builtin_function.BuiltinFunction('mapWithState', ['f', 'lst'], map_with_state)
+
 def import_functional(env):
     def compose(f, g):
         def h(x):

@@ -47,7 +47,8 @@ class Environment(object):
     def __init__(self):
         self.frames = [{'null': None, 'true': True, 'false': False,
                         'intDiv': int_div, 'makeList': make_list,
-                        '$map': imports.build_map_function(self)}]
+                        '$map': imports.build_map_function(self),
+                        '$mapWithState': imports.build_map_with_state_function(self)}]
         # Save names that shouldn't be replicated in subsequent stack frames
         self.default_names = self.frames[-1].keys()
         self.all_types = type_tree.generate_default_tree()

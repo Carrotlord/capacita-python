@@ -6,6 +6,7 @@ import ast2
 import operator_overload
 import strtools
 import line_manager
+import execution
 
 class BraceMatcher(object):
     # TODO : This class keeps a count of open braces
@@ -438,7 +439,30 @@ def lift_op_sections(line):
                     return line[:i] + '(a,b)->a{0}b'.format(op) + lift_op_sections(line[right_start:])
     return line
 
+def interleave(lst, item):
+    result = []
+    for elem in lst:
+        result.extend([elem, item])
+    if len(result) >= 2:
+        result.pop()
+    return result
+
+def decompose_function_calls(expr):
+    tokens = ast2.AST(expr).parse()
+    transformed = []
+    for token in tokens:
+        match_obj = re.match(r'(\$?[A-Za-z_][A-Za-z_0-9]*)\((.*)\)', token)
+        if match_obj:
+            func_name = match_obj.group(1)
+            func_args = match_obj.group(2)
+            arg_list = [arg.strip() for arg in execution.split_args(func_args)]
+            transformed.extend([func_name, '('] + interleave(arg_list, ',') + [')'])
+        else:
+            transformed.append(token)
+    return transformed
+
 def extract_list_comprehension(line):
+    has_state = False
     from_index = find_op_keyword(line, ' from ')
     if from_index == -1:
         return None
@@ -451,21 +475,30 @@ def extract_list_comprehension(line):
     while begin_index > 0 and line[begin_index] != '[':
         begin_index -= 1
     map_expr = line[begin_index + 1 : pipe_index].strip()
+    map_tokens = decompose_function_calls(map_expr)
+    if 'this' in map_tokens:
+        map_expr = ''.join(('$stateList' if token == 'this' else token) for token in map_tokens)
+        has_state = True
     right_start = from_index + len(' from ')
     end_index = right_start
     while end_index < len(line) and line[end_index] != ']':
         end_index += 1
     source = line[right_start : end_index].strip()
-    return map_expr, elem, source, begin_index, end_index
+    return map_expr, elem, source, begin_index, end_index, has_state
 
 def lift_list_comprehension(line):
     result = extract_list_comprehension(line)
     if result is None:
         return line
-    map_expr, elem, source, begin_index, end_index = result
-    return lift_list_comprehension(line[:begin_index]) + \
-           '$map({0} -> {1}, {2})'.format(elem, map_expr, source) + \
-           line[end_index + 1:]
+    map_expr, elem, source, begin_index, end_index, has_state = result
+    if has_state:
+        return lift_list_comprehension(line[:begin_index]) + \
+               '$mapWithState(({0}, $stateList) -> {1}, {2})'.format(elem, map_expr, source) + \
+               line[end_index + 1:]
+    else:
+        return lift_list_comprehension(line[:begin_index]) + \
+               '$map({0} -> {1}, {2})'.format(elem, map_expr, source) + \
+               line[end_index + 1:]
 
 def lift_lambdas(line_mgr, env):
     line_mgr.for_each_line(lift_op_sections)

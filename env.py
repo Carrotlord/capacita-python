@@ -328,22 +328,18 @@ class Environment(object):
             self.throw_exception('UndefinedVariable', var_name + ' is not defined.')
 
     def get(self, var_name):
-        if var_name == 'input':
-            # Read a line from the console
-            return '"{0}"'.format(raw_input())
         last_this = self.last_this()
         if var_name in last_this:
             return get_typed_value(last_this[var_name])
-        i = -1
-        while i >= -len(self.frames):
-            if var_name in self.frames[i]:
-                value = self.frames[i][var_name]
-                return get_typed_value(value)
-            else:
-                i -= 1
+        for frame in reversed(self.frames):
+            if var_name in frame:
+                return get_typed_value(frame[var_name])
         # If this variable is not defined, look in the type tree:
         if var_name in self.all_types:
             return self.all_types[var_name]
+        if var_name == 'input':
+            # Read a line from the console
+            return '"{0}"'.format(raw_input())
         self.throw_exception('UndefinedVariable', var_name + ' is not defined.')
         
     def has_name(self, var_name):

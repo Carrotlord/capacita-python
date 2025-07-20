@@ -556,14 +556,21 @@ def call_functions(tokens, env):
             func_name = match_obj.group(1)
             func_args = match_obj.group(2)
             arg_list = split_args(func_args)
-            # Evaluate all argument expressions:
-            arg_values = [eval_parentheses(arg, env) for arg in arg_list]
-            if prev_token == '.':
-                obj_name = tokens[i - 2]
-                func_obj = builtin_method.dot_operator(obj_name, func_name, env)
+            if func_name == '$ternary':
+                cond, true_case, false_case = arg_list
+                if eval_parentheses(cond, env):
+                    return_val = eval_parentheses(true_case, env)
+                else:
+                    return_val = eval_parentheses(false_case, env)
             else:
-                func_obj = env.get(func_name)
-            return_val = func_obj.execute(arg_values, env)
+                # Evaluate all argument expressions:
+                arg_values = [eval_parentheses(arg, env) for arg in arg_list]
+                if prev_token == '.':
+                    obj_name = tokens[i - 2]
+                    func_obj = builtin_method.dot_operator(obj_name, func_name, env)
+                else:
+                    func_obj = env.get(func_name)
+                return_val = func_obj.execute(arg_values, env)
             # Was an exception thrown during this function?
             if return_val.__class__ is Trigger:
                 return return_val

@@ -1,5 +1,6 @@
 # Longer operators should be detected before shorter ones:
-ordered_ops = [' and ', ' or ', ' xor ', 'not ', ' of ',
+ordered_ops = [' then ', ' else ',
+               ' and ', ' or ', ' xor ', 'not ', ' of ',
                '>=', '<=', '!=', '==', '<', '>',
                '+', '-', '*', '/', '%', '^', ':', '.', '~']
 

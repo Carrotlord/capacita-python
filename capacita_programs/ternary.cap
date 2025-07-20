@@ -1,0 +1,35 @@
+import functional
+
+sub error()
+    throw "error"
+end
+
+print 1 + 1 == 2 then "a" else "b"
+print 0 == 1 then "a" else "b"
+func abs(n)=n < 0 then -n else n
+func min(a, b) = a < b then a else b
+func min3(a, b, c) = a < b then min(a, c) else min(b, c)
+func minList(list) = list.size() == 0 then error() else foldLeft(min, list)
+
+func tag(all, elem) = [all.size(), elem]
+func enumerate(list) = [tag(this, elem) | elem from list]
+
+sub interleave(list, item)
+    results = []
+    for each pair of enumerate(list)
+        elem = pair[1]
+        results += pair[0] == list.size() - 1 then [elem] else [elem, item]
+    end
+    return results
+end
+
+print abs(100)
+print abs(-1.5)
+print interleave(['a', 'b', 'c', 'd', 'e'], '+')
+print min3(1,1,0)
+print min3(1,2,3)
+print min3(10,-2,-5)
+print min3(10,-2,5)
+print min3(3:1, 3, 3.0)
+print minList([-1, -5, 2, 0, 8, -6, 10])
+minList([])

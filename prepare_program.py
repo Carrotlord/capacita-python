@@ -455,11 +455,11 @@ def decompose_function_calls(expr):
         if match_obj:
             func_name = match_obj.group(1)
             func_args = match_obj.group(2)
-            arg_list = [arg.strip() for arg in execution.split_args(func_args)]
+            arg_list = execution.split_args(func_args)
             transformed.extend([func_name, '('] + interleave(arg_list, ',') + [')'])
         else:
             transformed.append(token)
-    return transformed
+    return [token.strip() for token in transformed]
 
 def extract_list_comprehension(line):
     has_state = False
@@ -500,6 +500,41 @@ def lift_list_comprehension(line):
                '$map({0} -> {1}, {2})'.format(elem, map_expr, source) + \
                line[end_index + 1:]
 
+def split_statement(line):
+    for keyword in special_statement_starters:
+        if line.startswith(keyword):
+            return keyword[:-1], line[len(keyword):]
+    if line.startswith('func '):
+        # TODO : allow default arguments in function definition
+        split_index = line.find('=') + 1
+        return line[:split_index], line[split_index:]
+    op = extract_compound_operator_line(line, ast2.compound_operators)
+    if op is not None:
+        split_index = line.find(op) + 2
+        return line[:split_index], line[split_index:]
+    return '', line
+
+def convert_ternary(line):
+    # Scan the string first before doing extra work:
+    if 'then' in line and 'else' in line:
+        front, rest = split_statement(line)
+        tokens = decompose_function_calls(rest)
+        try:
+            # TODO: this part needs to use BraceMatcher
+            # and the BraceMatcher must be able to operate on lists
+            delim_front = tokens.index('then')
+            delim_rest = tokens.index('else')
+        except ValueError:
+            # It's possible that the tokens don't
+            # form a real ternary, in which case
+            # it's ok to continue:
+            return line
+        cond = ''.join(tokens[:delim_front])
+        true_case = ''.join(tokens[delim_front + 1:delim_rest])
+        false_case = ''.join(tokens[delim_rest + 1:])
+        return front + ' $ternary({0}, {1}, {2})'.format(cond, true_case, false_case)
+    return line
+
 def lift_lambdas(line_mgr, env):
     line_mgr.for_each_line(lift_op_sections)
     brace_matcher = BraceMatcher(False)
@@ -509,7 +544,7 @@ def lift_lambdas(line_mgr, env):
         line = line_data.line
         lifted = []
         while True:
-            line = lift_list_comprehension(line)
+            line = lift_list_comprehension(convert_ternary(line))
             lambda_content = extract_lambda(line, brace_matcher)
             if lambda_content is None:
                 break

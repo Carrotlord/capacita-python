@@ -693,6 +693,25 @@ true
 false
 true
 true
+===== Testing capacita_programs/ternary.cap
+a
+b
+100
+1.5
+["a", "+", "b", "+", "c", "+", "d", "+", "e"]
+0
+1
+-5
+-2
+3.0
+-6
+Error: UncaughtException exception
+Thrown value ['"error"']
+Original source code:
+    Line 4: throw "error"
+Internal code:
+--> Line 1: throw "error"
+===== Exception: <type 'exceptions.SystemExit'>
 ===== Testing capacita_programs/test.cap
 68
 818:7
